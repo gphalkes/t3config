@@ -11,10 +11,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-EXTENSIONS="c libtool pkgconfig verbose_compile"
+EXTENSIONS="c libtool pkgconfig verbose_compile gettext"
 
 LTSHARED=1
 INSTALLDIRS="libdir docdir includedir"
+DEFAULT_LINGUAS=nl
 
 config() {
 	clean_c

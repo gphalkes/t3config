@@ -11,8 +11,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .POSIX:
+
 # C-compiler flags
 CFLAGS=-O2
+
+# Configuration flags. Remove -DHAVE_STRDUP if your system does not provide
+# the strdup function.
+CONFIGFLAGS=-DHAVE_STRDUP
+
+# Gettext configuration
+# GETTEXTFLAGS should contain -DUSE_GETTEXT to enable gettext translations
+# GETTEXTLIBS should contain all link flags to allow linking with gettext, if
+# it has been enabled. The GNU libc already contains the gettext library, so
+# there is no need to add any flags. Otherwise, -lintl is usually required, and
+# sometimes -liconv as well.
+# LOCALEDIR: the directory where the locale dependant files should be installed.
+# LINGUAS: translations to be installed. Look in po directory for available
+#  translations.
+GETTEXTFLAGS=
+GETTEXTLIBS=
+LOCALEDIR=$(prefix)/share/locale
+LINGUAS=
 
 # The libtool executable
 LIBTOOL=libtool
@@ -48,10 +67,10 @@ dist-clean: clean
 	rm -rf Makefile config.log libt3config.pc
 
 .c.lo:
-	$(SILENTCCLT) $(LIBTOOL) $(SILENCELT) --mode=compile --tag=CC $(CC) -shared $(CFLAGS) -Isrc -DT3_CONFIG_BUILD_DSO -c -o $@ $<
+	$(SILENTCCLT) $(LIBTOOL) $(SILENCELT) --mode=compile --tag=CC $(CC) -shared $(CFLAGS) $(CONFIGFLAGS) $(GETTEXTFLAGS) -Isrc -DT3_CONFIG_BUILD_DSO -c -o $@ $<
 
 src/libt3config.la: $(OBJECTS)
-	$(SILENTLDLT) $(LIBTOOL) $(SILENCELT) --mode=link --tag=CC $(CC) -shared -version-info <VERSIONINFO> $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LDLIBS) -rpath $(libdir)
+	$(SILENTLDLT) $(LIBTOOL) $(SILENCELT) --mode=link --tag=CC $(CC) -shared -version-info <VERSIONINFO> $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LDLIBS) $(GETTEXTLIBS) -rpath $(libdir)
 
 libt3config.pc: libt3config.pc.in
 	@{ echo '/^prefix=/c\' ; echo 'prefix=$(prefix)' ; } > .sedscript

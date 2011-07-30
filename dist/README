@@ -1,21 +1,19 @@
 Introduction
 ============
 
-The libt3unicode library provides functions for using and manipulating UTF-8
-encoded text. The functions provided can convert UTF-8 into separate
-codepoints, return relevant information about codepoints, normalize UTF-8
-strings, and more.
+The libt3config library provides functions for reading and writing simple
+structured configuration files.
 
-libt3unicode is part of the Tilde Terminal Toolkit (T3)
+libt3config is part of the Tilde Terminal Toolkit (T3)
 [http://os.ghalkes.nl/t3/]
 
 
 Prerequisites and installation
 ==============================
 
-libt3unicode requires the GNU libtool utility to be compiled.
+libt3config requires the GNU libtool utility to be compiled.
 
-There are two ways in which to compile libt3unicode:
+There are two ways in which to compile libt3config:
 
 Using the configure script:
 ---
@@ -48,11 +46,11 @@ Reporting bugs
 ==============
 
 If you think you have found a bug, please check that you are using the latest
-version of libt3unicode [http://os.ghalkes.nl/t3/libt3unicode.html]. When
+version of libt3config [http://os.ghalkes.nl/t3/libt3config.html]. When
 reporting bugs, please include a minimal example that demonstrates the problem.
 
 
 Author
 ======
 
-Gertjan Halkes <libt3unicode@ghalkes.nl>
+Gertjan Halkes <libt3config@ghalkes.nl>

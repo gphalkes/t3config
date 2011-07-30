@@ -36,4 +36,6 @@ s%<VERSIONINFO>%${VERSIONINFO}%g" ${TOPDIR}/Makefile.in
 # Modify parser output to look for files in current directory iso .objects
 sed -r -i 's%\.objects/%%g' ${TOPDIR}/src/parser.c
 
+echo "WARNING: skipping validate.c"
+
 create_tar
