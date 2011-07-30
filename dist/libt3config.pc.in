@@ -1,0 +1,10 @@
+prefix=<PREFIX>
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: libt3unicode
+Description: T3 Configuration file library
+Version: <VERSION>
+URL: http://os.ghalkes.nl/t3/libt3config.html
+Cflags: -I${includedir}/t3/config
+Libs: -L${libdir} -lt3config

@@ -1,0 +1,11 @@
+/** @mainpage
+
+@section Introduction
+
+The libt3config library provides functions for reading and writing simple
+structured configuration files.
+
+libt3config is part of the <A HREF="http://os.ghalkes.nl/t3/">Tilde Terminal
+Toolkit (T3)</A>.
+
+*/

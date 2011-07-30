@@ -112,7 +112,7 @@ static void write_int(FILE *file, t3_config_int_t value) {
 
 static void write_number(FILE *file, double value) {
 	//FIXME: replace by locale independent version!
-	fprintf(file, "%g", value);
+	fprintf(file, "%#g", value);
 }
 
 static int count_quotes(const char *value, char quote_char) {

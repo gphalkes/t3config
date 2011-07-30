@@ -1,0 +1,58 @@
+Introduction
+============
+
+The libt3unicode library provides functions for using and manipulating UTF-8
+encoded text. The functions provided can convert UTF-8 into separate
+codepoints, return relevant information about codepoints, normalize UTF-8
+strings, and more.
+
+libt3unicode is part of the Tilde Terminal Toolkit (T3)
+[http://os.ghalkes.nl/t3/]
+
+
+Prerequisites and installation
+==============================
+
+libt3unicode requires the GNU libtool utility to be compiled.
+
+There are two ways in which to compile libt3unicode:
+
+Using the configure script:
+---
+
+$ ./configure
+or
+$ ./configure --prefix=/usr
+(see ./configure --help for more tuning options)
+$ make all
+$ make install
+(assumes working install program)
+
+Manually editing the Makefile to suit your computer:
+---
+
+$ cp Makefile.in Makefile
+
+Edit the values for the different variables, using the comments in the
+Makefile for guidance, to suit your environment.
+
+$ make all
+$ make install
+(assumes working install program)
+
+The Makefiles in the distribution should work on all POSIX compatible make's.
+They have been tested using both GNU make and BSD make.
+
+
+Reporting bugs
+==============
+
+If you think you have found a bug, please check that you are using the latest
+version of libt3unicode [http://os.ghalkes.nl/t3/libt3unicode.html]. When
+reporting bugs, please include a minimal example that demonstrates the problem.
+
+
+Author
+======
+
+Gertjan Halkes <libt3unicode@ghalkes.nl>

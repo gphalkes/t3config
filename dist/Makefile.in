@@ -1,0 +1,80 @@
+# Copyright (C) 2011 G.P. Halkes
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3, as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+.POSIX:
+# C-compiler flags
+CFLAGS=-O2
+
+# The libtool executable
+LIBTOOL=libtool
+
+# Installation prefix
+prefix=/usr/local
+
+# Install program to use (should be BSD install compatible)
+INSTALL=install
+
+# Miscelaneous install paths
+libdir=$(prefix)/lib
+docdir=$(prefix)/share/doc/libt3config-<VERSION>
+includedir=$(prefix)/include
+pkgconfigdir=$(libdir)/pkgconfig
+
+SILENCELT=--silent
+SILENTCCLT=@echo '[CCLT]' $< ;
+SILENTLDLT=@echo '[LDLT]' $@ ;
+
+OBJECTS=<OBJECTS>
+
+all: src/libt3config.la libt3config.pc
+
+.PHONY: all clean dist-clean install uninstall
+.SUFFIXES: .c .o .lo .la .mo .po
+.IGNORE: uninstall
+
+clean:
+	rm -rf src/*.lo src/generated/*.lo src/.libs src/generated/.libs src/libt3config.la
+
+dist-clean: clean
+	rm -rf Makefile config.log libt3config.pc
+
+.c.lo:
+	$(SILENTCCLT) $(LIBTOOL) $(SILENCELT) --mode=compile --tag=CC $(CC) -shared $(CFLAGS) -Isrc -DT3_CONFIG_BUILD_DSO -c -o $@ $<
+
+src/libt3config.la: $(OBJECTS)
+	$(SILENTLDLT) $(LIBTOOL) $(SILENCELT) --mode=link --tag=CC $(CC) -shared -version-info <VERSIONINFO> $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LDLIBS) -rpath $(libdir)
+
+libt3config.pc: libt3config.pc.in
+	@{ echo '/^prefix=/c\' ; echo 'prefix=$(prefix)' ; } > .sedscript
+	@LIBDIR=$(libdir); if [ "$${LIBDIR#$(prefix)}" != "$${LIBDIR}" ] ; then LIBDIR="\$${prefix}$${LIBDIR#$(prefix)}" ; fi ; \
+		{ echo '/^libdir=/c\' ; echo "libdir=$${LIBDIR}" ; } >> .sedscript
+	@INCLUDEDIR=$(includedir); if [ "$${INCLUDEDIR#$(prefix)}" != "$${INCLUDEDIR}" ] ; then INCLUDEDIR="\$${prefix}$${INCLUDEDIR#$(prefix)}" ; fi ; \
+		{ echo '/^includedir=/c\' ; echo "includedir=$${INCLUDEDIR}" ; } >> .sedscript
+	sed -f .sedscript $< > $@
+
+install: all
+	$(INSTALL) -d $(libdir)
+	$(LIBTOOL) --mode=install $(INSTALL) -s -m0644 src/libt3config.la $(libdir)
+	chmod 0644 $(libdir)/libt3config.la
+	$(INSTALL) -d $(includedir)/t3/config/t3config
+	$(INSTALL) -m0644 src/config.h src/config_api.h src/config_errors.h $(includedir)/t3/config/t3config
+	$(INSTALL) -d $(docdir)/API/search
+	( cd doc ; find API -type f ) | xargs -IX $(INSTALL) -m0644 doc/X $(docdir)/X
+	$(INSTALL) -m0644 COPYING README Changelog $(docdir)
+	$(INSTALL) -d $(pkgconfigdir)
+	$(INSTALL) -m0644 libt3config.pc $(pkgconfigdir)
+
+uninstall:
+	$(LIBTOOL) --mode=uninstall rm $(libdir)/libt3config.la
+	rm -rf $(includedir)/t3/config
+	rm -rf $(docdir)
+	rm -f $(pkgconfigdir)/libt3config.pc

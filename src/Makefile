@@ -34,3 +34,4 @@ CFLAGS += -DHAVE_STRDUP
 		sed -r 's/^/T3_CONFIG_LOCAL /' ; echo "#endif" ; } > $@
 
 .objects/lex.lo: .objects/lex_hide.h
+.SECONDARY: .objects/parser.c .objects/parser.h .objects/lex.c .objects/lex_hide.h
