@@ -50,6 +50,8 @@
 \"(\"\"|[^"])*\"                       return STRING;
 '(''|[^'])*'                           return STRING;
 -?[0-9]*\.[0-9]+(e[+-][0-9]+)?         return NUMBER;
+(?i:(true|yes))                        return BOOL_TRUE;
+(?i:(false|no))                        return BOOL_FALSE;
 [_a-zA-Z][_0-9a-zA-Z]*                 return IDENTIFIER;
 \n                                     yyextra->line_number++; return '\n';
 [[:space:]]                            /* Ignore white space */

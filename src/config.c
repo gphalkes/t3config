@@ -25,6 +25,18 @@
 
 static void write_section(t3_config_item_t *config, FILE *file, int indent);
 
+#ifndef HAVE_STRDUP
+char *_t3_config_strdup(const char *str) {
+	char *result;
+	size_t len = strlen(str) + 1;
+
+	if ((result = malloc(len)) == NULL)
+		return NULL;
+	memcpy(result, str, len);
+	return result;
+}
+#endif
+
 static t3_config_item_t *config_read(parse_context_t *context, t3_config_error_t *error) {
 	int retval;
 
@@ -149,6 +161,9 @@ static void write_list(t3_config_item_t *config, FILE *file, int indent) {
 		fputc(' ', file);
 
 		switch (config->type) {
+			case T3_CONFIG_BOOL:
+				fputs(config->value.boolean ? "true" : "false", file);
+				break;
 			case T3_CONFIG_INT:
 				write_int(file, config->value.integer);
 				break;
@@ -182,6 +197,11 @@ static void write_section(t3_config_item_t *config, FILE *file, int indent) {
 		write_indent(file, indent);
 		fputs(config->name, file);
 		switch (config->type) {
+			case T3_CONFIG_BOOL:
+				fputs(" = ", file);
+				fputs(config->value.boolean ? "true" : "false", file);
+				fputc('\n', file);
+				break;
 			case T3_CONFIG_INT:
 				fputs(" = ", file);
 				write_int(file, config->value.integer);
@@ -236,6 +256,7 @@ void t3_config_delete(t3_config_item_t *config) {
 				break;
 			case T3_CONFIG_LIST:
 			case T3_CONFIG_SECTION:
+			case T3_CONFIG_SCHEMA:
 				t3_config_delete(ptr->value.list);
 				break;
 			default:
@@ -314,6 +335,15 @@ static int check_args(t3_config_item_t *config, const char *name) {
 	return T3_ERR_SUCCESS;
 }
 
+int t3_config_add_bool(t3_config_item_t *config, const char *name, t3_bool value) {
+	t3_config_item_t *item;
+	CHECK_ARGS(config, name);
+	if ((item = config_add(config, name, T3_CONFIG_BOOL)) == NULL)
+		return T3_ERR_OUT_OF_MEMORY;
+	item->value.boolean = value;
+	return T3_ERR_SUCCESS;
+}
+
 int t3_config_add_int(t3_config_item_t *config, const char *name, t3_config_int_t value) {
 	t3_config_item_t *item;
 	CHECK_ARGS(config, name);
@@ -367,9 +397,9 @@ int t3_config_add_section(t3_config_item_t *config, const char *name) {
 }
 
 t3_config_item_t *t3_config_get(t3_config_item_t *config, const char *name) {
-	if (config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_LIST)
+	if (config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_SCHEMA)
 		return NULL;
-	if (name != NULL && config->type != T3_CONFIG_SECTION)
+	if (name != NULL && config->type == T3_CONFIG_LIST)
 		return NULL;
 	if (name == NULL)
 		return config->value.list;
@@ -386,6 +416,10 @@ t3_config_item_type_t t3_config_get_type(t3_config_item_t *config) {
 
 const char *t3_config_get_name(t3_config_item_t *config) {
 	return config->name;
+}
+
+t3_bool t3_config_get_bool(t3_config_item_t *config) {
+	return config->type == T3_CONFIG_BOOL ? config->value.boolean : 0;
 }
 
 t3_config_int_t t3_config_get_int(t3_config_item_t *config) {
@@ -405,7 +439,7 @@ t3_config_item_t *t3_config_get_list(t3_config_item_t *config) {
 }
 
 t3_config_item_t *t3_config_get_section(t3_config_item_t *config) {
-	return config->type == T3_CONFIG_SECTION ? config->value.list : NULL;
+	return (config->type == T3_CONFIG_SECTION || config->type == T3_CONFIG_SCHEMA) ? config->value.list : NULL;
 }
 
 t3_config_item_t *t3_config_get_next(t3_config_item_t *config) {

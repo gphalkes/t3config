@@ -45,11 +45,13 @@ extern "C" {
 
 typedef enum {
 	T3_CONFIG_NONE,
+	T3_CONFIG_BOOL,
 	T3_CONFIG_INT,
 	T3_CONFIG_STRING,
 	T3_CONFIG_NUMBER,
 	T3_CONFIG_LIST,
-	T3_CONFIG_SECTION
+	T3_CONFIG_SECTION,
+	T3_CONFIG_SCHEMA
 } t3_config_item_type_t;
 
 typedef struct t3_config_item_t t3_config_item_t;
@@ -86,6 +88,7 @@ T3_CONFIG_API void t3_config_delete(t3_config_item_t *config);
 
 T3_CONFIG_API t3_config_item_t *t3_config_remove(t3_config_item_t *config, const char *name);
 
+T3_CONFIG_API int t3_config_add_bool(t3_config_item_t *config, const char *name, t3_bool value);
 T3_CONFIG_API int t3_config_add_int(t3_config_item_t *config, const char *name, t3_config_int_t value);
 T3_CONFIG_API int t3_config_add_number(t3_config_item_t *config, const char *name, double value);
 T3_CONFIG_API int t3_config_add_string(t3_config_item_t *config, const char *name, const char *value);
@@ -96,6 +99,7 @@ T3_CONFIG_API t3_config_item_t *t3_config_get(t3_config_item_t *config, const ch
 T3_CONFIG_API t3_config_item_type_t t3_config_get_type(t3_config_item_t *config);
 T3_CONFIG_API const char *t3_config_get_name(t3_config_item_t *config);
 
+T3_CONFIG_API t3_bool t3_config_get_bool(t3_config_item_t *config);
 T3_CONFIG_API t3_config_int_t t3_config_get_int(t3_config_item_t *config);
 T3_CONFIG_API double t3_config_get_number(t3_config_item_t *config);
 T3_CONFIG_API const char *t3_config_get_string(t3_config_item_t *config);

@@ -20,7 +20,7 @@
 %datatype "parse_context_t *", "config_internal.h";
 %start _t3_config_parse, config;
 
-%token INT, NUMBER, STRING, IDENTIFIER;
+%token INT, NUMBER, STRING, IDENTIFIER, BOOL_TRUE, BOOL_FALSE;
 
 {
 #include <stdlib.h>
@@ -49,6 +49,10 @@ static t3_config_item_t *allocate_item(struct _t3_config_this *LLthis, t3_bool a
 
 static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3_config_item_type_t type) {
 	switch (type) {
+		case T3_CONFIG_BOOL:
+			item->type = type;
+			item->value.boolean = LLsymb == BOOL_TRUE;
+			break;
 		case T3_CONFIG_INT: {
 			long value;
 			errno = 0;
@@ -62,6 +66,17 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3
 				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
 			item->type = type;
 			item->value.integer = (int) value;
+			break;
+		}
+		case T3_CONFIG_NUMBER: {
+			double value;
+			errno = 0;
+			//FIXME: use locale independent version
+			value = strtod(_t3_config_get_text(_t3_config_data->scanner), NULL);
+			if (errno == ERANGE)
+				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
+			item->type = type;
+			item->value.number = value;
 			break;
 		}
 		case T3_CONFIG_STRING: {
@@ -80,17 +95,6 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3
 			}
 			item->type = type;
 			item->value.string = value;
-			break;
-		}
-		case T3_CONFIG_NUMBER: {
-			double value;
-			errno = 0;
-			//FIXME: use locale independent version
-			value = strtod(_t3_config_get_text(_t3_config_data->scanner), NULL);
-			if (errno == ERANGE)
-				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
-			item->type = type;
-			item->value.number = value;
 			break;
 		}
 		case T3_CONFIG_LIST:
@@ -150,6 +154,11 @@ value(t3_config_item_t *item) {
 	INT
 	{
 		set_value(LLthis, item, T3_CONFIG_INT);
+	}
+|
+	[ BOOL_TRUE | BOOL_FALSE ]
+	{
+		set_value(LLthis, item, T3_CONFIG_BOOL);
 	}
 |
 	NUMBER

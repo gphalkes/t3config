@@ -5,10 +5,6 @@
 - allow validation based on description in own format
 
 types {
-	bool {
-		type = "int"
-		allowed_values = ( 0, 1 )
-	}
 	attribute {
 		# using a list within the list indicates a list of the type(s) in the list
 		type = ( "string", ( "string" ) )
@@ -30,6 +26,7 @@ allowed_keys {
 	config_version {
 		type = "int"
 		allowed_values = ( ( 0, 100) ) # using a list within a list specfies a range
+		required = true
 	}
 	hide_menubar {
 		type = "bool"
