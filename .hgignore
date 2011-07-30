@@ -7,3 +7,6 @@ src/.objects
 src/.deps
 src/test*
 src/libt3config.la
+doc/API
+doc/doxygen.conf
+doc/DoxygenLayout.xml
