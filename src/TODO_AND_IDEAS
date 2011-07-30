@@ -1,0 +1,65 @@
+- t3_config_strerror
+- create/use locale idependent strtol strtod write_number
+- hide generated parser symbols using T3_CONFIG_LOCAL
+- make testsuite
+- allow validation based on description in own format
+
+types {
+	bool {
+		type = "int"
+		allowed_values = ( 0, 1 )
+	}
+	attribute {
+		# using a list within the list indicates a list of the type(s) in the list
+		type = ( "string", ( "string" ) )
+	}
+	attributes {
+		type = "section"
+		allowed_keys {
+			non_print { type = "attribute" }
+			selection_cursor { type = "attribute" }
+			selection_cursor2 { type = "attribute" }
+		}
+	}
+}
+
+allowed_keys {
+	wrap {
+		type = "bool"
+	}
+	config_version {
+		type = "int"
+		allowed_values = ( ( 0, 100) ) # using a list within a list specfies a range
+	}
+	hide_menubar {
+		type = "bool"
+	}
+	color {
+		type = "bool"
+	}
+	tabsize {
+		type = "int"
+		allowed_values = ( ( 1, 16 ) )
+	}
+	auto_indent {
+		type = "bool"
+	}
+	terminals {
+		type = "section"
+		unknown_keys {
+			type = "section"
+			allowed_keys {
+				color {
+					type = "bool"
+				}
+				key_timeout {
+					type = "int"
+					allowed_values = ( (-10000, 10000) )
+				}
+				attributes {
+					type = "attributes"
+				}
+			}
+		}
+	}
+}

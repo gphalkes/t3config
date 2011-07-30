@@ -1,0 +1,9 @@
+syntax: glob
+src/config_shared.c
+src/config_errors.h
+src/config_api.h
+src/.libs
+src/.objects
+src/.deps
+src/test*
+src/libt3config.la

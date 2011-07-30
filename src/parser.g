@@ -1,0 +1,222 @@
+/* Copyright (C) 2011 G.P. Halkes
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License version 3, as
+   published by the Free Software Foundation.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+%options "abort thread-safe lowercase-symbols generate-lexer-wrapper=no";
+//FIXME: remove when not debugging
+//~ %options "generate-symbol-table";
+%prefix _t3_config_;
+%lexical _t3_config_yylex_wrapper;
+%datatype "parse_context_t *", "config_internal.h";
+%start _t3_config_parse, config;
+
+%token INT, NUMBER, STRING, IDENTIFIER;
+
+{
+#include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
+#include "config.h"
+
+static t3_config_item_t *allocate_item(struct _t3_config_this *LLthis, t3_bool allocate_name) {
+	t3_config_item_t *result;
+
+	if ((result = (t3_config_item_t *) malloc(sizeof(t3_config_item_t))) == NULL)
+		LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+
+	result->next = NULL;
+	result->type = T3_CONFIG_NONE;
+
+	if (allocate_name) {
+		if ((result->name = strdup(_t3_config_get_text(_t3_config_data->scanner))) == NULL)
+			LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+	} else {
+		result->name = NULL;
+	}
+
+	return result;
+}
+
+static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3_config_item_type_t type) {
+	switch (type) {
+		case T3_CONFIG_INT: {
+			long value;
+			errno = 0;
+			//FIXME: use locale independent version
+			value = strtol(_t3_config_get_text(_t3_config_data->scanner), NULL, 0);
+			if (errno == ERANGE
+#if T3_CONFIG_INT_MAX < LONG_MAX || T3_CONFIG_INT_MIN > LONG_MIN
+				|| value > T3_CONFIG_INT_MAX || value < T3_CONFIG_INT_MIN
+#endif
+)
+				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
+			item->type = type;
+			item->value.integer = (int) value;
+			break;
+		}
+		case T3_CONFIG_STRING: {
+			/* Don't need to allocate full yytext, because we drop the quotes. */
+			char *text = _t3_config_get_text(_t3_config_data->scanner);
+			char *value = malloc(strlen(text));
+			size_t i, j;
+
+			for (i = 1, j = 0; !(text[i] == text[0] && text[i + 1] == 0); i++, j++) {
+				value[j] = text[i];
+				/* Because the only quotes that can occur in the string itself
+				   are doubled (checked by lexing), we don't have to check the
+				   next character. */
+				if (text[i] == text[0])
+					i++;
+			}
+			item->type = type;
+			item->value.string = value;
+			break;
+		}
+		case T3_CONFIG_NUMBER: {
+			double value;
+			errno = 0;
+			//FIXME: use locale independent version
+			value = strtod(_t3_config_get_text(_t3_config_data->scanner), NULL);
+			if (errno == ERANGE)
+				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
+			item->type = type;
+			item->value.number = value;
+			break;
+		}
+		case T3_CONFIG_LIST:
+		case T3_CONFIG_SECTION:
+			item->type = type;
+			item->value.list = NULL;
+			break;
+		default:
+			LLabort(LLthis, T3_ERR_UNKNOWN);
+	}
+}
+
+int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis) {
+	if (LLreissue == LL_NEW_TOKEN) {
+		return _t3_config_lex(_t3_config_data->scanner);
+	} else {
+		int LLretval = LLreissue;
+		LLreissue = LL_NEW_TOKEN;
+		return LLretval;
+	}
+}
+
+void LLmessage(struct _t3_config_this *LLthis, int LLtoken) {
+	(void) LLtoken;
+//~ #ifdef DEBUG
+	//~ fprintf(stderr, "Error: %s, %s\n", LLgetSymbol(LLtoken), LLgetSymbol(LLsymb));
+//~ #endif
+	LLabort(LLthis, T3_ERR_PARSE_ERROR);
+}
+
+}
+
+//=========================== RULES ============================
+
+config {
+	t3_config_item_t **next_ptr;
+	_t3_config_data->LLthis = LLthis;
+	_t3_config_data->config = allocate_item(LLthis, t3_false);
+	_t3_config_data->config->type = T3_CONFIG_SECTION;
+	next_ptr = &_t3_config_data->config->value.list;
+} :
+	'\n' *
+	[
+		item(next_ptr)
+		{
+			if (t3_config_get(_t3_config_data->config, (*next_ptr)->name) != *next_ptr)
+				LLabort(LLthis, T3_ERR_DUPLICATE_KEY);
+			next_ptr = &(*next_ptr)->next;
+		}
+		[ '\n'+ ] ..?
+	]*
+;
+
+value(t3_config_item_t *item) {
+	t3_config_item_t **next_ptr;
+} :
+	INT
+	{
+		set_value(LLthis, item, T3_CONFIG_INT);
+	}
+|
+	NUMBER
+	{
+		set_value(LLthis, item, T3_CONFIG_NUMBER);
+	}
+|
+	STRING
+	{
+		set_value(LLthis, item, T3_CONFIG_STRING);
+	}
+|
+	'('
+	{
+		set_value(LLthis, item, T3_CONFIG_LIST);
+		next_ptr = &item->value.list;
+	}
+	'\n'*
+	[
+		{
+			*next_ptr = allocate_item(LLthis, t3_false);
+		}
+		[
+			value(*next_ptr)
+		|
+			section(*next_ptr)
+		]
+		{
+			next_ptr = &(*next_ptr)->next;
+		}
+		'\n'*
+		[
+			','
+			'\n'*
+			...
+		]*
+	]*
+	')'
+;
+
+item(t3_config_item_t **item) :
+	IDENTIFIER
+	{
+		*item = allocate_item(LLthis, t3_true);
+	}
+	[
+		section(*item)
+	|
+		'='
+		value(*item)
+	]
+;
+
+section(t3_config_item_t *item) {
+	t3_config_item_t **next_ptr = &item->value.list;
+	item->type = T3_CONFIG_SECTION;
+} :
+	'{'
+	'\n'*
+	[
+		item(next_ptr)
+		{
+			if (t3_config_get(item, (*next_ptr)->name) != *next_ptr)
+				LLabort(LLthis, T3_ERR_DUPLICATE_KEY);
+			next_ptr = &(*next_ptr)->next;
+		}
+		[ [';' | '\n'] '\n'* ] ..?
+	]*
+	'}'
+;
