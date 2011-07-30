@@ -37,6 +37,18 @@ char *_t3_config_strdup(const char *str) {
 }
 #endif
 
+t3_config_item_t *t3_config_new(void) {
+	t3_config_item_t *result;
+
+	if ((result = malloc(sizeof(t3_config_item_t))) == NULL)
+		return NULL;
+	result->name = NULL;
+	result->type = T3_CONFIG_SECTION;
+	result->value.list = NULL;
+	result->next = NULL;
+	return result;
+}
+
 static t3_config_item_t *config_read(parse_context_t *context, t3_config_error_t *error) {
 	int retval;
 
@@ -98,6 +110,8 @@ static void write_int(FILE *file, t3_config_int_t value) {
 	if (value == 0) {
 		fputc('0', file);
 		return;
+	} else if (value < 0) {
+		fputc('-', file);
 	}
 
 	buffer[79] = 0;
@@ -271,7 +285,7 @@ void t3_config_delete(t3_config_item_t *config) {
 t3_config_item_t *t3_config_remove(t3_config_item_t *config, const char *name) {
 	t3_config_item_t *ptr, *prev;
 
-	if (config->type != T3_CONFIG_SECTION)
+	if (config == NULL || config->type != T3_CONFIG_SECTION)
 		return NULL;
 
 	prev = NULL;
@@ -291,6 +305,10 @@ t3_config_item_t *t3_config_remove(t3_config_item_t *config, const char *name) {
 		prev->next = ptr->next;
 	ptr->next = NULL;
 	return ptr;
+}
+
+void t3_config_prune(t3_config_item_t *config, const char *name) {
+	t3_config_delete(t3_config_remove(config, name));
 }
 
 static t3_config_item_t *config_add(t3_config_item_t *config, const char *name, t3_config_item_type_t type) {
@@ -396,7 +414,8 @@ int t3_config_add_section(t3_config_item_t *config, const char *name) {
 	return T3_ERR_SUCCESS;
 }
 
-t3_config_item_t *t3_config_get(t3_config_item_t *config, const char *name) {
+t3_config_item_t *t3_config_get(const t3_config_item_t *config, const char *name) {
+	t3_config_item_t *result;
 	if (config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_SCHEMA)
 		return NULL;
 	if (name != NULL && config->type == T3_CONFIG_LIST)
@@ -404,46 +423,46 @@ t3_config_item_t *t3_config_get(t3_config_item_t *config, const char *name) {
 	if (name == NULL)
 		return config->value.list;
 
-	config = config->value.list;
-	while (config != NULL && strcmp(config->name, name) != 0)
-		config = config->next;
-	return config;
+	result = config->value.list;
+	while (result != NULL && strcmp(result->name, name) != 0)
+		result = result->next;
+	return result;
 }
 
-t3_config_item_type_t t3_config_get_type(t3_config_item_t *config) {
-	return config->type;
+t3_config_item_type_t t3_config_get_type(const t3_config_item_t *config) {
+	return config != NULL ? config->type : T3_CONFIG_NONE;
 }
 
-const char *t3_config_get_name(t3_config_item_t *config) {
-	return config->name;
+const char *t3_config_get_name(const t3_config_item_t *config) {
+	return config != NULL ? config->name : NULL;
 }
 
-t3_bool t3_config_get_bool(t3_config_item_t *config) {
-	return config->type == T3_CONFIG_BOOL ? config->value.boolean : 0;
+t3_bool t3_config_get_bool(const t3_config_item_t *config) {
+	return config != NULL && config->type == T3_CONFIG_BOOL ? config->value.boolean : 0;
 }
 
-t3_config_int_t t3_config_get_int(t3_config_item_t *config) {
-	return config->type == T3_CONFIG_INT ? config->value.integer : 0;
+t3_config_int_t t3_config_get_int(const t3_config_item_t *config) {
+	return config != NULL && config->type == T3_CONFIG_INT ? config->value.integer : 0;
 }
 
-double t3_config_get_number(t3_config_item_t *config) {
-	return config->type == T3_CONFIG_NUMBER ? config->value.number : 0.0;
+double t3_config_get_number(const t3_config_item_t *config) {
+	return config != NULL && config->type == T3_CONFIG_NUMBER ? config->value.number : 0.0;
 }
 
-const char *t3_config_get_string(t3_config_item_t *config) {
-	return config->type == T3_CONFIG_STRING ? config->value.string : NULL;
+const char *t3_config_get_string(const t3_config_item_t *config) {
+	return config != NULL && config->type == T3_CONFIG_STRING ? config->value.string : NULL;
 }
 
-t3_config_item_t *t3_config_get_list(t3_config_item_t *config) {
-	return config->type == T3_CONFIG_LIST ? config->value.list : NULL;
+t3_config_item_t *t3_config_get_list(const t3_config_item_t *config) {
+	return config != NULL && config->type == T3_CONFIG_LIST ? config->value.list : NULL;
 }
 
-t3_config_item_t *t3_config_get_section(t3_config_item_t *config) {
-	return (config->type == T3_CONFIG_SECTION || config->type == T3_CONFIG_SCHEMA) ? config->value.list : NULL;
+t3_config_item_t *t3_config_get_section(const t3_config_item_t *config) {
+	return config != NULL && (config->type == T3_CONFIG_SECTION || config->type == T3_CONFIG_SCHEMA) ? config->value.list : NULL;
 }
 
-t3_config_item_t *t3_config_get_next(t3_config_item_t *config) {
-	return config->next;
+t3_config_item_t *t3_config_get_next(const t3_config_item_t *config) {
+	return config != NULL ? config->next : NULL;
 }
 
 int t3_config_get_version(void) {

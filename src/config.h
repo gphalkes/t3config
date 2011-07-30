@@ -81,12 +81,14 @@ typedef int t3_config_int_t;
 #define T3_CONFIG_INT_MIN INT_MIN
 #endif
 
+T3_CONFIG_API t3_config_item_t *t3_config_new(void);
 T3_CONFIG_API t3_config_item_t *t3_config_read_file(FILE *file, t3_config_error_t *error);
 T3_CONFIG_API t3_config_item_t *t3_config_read_buffer(const char *buffer, t3_config_error_t *error);
 T3_CONFIG_API int t3_config_write_file(t3_config_item_t *config, FILE *file);
 T3_CONFIG_API void t3_config_delete(t3_config_item_t *config);
 
 T3_CONFIG_API t3_config_item_t *t3_config_remove(t3_config_item_t *config, const char *name);
+T3_CONFIG_API void t3_config_prune(t3_config_item_t *config, const char *name);
 
 T3_CONFIG_API int t3_config_add_bool(t3_config_item_t *config, const char *name, t3_bool value);
 T3_CONFIG_API int t3_config_add_int(t3_config_item_t *config, const char *name, t3_config_int_t value);
@@ -95,17 +97,17 @@ T3_CONFIG_API int t3_config_add_string(t3_config_item_t *config, const char *nam
 T3_CONFIG_API int t3_config_add_list(t3_config_item_t *config, const char *name);
 T3_CONFIG_API int t3_config_add_section(t3_config_item_t *config, const char *name);
 
-T3_CONFIG_API t3_config_item_t *t3_config_get(t3_config_item_t *config, const char *name);
-T3_CONFIG_API t3_config_item_type_t t3_config_get_type(t3_config_item_t *config);
-T3_CONFIG_API const char *t3_config_get_name(t3_config_item_t *config);
+T3_CONFIG_API t3_config_item_t *t3_config_get(const t3_config_item_t *config, const char *name);
+T3_CONFIG_API t3_config_item_type_t t3_config_get_type(const t3_config_item_t *config);
+T3_CONFIG_API const char *t3_config_get_name(const t3_config_item_t *config);
 
-T3_CONFIG_API t3_bool t3_config_get_bool(t3_config_item_t *config);
-T3_CONFIG_API t3_config_int_t t3_config_get_int(t3_config_item_t *config);
-T3_CONFIG_API double t3_config_get_number(t3_config_item_t *config);
-T3_CONFIG_API const char *t3_config_get_string(t3_config_item_t *config);
-T3_CONFIG_API t3_config_item_t *t3_config_get_list(t3_config_item_t *config);
-T3_CONFIG_API t3_config_item_t *t3_config_get_section(t3_config_item_t *config);
-T3_CONFIG_API t3_config_item_t *t3_config_get_next(t3_config_item_t *config);
+T3_CONFIG_API t3_bool t3_config_get_bool(const t3_config_item_t *config);
+T3_CONFIG_API t3_config_int_t t3_config_get_int(const t3_config_item_t *config);
+T3_CONFIG_API double t3_config_get_number(const t3_config_item_t *config);
+T3_CONFIG_API const char *t3_config_get_string(const t3_config_item_t *config);
+T3_CONFIG_API t3_config_item_t *t3_config_get_list(const t3_config_item_t *config);
+T3_CONFIG_API t3_config_item_t *t3_config_get_section(const t3_config_item_t *config);
+T3_CONFIG_API t3_config_item_t *t3_config_get_next(const t3_config_item_t *config);
 
 /** Get the value of ::T3_CONFIG_VERSION corresponding to the actual used library.
     @ingroup t3window_other
