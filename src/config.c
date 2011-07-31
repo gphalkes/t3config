@@ -112,10 +112,12 @@ t3_config_item_t *t3_config_read_buffer(const char *buffer, size_t size, t3_conf
 
 /** Locale independent strtod implemenation.
     Wraps the locale dependent strtod implementation from the C library. The
-    rationale for not using dtoa.c is that to use that one has to know that the
-    platform uses IEEE representation and in which endianess. The C library
+    rationale for not using dtoa.c is that it has too many configuration
+    options with platform dependencies such as endianess. The C library
     implementers have already figured all that out, so we just use their
     strtod by replacing the period by localeconv()->decimal_point.
+    Furthermore, we would have to track updates to those sources as well,
+    as bug-fixes are still being applied to this piece of 20 year old code ...
 */
 double _t3_config_strtod(char *text) {
 	struct lconv *ldata = localeconv();
@@ -244,7 +246,7 @@ static void write_number(FILE *file, double value) {
 		return;
 	}
 
-	snprintf(buffer, sizeof(buffer), "%g", value);
+	snprintf(buffer, sizeof(buffer), "%.17g", value);
 	/* Replace locale dependent decimal point with '.' */
 	if (strcmp(ldata->decimal_point, ".") != 0) {
 		decimal_point = strstr(buffer, ldata->decimal_point);
