@@ -29,6 +29,7 @@
 T3_CONFIG_LOCAL int _t3_config_get_column(yyscan_t yyscanner);
 T3_CONFIG_LOCAL void _t3_config_set_column(int column_no, yyscan_t yyscanner);
 
+/* Provide our own input routine to support reading from buffer. */
 #define YY_INPUT(buf, result, max_size) do { \
 	if (yyextra->scan_type == SCAN_FILE) { \
 		errno = 0; \
@@ -50,16 +51,17 @@ T3_CONFIG_LOCAL void _t3_config_set_column(int column_no, yyscan_t yyscanner);
 
 %}
 
+NUMBER_PAT     -?([0-9]*\.[0-9]+([eE][+-][0-9]+)?)|(?i:nan|inf(inity)?)
 %%
 
 -?[0-9]+|0x[0-9A-Fa-f]                 return INT;
 \"(\"\"|[^"])*\"                       return STRING;
 '(''|[^'])*'                           return STRING;
--?[0-9]*\.[0-9]+(e[+-][0-9]+)?         return NUMBER;
+{NUMBER_PAT}                           return NUMBER;
 (?i:(true|yes))                        return BOOL_TRUE;
 (?i:(false|no))                        return BOOL_FALSE;
 [_a-zA-Z][_0-9a-zA-Z]*                 return IDENTIFIER;
-\n                                     yyextra->line_number++; return '\n';
+\n                                     return '\n';
 [[:space:]]                            /* Ignore white space */
 #.*                                    /* Ignore comments */
 .                                      return (unsigned char) yytext[0];

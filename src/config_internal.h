@@ -63,5 +63,5 @@ T3_CONFIG_LOCAL int _t3_config_lex_init(yyscan_t *scanner);
 T3_CONFIG_LOCAL int _t3_config_lex_init_extra(parse_context_t *extra, yyscan_t *scanner);
 T3_CONFIG_LOCAL int _t3_config_lex_destroy(yyscan_t scanner);
 T3_CONFIG_LOCAL void _t3_config_set_in(FILE *in_str, yyscan_t scanner);
-
+T3_CONFIG_LOCAL double _t3_config_strtod(char *text);
 #endif

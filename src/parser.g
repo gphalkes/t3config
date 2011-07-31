@@ -13,8 +13,6 @@
 */
 
 %options "abort thread-safe lowercase-symbols generate-lexer-wrapper=no";
-//FIXME: remove when not debugging
-//~ %options "generate-symbol-table";
 %prefix _t3_config_;
 %lexical _t3_config_yylex_wrapper;
 %datatype "parse_context_t *", "config_internal.h";
@@ -64,13 +62,12 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3
 		case T3_CONFIG_INT: {
 			long value;
 			errno = 0;
-			//FIXME: use locale independent version
 			value = strtol(_t3_config_get_text(_t3_config_data->scanner), NULL, 0);
 			if (errno == ERANGE
 #if T3_CONFIG_INT_MAX < LONG_MAX || T3_CONFIG_INT_MIN > LONG_MIN
 				|| value > T3_CONFIG_INT_MAX || value < T3_CONFIG_INT_MIN
 #endif
-)
+			)
 				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
 			item->type = type;
 			item->value.integer = (int) value;
@@ -79,8 +76,7 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3
 		case T3_CONFIG_NUMBER: {
 			double value;
 			errno = 0;
-			//FIXME: use locale independent version
-			value = strtod(_t3_config_get_text(_t3_config_data->scanner), NULL);
+			value = _t3_config_strtod(_t3_config_get_text(_t3_config_data->scanner));
 			if (errno == ERANGE)
 				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
 			item->type = type;
@@ -119,6 +115,10 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3
 T3_CONFIG_LOCAL int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis);
 int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis) {
 	if (LLreissue == LL_NEW_TOKEN) {
+		/* Increase line number when the last token was a newline, instead of
+		   when we find a newline, to improve error location reporting. */
+		if (LLsymb == '\n')
+			_t3_config_data->line_number++;
 		return _t3_config_lex(_t3_config_data->scanner);
 	} else {
 		int LLretval = LLreissue;
@@ -130,9 +130,6 @@ int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis) {
 T3_CONFIG_LOCAL void LLmessage(struct _t3_config_this *LLthis, int LLtoken);
 void LLmessage(struct _t3_config_this *LLthis, int LLtoken) {
 	(void) LLtoken;
-//~ #ifdef DEBUG
-	//~ fprintf(stderr, "Error: %s, %s\n", LLgetSymbol(LLtoken), LLgetSymbol(LLsymb));
-//~ #endif
 	LLabort(LLthis, T3_ERR_PARSE_ERROR);
 }
 

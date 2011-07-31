@@ -1,4 +1,3 @@
-- create/use locale idependent strtol strtod write_number
 - make testsuite
 - allow validation based on description in own format
 	- what should validation do exactly? provide messages on what is wrong, or

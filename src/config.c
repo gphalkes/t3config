@@ -13,6 +13,10 @@
 */
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
+#include <errno.h>
+#include <math.h>
+
 #include "config_internal.h"
 #include "parser.h"
 
@@ -95,6 +99,99 @@ t3_config_item_t *t3_config_read_buffer(const char *buffer, size_t size, t3_conf
 	return config_read(&context, error);
 }
 
+double _t3_config_strtod(char *text) {
+	struct lconv *ldata = localeconv();
+	char buffer[160], *decimal_point;
+	size_t idx = 0;
+
+	/* This routine has the following problem to solve: the values we read from
+	   the configuration file use a period as decimal separator. However, strtod
+	   is locale dependent, and expects decimal_separator (although some
+	   implementations also accept a period when decimal_separator is different).
+	   Thus if the decimal_separator is not a period, it needs to be replaced.
+
+	   As an extra obstacle, I don't want an out-of-memory condition to make this
+	   routine fail, so malloc is out.
+
+	   Now, we do already know that the input is actually a valid textual
+	   representation of a floating point value, because it has already been
+	   identified as such by the lexer.
+
+	   So here we go:
+	*/
+
+	/* If decimal_point happens to be a period, just call strtod ... */
+	if (strcmp(ldata->decimal_point, ".") == 0)
+		return strtod(text, NULL);
+
+	/* ... and also call strtod if there is no decimal point to begin with ... */
+	if ((decimal_point = strchr(text, '.')) == NULL)
+		return strtod(text, NULL);
+
+	/* ... and if decimal_point is a single character, just replace it in the
+	   string we got from the lexer and call strtod. */
+	if (strlen(ldata->decimal_point) == 1) {
+		*decimal_point = ldata->decimal_point[0];
+		return strtod(text, NULL);
+	}
+
+	/* decimal_point is more than a single byte. This may for example occur
+	   if the decimal separater is a Unicode character above U+007F, or in some
+	   multi-byte character set. So, we create a representation of it in our
+	   local buffer, which allows us to do paste in the decimal_separator.
+
+	   First of course, we copy a sign, if that is present ...
+	*/
+	if (*text == '-') {
+		buffer[idx++] = '-';
+		text++;
+	}
+
+	/* ... then we skip all leading zeros. */
+	while (*text == '0') text++;
+
+	/* We already know that there is a decimal point in the text, so that last
+	   character we can possibly stop at. Now if there are more than 60
+	   digits in the input, we can safely assume that the result is too large.
+	   In that case we just emulate the behaviour of strtod, instead of trying
+	   to feed it some silly value.
+	*/
+	if ((decimal_point - text) > 60) {
+		errno = ERANGE;
+		/* If we already copied a sign bit, pass -inf. */
+		return idx == 0 ? HUGE_VAL : - HUGE_VAL;
+	}
+	/* Now we can copy all the text up to the decimal point ... */
+	memcpy(buffer, text, decimal_point - text);
+	idx += decimal_point - text;
+	/* ... and paste the decimal_point after it. */
+	strcat(buffer + idx, ldata->decimal_point);
+	idx += strlen(ldata->decimal_point);
+
+	/* That leaves us with the text after the decimal point. We copy all digits
+	   up until we fill our buffer with 131 characters. That should leave more
+	   than enough digits to leave the precision intact. */
+	text = decimal_point + 1;
+	while (idx < 130 && *text != 0) {
+		if (*text == 'e' || *text == 'E')
+			break;
+		buffer[idx++] = *text;
+	}
+	/* Skip all further digits, and stop at either an 'e' character, or the end
+	   of the string. */
+	while (*text != 'e' && *text != 'E' && *text != 0) text++;
+	/* If we found an 'e' character, copy the exponent up until a buffer fill
+	   of 159 characters (thus leaving just enough space for the nul byte). */
+	if (*text != 0) {
+		while (idx < 158 && *text != 0)
+			buffer[idx++] = *text;
+	}
+	/* Terminate the string, and pass it to strtod, which should now be able
+	   to parse it correctly. */
+	buffer[idx] = 0;
+	return strtod(buffer, NULL);
+}
+
 static void write_indent(FILE *file, int indent) {
 	static const char tabs[8] = "\t\t\t\t\t\t\t\t";
 	while (indent > 8) {
@@ -105,29 +202,37 @@ static void write_indent(FILE *file, int indent) {
 }
 
 static void write_int(FILE *file, t3_config_int_t value) {
-	char buffer[80], *buffer_ptr = buffer + 78;
-	int digit;
-
-	if (value == 0) {
-		fputc('0', file);
-		return;
-	} else if (value < 0) {
-		fputc('-', file);
-	}
-
-	buffer[79] = 0;
-	while (value != 0) {
-		digit = value % 10;
-		value /= 10;
-		*buffer_ptr-- = '0' + (digit < 0 ? -digit : digit);
-	}
-
-	fputs(buffer_ptr + 1, file);
+	fprintf(file, "%d", value);
 }
 
 static void write_number(FILE *file, double value) {
-	//FIXME: replace by locale independent version!
-	fprintf(file, "%#g", value);
+	char buffer[160], *decimal_point;
+	struct lconv *ldata = localeconv();
+
+	/* Make sure that we have standard representations for not-a-number and
+	   infinity. Especially NaN is allowed to have extra characters. */
+	if (isnan(value)) {
+		fprintf(file, "%sNaN", signbit(value) ? "-" : "");
+		return;
+	} else if (isinf(value)) {
+		fprintf(file, "%sInfinity", signbit(value) ? "-" : "");
+		return;
+	}
+
+	snprintf(buffer, sizeof(buffer), "%g", value);
+	/* Replace locale dependent decimal point with '.' */
+	if (strcmp(ldata->decimal_point, ".") != 0) {
+		decimal_point = strstr(buffer, ldata->decimal_point);
+		if (decimal_point != NULL) {
+			memmove(decimal_point + 1, decimal_point + strlen(ldata->decimal_point),
+				strlen(decimal_point + strlen(ldata->decimal_point)) + 1);
+			*decimal_point = '.';
+		}
+	}
+
+	if (strchr(buffer, '.') == NULL)
+		strcat(buffer, ".0");
+	fputs(buffer, file);
 }
 
 static int count_quotes(const char *value, char quote_char) {
