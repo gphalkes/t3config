@@ -43,7 +43,8 @@ typedef struct {
 	int scan_type;
 	FILE *file;
 	const char *buffer;
-	size_t buffer_idx;
+	size_t buffer_size,
+		buffer_idx;
 	int line_number;
 	void *LLthis;
 } parse_context_t;

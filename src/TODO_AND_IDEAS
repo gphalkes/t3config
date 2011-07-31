@@ -1,8 +1,13 @@
-- t3_config_strerror
 - create/use locale idependent strtol strtod write_number
 - hide generated parser symbols using T3_CONFIG_LOCAL
 - make testsuite
 - allow validation based on description in own format
+	- what should validation do exactly? provide messages on what is wrong, or
+		prune everything invalid? The latter is useful, but so is the former.
+		And what about missing required stuff? Does that prune the whole
+		container? That will run afoul when the container itself is required!
+		More obvious answer is that required stuff should have a default value
+		as well, which will be substituted if not provided.
 
 types {
 	attribute {
@@ -25,8 +30,9 @@ allowed_keys {
 	}
 	config_version {
 		type = "int"
-		allowed_values = ( ( 0, 100) ) # using a list within a list specfies a range
+		allowed_values = ( ( 0, 256) ) # using a list within a list specfies a range
 		required = true
+		default = 1
 	}
 	hide_menubar {
 		type = "bool"

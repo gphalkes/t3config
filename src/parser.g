@@ -93,6 +93,7 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3
 				if (text[i] == text[0])
 					i++;
 			}
+			value[j] = 0;
 			item->type = type;
 			item->value.string = value;
 			break;

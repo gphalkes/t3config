@@ -33,11 +33,12 @@
 			clearerr(yyextra->file); \
 		} \
 	} else { \
-		if (yyextra->buffer[yyextra->buffer_idx] == 0)  {\
+		if (yyextra->buffer_idx == yyextra->buffer_size)  {\
 			result = YY_NULL; \
 		} else { \
 			result = 0; \
-			while ((size_t) result < max_size && (buf[result++] = yyextra->buffer[yyextra->buffer_idx++]) != 0) {} \
+			while ((size_t) result < max_size && yyextra->buffer_idx < yyextra->buffer_size) \
+				buf[result++] = yyextra->buffer[yyextra->buffer_idx++]; \
 		} \
 	} \
 } while (0)
