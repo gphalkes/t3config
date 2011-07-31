@@ -22,6 +22,14 @@
 
 %token INT, NUMBER, STRING, IDENTIFIER, BOOL_TRUE, BOOL_FALSE;
 
+%top {
+#include "config_api.h"
+#include "config_internal.h"
+struct _t3_config_this;
+T3_CONFIG_LOCAL int _t3_config_parse(parse_context_t * LLuserData);
+T3_CONFIG_LOCAL void _t3_config_abort(struct _t3_config_this *, int);
+}
+
 {
 #include <stdlib.h>
 #include <errno.h>
@@ -108,6 +116,7 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3
 	}
 }
 
+T3_CONFIG_LOCAL int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis);
 int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis) {
 	if (LLreissue == LL_NEW_TOKEN) {
 		return _t3_config_lex(_t3_config_data->scanner);
@@ -118,6 +127,7 @@ int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis) {
 	}
 }
 
+T3_CONFIG_LOCAL void LLmessage(struct _t3_config_this *LLthis, int LLtoken);
 void LLmessage(struct _t3_config_this *LLthis, int LLtoken) {
 	(void) LLtoken;
 //~ #ifdef DEBUG

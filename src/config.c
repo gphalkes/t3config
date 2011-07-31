@@ -439,7 +439,6 @@ t3_config_item_t *t3_config_add_section(t3_config_item_t *config, const char *na
 }
 
 int t3_config_add_existing(t3_config_item_t *config, const char *name, t3_config_item_t *value) {
-	t3_config_item_t *item;
 	char *item_name = NULL;
 	if (!can_add(config, name))
 		return T3_ERR_BAD_ARG;
@@ -450,11 +449,11 @@ int t3_config_add_existing(t3_config_item_t *config, const char *name, t3_config
 	free(value->name);
 	value->name = item_name;
 	if (config->value.list == NULL) {
-		config->value.list = item;
+		config->value.list = value;
 	} else {
 		t3_config_item_t *ptr = config->value.list;
 		while (ptr->next != NULL) ptr = ptr->next;
-		ptr->next = item;
+		ptr->next = value;
 	}
 	return T3_ERR_SUCCESS;
 }

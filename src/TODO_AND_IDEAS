@@ -1,5 +1,4 @@
 - create/use locale idependent strtol strtod write_number
-- hide generated parser symbols using T3_CONFIG_LOCAL
 - make testsuite
 - allow validation based on description in own format
 	- what should validation do exactly? provide messages on what is wrong, or

@@ -13,7 +13,7 @@
 
 SOURCES.libt3config.la = lex.l parser.g config.c config_shared.c
 
-CFLAGS.lex = -Wno-unused -Wno-unused-parameter
+CFLAGS.lex = -Wno-unused -Wno-unused-parameter -Wno-switch-default
 
 LTTARGETS := libt3config.la
 #================================================#

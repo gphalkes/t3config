@@ -19,10 +19,15 @@
 
 %{
 #include "parser.h"
+
+/* Hide symbols from generated code. This is ugly, but unfortunately I have not
+   found a better way to do this. */
 #include "config_api.h"
 #define YY_EXTRA_TYPE parse_context_t *
 #include "lex_hide.h"
 #undef YY_EXTRA_TYPE
+T3_CONFIG_LOCAL int _t3_config_get_column(yyscan_t yyscanner);
+T3_CONFIG_LOCAL void _t3_config_set_column(int column_no, yyscan_t yyscanner);
 
 #define YY_INPUT(buf, result, max_size) do { \
 	if (yyextra->scan_type == SCAN_FILE) { \
