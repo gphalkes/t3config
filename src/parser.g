@@ -63,12 +63,14 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3
 			long value;
 			errno = 0;
 			value = strtol(_t3_config_get_text(_t3_config_data->scanner), NULL, 0);
+/*
 			if (errno == ERANGE
 #if T3_CONFIG_INT_MAX < LONG_MAX || T3_CONFIG_INT_MIN > LONG_MIN
 				|| value > T3_CONFIG_INT_MAX || value < T3_CONFIG_INT_MIN
 #endif
 			)
 				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
+*/
 			item->type = type;
 			item->value.integer = (int) value;
 			break;
@@ -77,8 +79,8 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3
 			double value;
 			errno = 0;
 			value = _t3_config_strtod(_t3_config_get_text(_t3_config_data->scanner));
-			if (errno == ERANGE)
-				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
+/*			if (errno == ERANGE)
+				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);*/
 			item->type = type;
 			item->value.number = value;
 			break;

@@ -2,7 +2,16 @@ Introduction
 ============
 
 The libt3config library provides functions for reading and writing simple
-structured configuration files.
+structured configuration files. libt3config provides the following features:
+
+- simple structured syntax
+- simple API for reading and manipulating configurations
+- parsed configurations use typed data (boolean, integer, floating point number
+  string, list, section)
+- completely thread safe
+
+In a future release, some basic schema checking of the parsed configuration
+will also be possible.
 
 libt3config is part of the Tilde Terminal Toolkit (T3)
 [http://os.ghalkes.nl/t3/]

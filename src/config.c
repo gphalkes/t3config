@@ -30,6 +30,7 @@
 static void write_section(t3_config_item_t *config, FILE *file, int indent);
 
 #ifndef HAVE_STRDUP
+/** strdup implementation if none is provided by the environment. */
 char *_t3_config_strdup(const char *str) {
 	char *result;
 	size_t len = strlen(str) + 1;
@@ -53,9 +54,11 @@ t3_config_item_t *t3_config_new(void) {
 	return result;
 }
 
+/** Read config, either from file or from buffer. */
 static t3_config_item_t *config_read(parse_context_t *context, t3_config_error_t *error) {
 	int retval;
 
+	/* Initialize lexer. */
 	if (_t3_config_lex_init_extra(context, &context->scanner) != 0) {
 		if (error != NULL) {
 			error->error = T3_ERR_OUT_OF_MEMORY;
@@ -64,21 +67,27 @@ static t3_config_item_t *config_read(parse_context_t *context, t3_config_error_t
 		return NULL;
 	}
 
+	/* Perform parse. */
 	if ((retval = _t3_config_parse(context)) != 0) {
 		if (error != NULL) {
 			error->error = retval;
 			error->line_number = _t3_config_get_extra(context->scanner)->line_number;
 		}
+		/* On failure, we free all memory allocated by the partial parse ... */
 		t3_config_delete(context->config);
+		/* ... and set context->config to NULL so we return NULL at the end. */
 		context->config = NULL;
 	}
+	/* Free memory allocated by lexer. */
 	_t3_config_lex_destroy(context->scanner);
 	return context->config;
 }
 
 
-t3_config_item_t *t3_config_read_file(FILE *file, t3_config_error_t *error) {
+t3_config_item_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void *opts) {
 	parse_context_t context;
+
+	(void) opts;
 
 	context.scan_type = SCAN_FILE;
 	context.file = file;
@@ -87,8 +96,10 @@ t3_config_item_t *t3_config_read_file(FILE *file, t3_config_error_t *error) {
 	return config_read(&context, error);
 }
 
-t3_config_item_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error) {
+t3_config_item_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts) {
 	parse_context_t context;
+
+	(void) opts;
 
 	context.scan_type = SCAN_BUFFER;
 	context.buffer = buffer;
@@ -99,6 +110,13 @@ t3_config_item_t *t3_config_read_buffer(const char *buffer, size_t size, t3_conf
 	return config_read(&context, error);
 }
 
+/** Locale independent strtod implemenation.
+    Wraps the locale dependent strtod implementation from the C library. The
+    rationale for not using dtoa.c is that to use that one has to know that the
+    platform uses IEEE representation and in which endianess. The C library
+    implementers have already figured all that out, so we just use their
+    strtod by replacing the period by localeconv()->decimal_point.
+*/
 double _t3_config_strtod(char *text) {
 	struct lconv *ldata = localeconv();
 	char buffer[160], *decimal_point;
@@ -135,10 +153,11 @@ double _t3_config_strtod(char *text) {
 		return strtod(text, NULL);
 	}
 
-	/* decimal_point is more than a single byte. This may for example occur
+	/* If we reach this point, the value contains a decimal point and
+	   decimal_point is more than a single byte. This may for example occur
 	   if the decimal separater is a Unicode character above U+007F, or in some
-	   multi-byte character set. So, we create a representation of it in our
-	   local buffer, which allows us to do paste in the decimal_separator.
+	   multi-byte character set. So, we create a representation of the value in
+	   our local buffer, which allows us to paste in the decimal_separator.
 
 	   First of course, we copy a sign, if that is present ...
 	*/
@@ -150,21 +169,22 @@ double _t3_config_strtod(char *text) {
 	/* ... then we skip all leading zeros. */
 	while (*text == '0') text++;
 
-	/* We already know that there is a decimal point in the text, so that last
-	   character we can possibly stop at. Now if there are more than 60
+	/* We already know that there is a decimal point in the text, so that is
+	   the last character we can possibly stop at. Now if there are more than 50
 	   digits in the input, we can safely assume that the result is too large.
 	   In that case we just emulate the behaviour of strtod, instead of trying
 	   to feed it some silly value.
 	*/
-	if ((decimal_point - text) > 60) {
+	if ((decimal_point - text) > 50) {
 		errno = ERANGE;
 		/* If we already copied a sign bit, pass -inf. */
 		return idx == 0 ? HUGE_VAL : - HUGE_VAL;
 	}
+
 	/* Now we can copy all the text up to the decimal point ... */
 	memcpy(buffer, text, decimal_point - text);
 	idx += decimal_point - text;
-	/* ... and paste the decimal_point after it. */
+	/* ... and paste decimal_point after it. */
 	strcat(buffer + idx, ldata->decimal_point);
 	idx += strlen(ldata->decimal_point);
 
@@ -192,6 +212,7 @@ double _t3_config_strtod(char *text) {
 	return strtod(buffer, NULL);
 }
 
+/** Write indentation to the output. */
 static void write_indent(FILE *file, int indent) {
 	static const char tabs[8] = "\t\t\t\t\t\t\t\t";
 	while (indent > 8) {
@@ -201,16 +222,20 @@ static void write_indent(FILE *file, int indent) {
 	fwrite(tabs, 1, indent, file);
 }
 
+/** Write a single integer to the output. */
 static void write_int(FILE *file, t3_config_int_t value) {
 	fprintf(file, "%d", value);
 }
 
+/** Write a floating point number to the output. */
 static void write_number(FILE *file, double value) {
 	char buffer[160], *decimal_point;
 	struct lconv *ldata = localeconv();
 
 	/* Make sure that we have standard representations for not-a-number and
-	   infinity. Especially NaN is allowed to have extra characters. */
+	   infinity. Especially NaN is allowed to have extra characters in the C
+	   specification.
+	*/
 	if (isnan(value)) {
 		fprintf(file, "%sNaN", signbit(value) ? "-" : "");
 		return;
@@ -235,6 +260,11 @@ static void write_number(FILE *file, double value) {
 	fputs(buffer, file);
 }
 
+/** Determine the number of quote characters in a string.
+    @param value The string to check.
+    @param quote_char The quote character.
+    @return The number of occurences of @p quote_char in @p value.
+*/
 static int count_quotes(const char *value, char quote_char) {
 	const char *quote;
 	int count = 0;
@@ -247,6 +277,10 @@ static int count_quotes(const char *value, char quote_char) {
 	return count;
 }
 
+/** Write a string to the output, quoting and escaping as necessary.
+    This routine optimizes its use of quotes by counting the number of quotes
+    in the string and using the quotes that occur least in the string itself.
+*/
 static void write_string(FILE *file, const char *value) {
 	const char *quote;
 	char quote_char = '"';
@@ -270,6 +304,7 @@ static void write_string(FILE *file, const char *value) {
 	fputc(quote_char, file);
 }
 
+/** Write a list to the output. */
 static void write_list(t3_config_item_t *config, FILE *file, int indent) {
 	t3_bool first = t3_true;
 	while (config != NULL) {
@@ -312,6 +347,7 @@ static void write_list(t3_config_item_t *config, FILE *file, int indent) {
 	}
 }
 
+/** Write a section to the output. */
 static void write_section(t3_config_item_t *config, FILE *file, int indent) {
 	while (config != NULL) {
 		write_indent(file, indent);
@@ -349,7 +385,8 @@ static void write_section(t3_config_item_t *config, FILE *file, int indent) {
 				fputs("}\n", file);
 				break;
 			default:
-				/* This can only happen if the client screws up the list. */
+				/* This can only happen if the client screws up the list, which
+				   the interface does not allow by itself. */
 				break;
 		}
 		config = config->next;
@@ -396,6 +433,7 @@ t3_config_item_t *t3_config_unlink(t3_config_item_t *config, const char *name) {
 	prev = NULL;
 	ptr = config->value.list;
 
+	/* Find the named item in the list, keeping a reference to the item preceeding it. */
 	while (ptr != NULL && strcmp(ptr->name, name) != 0) {
 		prev = ptr;
 		ptr = ptr->next;
@@ -421,6 +459,7 @@ t3_config_item_t *t3_config_unlink_from_list(t3_config_item_t *list, t3_config_i
 	prev = NULL;
 	ptr = list->value.list;
 
+	/* Find the referenced item in the list, keeping a reference to the item preceeding it. */
 	while (ptr != NULL && ptr != item) {
 		prev = ptr;
 		ptr = ptr->next;
@@ -445,6 +484,9 @@ void t3_config_erase_from_list(t3_config_item_t *list, t3_config_item_t *item) {
 	t3_config_delete(t3_config_unlink_from_list(list, item));
 }
 
+/** Allocate a new item and link it to the end of the list.
+    @p config must be either ::T3_CONFIG_LIST or ::T3_CONFIG_SECTION .
+*/
 static t3_config_item_t *config_add(t3_config_item_t *config, const char *name, t3_config_item_type_t type) {
 	t3_config_item_t *result;
 
@@ -460,6 +502,7 @@ static t3_config_item_t *config_add(t3_config_item_t *config, const char *name, 
 	}
 	result->type = type;
 	result->next = NULL;
+
 	if (config->value.list == NULL) {
 		config->value.list = result;
 	} else {
@@ -471,12 +514,23 @@ static t3_config_item_t *config_add(t3_config_item_t *config, const char *name, 
 	return result;
 }
 
+/** Check whether @p config is either ::T3_CONFIG_LIST or ::T3_CONFIG_SECTION . */
 static t3_bool can_add(t3_config_item_t *config, const char *name) {
 	return config != NULL &&
 		((config->type == T3_CONFIG_SECTION && name != NULL) ||
 		(config->type == T3_CONFIG_LIST && name == NULL));
 }
 
+/** Check whether @p name is a valid key. */
+static t3_bool check_name(const char *name) {
+	return name == NULL || (strspn(name, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen(name) &&
+		strchr("0123456789", name[0]) == NULL);
+}
+
+/** Add or replace an item.
+    If an item with @p name already exists in the list in @p config, it will
+    be stripped of its values, and returned. Otherwise a new item is created.
+*/
 static t3_config_item_t *add_or_replace(t3_config_item_t *config, const char *name, t3_config_item_type_t type) {
 	t3_config_item_t *item;
 	if (name == NULL || (item = t3_config_get(config, name)) == NULL)
@@ -494,7 +548,7 @@ static t3_config_item_t *add_or_replace(t3_config_item_t *config, const char *na
 #define ADD(name_type, arg_type, TYPE, value_set) \
 int t3_config_add_##name_type(t3_config_item_t *config, const char *name, arg_type value) { \
 	t3_config_item_t *item; \
-	if (!can_add(config, name)) \
+	if (!can_add(config, name) || !check_name(name)) \
 		return T3_ERR_BAD_ARG; \
 	if ((item = add_or_replace(config, name, TYPE)) == NULL) \
 		return T3_ERR_OUT_OF_MEMORY; \
@@ -511,14 +565,15 @@ ADD(string, const char *, T3_CONFIG_STRING,
 	if ((item->value.string = strdup(value)) == NULL) { t3_config_erase(config, name); return T3_ERR_OUT_OF_MEMORY; }
 )
 
-t3_config_item_t *t3_config_add_list(t3_config_item_t *config, const char *name, int *error) {
+/** Add a list or section. */
+static t3_config_item_t *t3_config_add_aggregate(t3_config_item_t *config, const char *name, int *error, t3_config_item_type_t type) {
 	t3_config_item_t *item;
-	if (!can_add(config, name)) {
+	if (!can_add(config, name) || !check_name(name)) {
 		if (error != NULL)
 			*error = T3_ERR_BAD_ARG;
 		return NULL;
 	}
-	if ((item = add_or_replace(config, name, T3_CONFIG_LIST)) == NULL) {
+	if ((item = add_or_replace(config, name, type)) == NULL) {
 		if (error != NULL)
 			*error = T3_ERR_OUT_OF_MEMORY;
 		return NULL;
@@ -527,25 +582,17 @@ t3_config_item_t *t3_config_add_list(t3_config_item_t *config, const char *name,
 	return item;
 }
 
-t3_config_item_t *t3_config_add_section(t3_config_item_t *config, const char *name, int *error) {
-	t3_config_item_t *item;
-	if (!can_add(config, name)) {
-		if (error != NULL)
-			*error = T3_ERR_BAD_ARG;
-		return NULL;
-	}
-	if ((item = add_or_replace(config, name, T3_CONFIG_SECTION)) == NULL) {
-		if (error != NULL)
-			*error = T3_ERR_OUT_OF_MEMORY;
-		return NULL;
-	}
-	item->value.list = NULL;
-	return item;
+#define ADD_AGGREGATE(type, TYPE) \
+t3_config_item_t *t3_config_add_##type(t3_config_item_t *config, const char *name, int *error) { \
+	return t3_config_add_aggregate(config, name, error, TYPE); \
 }
+
+ADD_AGGREGATE(list, T3_CONFIG_LIST)
+ADD_AGGREGATE(section, T3_CONFIG_SECTION)
 
 int t3_config_add_existing(t3_config_item_t *config, const char *name, t3_config_item_t *value) {
 	char *item_name = NULL;
-	if (!can_add(config, name))
+	if (!can_add(config, name) || !check_name(name))
 		return T3_ERR_BAD_ARG;
 	if (name != NULL) {
 		if ((item_name = strdup(name)) == NULL)

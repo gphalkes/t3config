@@ -99,16 +99,18 @@ T3_CONFIG_API t3_config_item_t *t3_config_new(void);
 /** Read a config from a @c FILE.
     @param file The @c FILE to read from.
     @param error A pointer to the location to store an error value (or @c NULL).
+	@param opts Unused, should be @c NULL.
     @return A pointer to the new config or @c NULL on error.
 */
-T3_CONFIG_API t3_config_item_t *t3_config_read_file(FILE *file, t3_config_error_t *error);
+T3_CONFIG_API t3_config_item_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void *opts);
 /** Read a config from memory.
     @param buffer The buffer to parse.
     @param size The size of the buffer.
     @param error A pointer to the location to store an error value (or @c NULL).
+	@param opts Unused, should be @c NULL.
     @return A pointer to the new config or @c NULL on error.
 */
-T3_CONFIG_API t3_config_item_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error);
+T3_CONFIG_API t3_config_item_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts);
 /** Write a config to a @c FILE.
     @param config The config to write.
     @param file The @c FILE to write to.
