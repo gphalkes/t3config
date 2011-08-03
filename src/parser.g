@@ -144,6 +144,7 @@ config {
 	_t3_config_data->LLthis = LLthis;
 	_t3_config_data->config = allocate_item(LLthis, t3_false);
 	_t3_config_data->config->type = T3_CONFIG_SECTION;
+	_t3_config_data->config->value.list = NULL;
 	next_ptr = &_t3_config_data->config->value.list;
 } :
 	'\n' *
@@ -184,6 +185,7 @@ value(t3_config_item_t *item) {
 	'('
 	{
 		set_value(LLthis, item, T3_CONFIG_LIST);
+		item->value.list = NULL;
 		next_ptr = &item->value.list;
 	}
 	'\n'*
@@ -225,6 +227,7 @@ item(t3_config_item_t **item) :
 section(t3_config_item_t *item) {
 	t3_config_item_t **next_ptr = &item->value.list;
 	item->type = T3_CONFIG_SECTION;
+	item->value.list = NULL;
 } :
 	'{'
 	'\n'*

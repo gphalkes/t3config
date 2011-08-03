@@ -87,7 +87,7 @@ install: all
 	$(INSTALL) -d $(includedir)/t3/config/t3config
 	$(INSTALL) -m0644 src/config.h src/config_api.h src/config_errors.h $(includedir)/t3/config/t3config
 	$(INSTALL) -d $(docdir)/API/search
-	( cd doc ; find API -type f ) | xargs -IX $(INSTALL) -m0644 doc/X $(docdir)/X
+	( cd doc ; find API -type f ) | while read X ; do $(INSTALL) -m0644 doc/$${X} $(docdir)/$${X} ; done
 	$(INSTALL) -m0644 COPYING README Changelog $(docdir)
 	$(INSTALL) -d $(pkgconfigdir)
 	$(INSTALL) -m0644 libt3config.pc $(pkgconfigdir)
