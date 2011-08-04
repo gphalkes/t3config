@@ -60,7 +60,7 @@ NUMBER_PAT     -?([0-9]*\.[0-9]+([eE][+-][0-9]+)?)|(?i:nan|inf(inity)?)
 {NUMBER_PAT}                           return NUMBER;
 (?i:(true|yes))                        return BOOL_TRUE;
 (?i:(false|no))                        return BOOL_FALSE;
-[_a-zA-Z][_0-9a-zA-Z]*                 return IDENTIFIER;
+[_a-zA-Z][-_0-9a-zA-Z]*                return IDENTIFIER;
 \n                                     return '\n';
 [[:space:]]                            /* Ignore white space */
 #.*                                    /* Ignore comments */

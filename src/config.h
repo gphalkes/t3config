@@ -238,6 +238,21 @@ T3_CONFIG_API const char *t3_config_get_string(const t3_config_item_t *config);
 */
 T3_CONFIG_API t3_config_item_t *t3_config_get_next(const t3_config_item_t *config);
 
+/** Find a specific value in a section or list.
+    @param config The section or list to search.
+    @param predicate A function to call which determines whether an item in the section or list matches.
+    @param data A pointer to user data which will be passed as the second argument to @p predicate.
+    @param start_from A pointer to the last found item, or @c NULL to start from the beginning of the list.
+    @return A pointer to the first item for which @p predicate returned ::t3_true, or @c NULL of none was found.
+
+    This function allows one to easily find an item matching a predicate in a
+    section or list. It can also be used to find all matching items, by simply
+    passing the result of the last call as the @p start_from parameter until
+    the function returns @c NULL.
+*/
+T3_CONFIG_API t3_config_item_t *t3_config_find(const t3_config_item_t *config,
+	t3_bool (*predicate)(t3_config_item_t *, void *), void *data, t3_config_item_t *start_from);
+
 /** Get the value of ::T3_CONFIG_VERSION corresponding to the actual used library.
     @ingroup t3window_other
     @return The value of ::T3_CONFIG_VERSION.

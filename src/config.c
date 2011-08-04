@@ -525,8 +525,8 @@ static t3_bool can_add(t3_config_item_t *config, const char *name) {
 
 /** Check whether @p name is a valid key. */
 static t3_bool check_name(const char *name) {
-	return name == NULL || (strspn(name, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen(name) &&
-		strchr("0123456789", name[0]) == NULL);
+	return name == NULL || (strspn(name, "-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen(name) &&
+		strchr("-0123456789", name[0]) == NULL);
 }
 
 /** Add or replace an item.
@@ -647,6 +647,27 @@ GET(string, const char *, T3_CONFIG_STRING, string, NULL)
 
 t3_config_item_t *t3_config_get_next(const t3_config_item_t *config) {
 	return config != NULL ? config->next : NULL;
+}
+
+t3_config_item_t *t3_config_find(const t3_config_item_t *config,
+		t3_bool (*predicate)(t3_config_item_t *, void *), void *data, t3_config_item_t *start_from)
+{
+	t3_config_item_t *item;
+	if (config == NULL || (config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_SECTION))
+		return NULL;
+
+	item = config->value.list;
+	if (start_from != NULL) {
+		for (; item != start_from && item != NULL; item = item->next) {}
+
+		if (item == NULL)
+			return NULL;
+		item = item->next;
+	}
+
+	for (; item != NULL && !predicate(item, data); item = item->next) {}
+
+	return item;
 }
 
 int t3_config_get_version(void) {
