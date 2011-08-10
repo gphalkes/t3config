@@ -23,6 +23,7 @@
 %top {
 #include "config_api.h"
 #include "config_internal.h"
+
 struct _t3_config_this;
 T3_CONFIG_LOCAL int _t3_config_parse(parse_context_t * LLuserData);
 T3_CONFIG_LOCAL void _t3_config_abort(struct _t3_config_this *, int);
@@ -34,10 +35,10 @@ T3_CONFIG_LOCAL void _t3_config_abort(struct _t3_config_this *, int);
 #include <limits.h>
 #include "config.h"
 
-static t3_config_item_t *allocate_item(struct _t3_config_this *LLthis, t3_bool allocate_name) {
-	t3_config_item_t *result;
+static t3_config_t *allocate_item(struct _t3_config_this *LLthis, t3_bool allocate_name) {
+	t3_config_t *result;
 
-	if ((result = (t3_config_item_t *) malloc(sizeof(t3_config_item_t))) == NULL)
+	if ((result = (t3_config_t *) malloc(sizeof(t3_config_t))) == NULL)
 		LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
 
 	result->next = NULL;
@@ -53,7 +54,7 @@ static t3_config_item_t *allocate_item(struct _t3_config_this *LLthis, t3_bool a
 	return result;
 }
 
-static void set_value(struct _t3_config_this *LLthis, t3_config_item_t *item, t3_config_item_type_t type) {
+static void set_value(struct _t3_config_this *LLthis, t3_config_t *item, t3_config_item_type_t type) {
 	switch (type) {
 		case T3_CONFIG_BOOL:
 			item->type = type;
@@ -140,7 +141,7 @@ void LLmessage(struct _t3_config_this *LLthis, int LLtoken) {
 //=========================== RULES ============================
 
 config {
-	t3_config_item_t **next_ptr;
+	t3_config_t **next_ptr;
 	_t3_config_data->LLthis = LLthis;
 	_t3_config_data->config = allocate_item(LLthis, t3_false);
 	_t3_config_data->config->type = T3_CONFIG_SECTION;
@@ -159,8 +160,8 @@ config {
 	]*
 ;
 
-value(t3_config_item_t *item) {
-	t3_config_item_t **next_ptr;
+value(t3_config_t *item) {
+	t3_config_t **next_ptr;
 } :
 	INT
 	{
@@ -211,7 +212,7 @@ value(t3_config_item_t *item) {
 	')'
 ;
 
-item(t3_config_item_t **item) :
+item(t3_config_t **item) :
 	IDENTIFIER
 	{
 		*item = allocate_item(LLthis, t3_true);
@@ -224,8 +225,8 @@ item(t3_config_item_t **item) :
 	]
 ;
 
-section(t3_config_item_t *item) {
-	t3_config_item_t **next_ptr = &item->value.list;
+section(t3_config_t *item) {
+	t3_config_t **next_ptr = &item->value.list;
 	item->type = T3_CONFIG_SECTION;
 	item->value.list = NULL;
 } :

@@ -27,7 +27,7 @@
 #define _(x) (x)
 #endif
 
-static void write_section(t3_config_item_t *config, FILE *file, int indent);
+static void write_section(t3_config_t *config, FILE *file, int indent);
 
 #ifndef HAVE_STRDUP
 /** strdup implementation if none is provided by the environment. */
@@ -42,10 +42,10 @@ char *_t3_config_strdup(const char *str) {
 }
 #endif
 
-t3_config_item_t *t3_config_new(void) {
-	t3_config_item_t *result;
+t3_config_t *t3_config_new(void) {
+	t3_config_t *result;
 
-	if ((result = malloc(sizeof(t3_config_item_t))) == NULL)
+	if ((result = malloc(sizeof(t3_config_t))) == NULL)
 		return NULL;
 	result->name = NULL;
 	result->type = T3_CONFIG_SECTION;
@@ -55,7 +55,7 @@ t3_config_item_t *t3_config_new(void) {
 }
 
 /** Read config, either from file or from buffer. */
-static t3_config_item_t *config_read(parse_context_t *context, t3_config_error_t *error) {
+static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *error) {
 	int retval;
 
 	/* Initialize lexer. */
@@ -84,7 +84,7 @@ static t3_config_item_t *config_read(parse_context_t *context, t3_config_error_t
 }
 
 
-t3_config_item_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void *opts) {
+t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void *opts) {
 	parse_context_t context;
 
 	(void) opts;
@@ -96,7 +96,7 @@ t3_config_item_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void
 	return config_read(&context, error);
 }
 
-t3_config_item_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts) {
+t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts) {
 	parse_context_t context;
 
 	(void) opts;
@@ -307,7 +307,7 @@ static void write_string(FILE *file, const char *value) {
 }
 
 /** Write a list to the output. */
-static void write_list(t3_config_item_t *config, FILE *file, int indent) {
+static void write_list(t3_config_t *config, FILE *file, int indent) {
 	t3_bool first = t3_true;
 	while (config != NULL) {
 		if (first)
@@ -350,7 +350,7 @@ static void write_list(t3_config_item_t *config, FILE *file, int indent) {
 }
 
 /** Write a section to the output. */
-static void write_section(t3_config_item_t *config, FILE *file, int indent) {
+static void write_section(t3_config_t *config, FILE *file, int indent) {
 	while (config != NULL) {
 		write_indent(file, indent);
 		fputs(config->name, file);
@@ -395,7 +395,7 @@ static void write_section(t3_config_item_t *config, FILE *file, int indent) {
 	}
 }
 
-int t3_config_write_file(t3_config_item_t *config, FILE *file) {
+int t3_config_write_file(t3_config_t *config, FILE *file) {
 	if (config->type != T3_CONFIG_SECTION)
 		return T3_ERR_BAD_ARG;
 
@@ -404,8 +404,8 @@ int t3_config_write_file(t3_config_item_t *config, FILE *file) {
 }
 
 
-void t3_config_delete(t3_config_item_t *config) {
-	t3_config_item_t *ptr = config;
+void t3_config_delete(t3_config_t *config) {
+	t3_config_t *ptr = config;
 
 	while (config != NULL) {
 		config = ptr->next;
@@ -426,8 +426,8 @@ void t3_config_delete(t3_config_item_t *config) {
 	}
 }
 
-t3_config_item_t *t3_config_unlink(t3_config_item_t *config, const char *name) {
-	t3_config_item_t *ptr, *prev;
+t3_config_t *t3_config_unlink(t3_config_t *config, const char *name) {
+	t3_config_t *ptr, *prev;
 
 	if (config == NULL || config->type != T3_CONFIG_SECTION)
 		return NULL;
@@ -452,8 +452,8 @@ t3_config_item_t *t3_config_unlink(t3_config_item_t *config, const char *name) {
 	return ptr;
 }
 
-t3_config_item_t *t3_config_unlink_from_list(t3_config_item_t *list, t3_config_item_t *item) {
-	t3_config_item_t *ptr, *prev;
+t3_config_t *t3_config_unlink_from_list(t3_config_t *list, t3_config_t *item) {
+	t3_config_t *ptr, *prev;
 
 	if (list == NULL || (list->type != T3_CONFIG_SECTION && list->type != T3_CONFIG_LIST))
 		return NULL;
@@ -478,21 +478,21 @@ t3_config_item_t *t3_config_unlink_from_list(t3_config_item_t *list, t3_config_i
 	return item;
 }
 
-void t3_config_erase(t3_config_item_t *config, const char *name) {
+void t3_config_erase(t3_config_t *config, const char *name) {
 	t3_config_delete(t3_config_unlink(config, name));
 }
 
-void t3_config_erase_from_list(t3_config_item_t *list, t3_config_item_t *item) {
+void t3_config_erase_from_list(t3_config_t *list, t3_config_t *item) {
 	t3_config_delete(t3_config_unlink_from_list(list, item));
 }
 
 /** Allocate a new item and link it to the end of the list.
     @p config must be either ::T3_CONFIG_LIST or ::T3_CONFIG_SECTION .
 */
-static t3_config_item_t *config_add(t3_config_item_t *config, const char *name, t3_config_item_type_t type) {
-	t3_config_item_t *result;
+static t3_config_t *config_add(t3_config_t *config, const char *name, t3_config_item_type_t type) {
+	t3_config_t *result;
 
-	if ((result = malloc(sizeof(t3_config_item_t))) == NULL)
+	if ((result = malloc(sizeof(t3_config_t))) == NULL)
 		return NULL;
 	if (name == NULL) {
 		result->name = NULL;
@@ -508,7 +508,7 @@ static t3_config_item_t *config_add(t3_config_item_t *config, const char *name, 
 	if (config->value.list == NULL) {
 		config->value.list = result;
 	} else {
-		t3_config_item_t *ptr = config->value.list;
+		t3_config_t *ptr = config->value.list;
 		while (ptr->next != NULL) ptr = ptr->next;
 		ptr->next = result;
 	}
@@ -517,7 +517,7 @@ static t3_config_item_t *config_add(t3_config_item_t *config, const char *name, 
 }
 
 /** Check whether @p config is either ::T3_CONFIG_LIST or ::T3_CONFIG_SECTION . */
-static t3_bool can_add(t3_config_item_t *config, const char *name) {
+static t3_bool can_add(t3_config_t *config, const char *name) {
 	return config != NULL &&
 		((config->type == T3_CONFIG_SECTION && name != NULL) ||
 		(config->type == T3_CONFIG_LIST && name == NULL));
@@ -533,8 +533,8 @@ static t3_bool check_name(const char *name) {
     If an item with @p name already exists in the list in @p config, it will
     be stripped of its values, and returned. Otherwise a new item is created.
 */
-static t3_config_item_t *add_or_replace(t3_config_item_t *config, const char *name, t3_config_item_type_t type) {
-	t3_config_item_t *item;
+static t3_config_t *add_or_replace(t3_config_t *config, const char *name, t3_config_item_type_t type) {
+	t3_config_t *item;
 	if (name == NULL || (item = t3_config_get(config, name)) == NULL)
 		return config_add(config, name, type);
 
@@ -548,8 +548,8 @@ static t3_config_item_t *add_or_replace(t3_config_item_t *config, const char *na
 }
 
 #define ADD(name_type, arg_type, TYPE, value_set) \
-int t3_config_add_##name_type(t3_config_item_t *config, const char *name, arg_type value) { \
-	t3_config_item_t *item; \
+int t3_config_add_##name_type(t3_config_t *config, const char *name, arg_type value) { \
+	t3_config_t *item; \
 	if (!can_add(config, name) || !check_name(name)) \
 		return T3_ERR_BAD_ARG; \
 	if ((item = add_or_replace(config, name, TYPE)) == NULL) \
@@ -568,8 +568,8 @@ ADD(string, const char *, T3_CONFIG_STRING,
 )
 
 /** Add a list or section. */
-static t3_config_item_t *t3_config_add_aggregate(t3_config_item_t *config, const char *name, int *error, t3_config_item_type_t type) {
-	t3_config_item_t *item;
+static t3_config_t *t3_config_add_aggregate(t3_config_t *config, const char *name, int *error, t3_config_item_type_t type) {
+	t3_config_t *item;
 	if (!can_add(config, name) || !check_name(name)) {
 		if (error != NULL)
 			*error = T3_ERR_BAD_ARG;
@@ -585,14 +585,14 @@ static t3_config_item_t *t3_config_add_aggregate(t3_config_item_t *config, const
 }
 
 #define ADD_AGGREGATE(type, TYPE) \
-t3_config_item_t *t3_config_add_##type(t3_config_item_t *config, const char *name, int *error) { \
+t3_config_t *t3_config_add_##type(t3_config_t *config, const char *name, int *error) { \
 	return t3_config_add_aggregate(config, name, error, TYPE); \
 }
 
 ADD_AGGREGATE(list, T3_CONFIG_LIST)
 ADD_AGGREGATE(section, T3_CONFIG_SECTION)
 
-int t3_config_add_existing(t3_config_item_t *config, const char *name, t3_config_item_t *value) {
+int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *value) {
 	char *item_name = NULL;
 	if (!can_add(config, name) || !check_name(name))
 		return T3_ERR_BAD_ARG;
@@ -605,15 +605,15 @@ int t3_config_add_existing(t3_config_item_t *config, const char *name, t3_config
 	if (config->value.list == NULL) {
 		config->value.list = value;
 	} else {
-		t3_config_item_t *ptr = config->value.list;
+		t3_config_t *ptr = config->value.list;
 		while (ptr->next != NULL) ptr = ptr->next;
 		ptr->next = value;
 	}
 	return T3_ERR_SUCCESS;
 }
 
-t3_config_item_t *t3_config_get(const t3_config_item_t *config, const char *name) {
-	t3_config_item_t *result;
+t3_config_t *t3_config_get(const t3_config_t *config, const char *name) {
+	t3_config_t *result;
 	if (config == NULL || (config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_LIST))
 		return NULL;
 	if (name != NULL && config->type == T3_CONFIG_LIST)
@@ -627,16 +627,16 @@ t3_config_item_t *t3_config_get(const t3_config_item_t *config, const char *name
 	return result;
 }
 
-t3_config_item_type_t t3_config_get_type(const t3_config_item_t *config) {
+t3_config_item_type_t t3_config_get_type(const t3_config_t *config) {
 	return config != NULL ? config->type : T3_CONFIG_NONE;
 }
 
-const char *t3_config_get_name(const t3_config_item_t *config) {
+const char *t3_config_get_name(const t3_config_t *config) {
 	return config != NULL ? config->name : NULL;
 }
 
 #define GET(name_type, arg_type, TYPE, value_name, deflt) \
-arg_type t3_config_get_##name_type(const t3_config_item_t *config) { \
+arg_type t3_config_get_##name_type(const t3_config_t *config) { \
 	return config != NULL && config->type == TYPE ? config->value.value_name : deflt; \
 }
 
@@ -645,14 +645,14 @@ GET(int, t3_config_int_t, T3_CONFIG_INT, integer, 0)
 GET(number, double, T3_CONFIG_NUMBER, number, 0.0)
 GET(string, const char *, T3_CONFIG_STRING, string, NULL)
 
-t3_config_item_t *t3_config_get_next(const t3_config_item_t *config) {
+t3_config_t *t3_config_get_next(const t3_config_t *config) {
 	return config != NULL ? config->next : NULL;
 }
 
-t3_config_item_t *t3_config_find(const t3_config_item_t *config,
-		t3_bool (*predicate)(t3_config_item_t *, void *), void *data, t3_config_item_t *start_from)
+t3_config_t *t3_config_find(const t3_config_t *config,
+		t3_bool (*predicate)(t3_config_t *, void *), void *data, t3_config_t *start_from)
 {
-	t3_config_item_t *item;
+	t3_config_t *item;
 	if (config == NULL || (config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_SECTION))
 		return NULL;
 

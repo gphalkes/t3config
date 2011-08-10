@@ -54,10 +54,10 @@ typedef enum {
 	T3_CONFIG_SECTION /**< A list of named items. */
 } t3_config_item_type_t;
 
-/** @struct t3_config_item_t
+/** @struct t3_config_t
     An opaque struct representing a config or sub-config.
 */
-typedef struct t3_config_item_t t3_config_item_t;
+typedef struct t3_config_t t3_config_t;
 
 /** A structure representing an error, with line number.
     Used by ::t3_config_read_file and ::t3_config_read_buffer. If @p error
@@ -95,14 +95,14 @@ typedef int t3_config_int_t;
     @return A pointer to the new config or @c NULL if out of memory.
     Each config is a section. This function creates an empty section.
 */
-T3_CONFIG_API t3_config_item_t *t3_config_new(void);
+T3_CONFIG_API t3_config_t *t3_config_new(void);
 /** Read a config from a @c FILE.
     @param file The @c FILE to read from.
     @param error A pointer to the location to store an error value (or @c NULL).
 	@param opts Unused, should be @c NULL.
     @return A pointer to the new config or @c NULL on error.
 */
-T3_CONFIG_API t3_config_item_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void *opts);
+T3_CONFIG_API t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void *opts);
 /** Read a config from memory.
     @param buffer The buffer to parse.
     @param size The size of the buffer.
@@ -110,30 +110,30 @@ T3_CONFIG_API t3_config_item_t *t3_config_read_file(FILE *file, t3_config_error_
 	@param opts Unused, should be @c NULL.
     @return A pointer to the new config or @c NULL on error.
 */
-T3_CONFIG_API t3_config_item_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts);
+T3_CONFIG_API t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts);
 /** Write a config to a @c FILE.
     @param config The config to write.
     @param file The @c FILE to write to.
     @return Either ::T3_ERR_ERRNO or ::T3_ERR_SUCCESS
 */
-T3_CONFIG_API int t3_config_write_file(t3_config_item_t *config, FILE *file);
+T3_CONFIG_API int t3_config_write_file(t3_config_t *config, FILE *file);
 /** Free all memory used by @p (sub-)config.
     If you wish to remove a sub-config, either use ::t3_config_erase or
     ::t3_config_erase_from_list, or call ::t3_config_unlink or
     ::t3_config_unlink_from_list on the sub-config first.
 */
-T3_CONFIG_API void t3_config_delete(t3_config_item_t *config);
+T3_CONFIG_API void t3_config_delete(t3_config_t *config);
 
 /** Unlink an item from a (sub-)config. */
-T3_CONFIG_API t3_config_item_t *t3_config_unlink(t3_config_item_t *config, const char *name);
+T3_CONFIG_API t3_config_t *t3_config_unlink(t3_config_t *config, const char *name);
 /** Unlink an item from a (sub-)config or list. */
-T3_CONFIG_API t3_config_item_t *t3_config_unlink_from_list(t3_config_item_t *list, t3_config_item_t *item);
+T3_CONFIG_API t3_config_t *t3_config_unlink_from_list(t3_config_t *list, t3_config_t *item);
 /** Erase an item from a (sub-)config.
     All memory related to the item and all sub-items is released. */
-T3_CONFIG_API void t3_config_erase(t3_config_item_t *config, const char *name);
+T3_CONFIG_API void t3_config_erase(t3_config_t *config, const char *name);
 /** Erase an item from a (sub-)config or list.
     All memory related to the item and all sub-items is released. */
-T3_CONFIG_API void t3_config_erase_from_list(t3_config_item_t *list, t3_config_item_t *item);
+T3_CONFIG_API void t3_config_erase_from_list(t3_config_t *list, t3_config_t *item);
 
 /** Add (or overwrite) a boolean value to a (sub-)config.
     @param config The (sub-)config to add to.
@@ -147,21 +147,21 @@ T3_CONFIG_API void t3_config_erase_from_list(t3_config_item_t *list, t3_config_i
     value. If necessary, memory used by sub-items or values is released prior
     to replacing the value, but after checking for argument validity.
 */
-T3_CONFIG_API int t3_config_add_bool(t3_config_item_t *config, const char *name, t3_bool value);
+T3_CONFIG_API int t3_config_add_bool(t3_config_t *config, const char *name, t3_bool value);
 /** Add (or overwrite) an integer value to a (sub-)config.
     See ::t3_config_add_bool for details.
 */
-T3_CONFIG_API int t3_config_add_int(t3_config_item_t *config, const char *name, t3_config_int_t value);
+T3_CONFIG_API int t3_config_add_int(t3_config_t *config, const char *name, t3_config_int_t value);
 /** Add (or overwrite) an floating point number value to a (sub-)config.
     See ::t3_config_add_bool for details.
 */
-T3_CONFIG_API int t3_config_add_number(t3_config_item_t *config, const char *name, double value);
+T3_CONFIG_API int t3_config_add_number(t3_config_t *config, const char *name, double value);
 /** Add (or overwrite) a string value to a (sub-)config.
 
     A copy of the string is stored in the (sub-)config. See ::t3_config_add_bool for
     further details.
 */
-T3_CONFIG_API int t3_config_add_string(t3_config_item_t *config, const char *name, const char *value);
+T3_CONFIG_API int t3_config_add_string(t3_config_t *config, const char *name, const char *value);
 /** Add (or overwrite) a list to the (sub-)config.
     @param config The (sub-)config to add to.
     @param name The name under which to add the item, or @c NULL if adding to a list.
@@ -172,11 +172,11 @@ T3_CONFIG_API int t3_config_add_string(t3_config_item_t *config, const char *nam
     list. If necessary, memory used by sub-items or values is released prior
     to replacing the value, but after checking for argument validity.
 */
-T3_CONFIG_API t3_config_item_t *t3_config_add_list(t3_config_item_t *config, const char *name, int *error);
+T3_CONFIG_API t3_config_t *t3_config_add_list(t3_config_t *config, const char *name, int *error);
 /** Add (or overwrite) a section to the (sub-)config.
     See ::t3_config_add_list for details.
 */
-T3_CONFIG_API t3_config_item_t *t3_config_add_section(t3_config_item_t *config, const char *name, int *error);
+T3_CONFIG_API t3_config_t *t3_config_add_section(t3_config_t *config, const char *name, int *error);
 /** Add (or overwrite) an existing value to the (sub-)config.
     The primary use of this function is to add complete sections created
     earlier from some source, or unlinked from elsewhere in the configuration.
@@ -184,7 +184,7 @@ T3_CONFIG_API t3_config_item_t *t3_config_add_section(t3_config_item_t *config, 
     multiple times.
     See ::t3_config_add_bool for details.
 */
-T3_CONFIG_API int t3_config_add_existing(t3_config_item_t *config, const char *name, t3_config_item_t *value);
+T3_CONFIG_API int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *value);
 
 /** Retrieve a sub-config.
     @param config The (sub-)config to retrieve from.
@@ -194,41 +194,41 @@ T3_CONFIG_API int t3_config_add_existing(t3_config_item_t *config, const char *n
     This function can be used both to retrieve a named sub-config, or to get the
     first sub-config for iteration over all items in this (sub-)config.
 */
-T3_CONFIG_API t3_config_item_t *t3_config_get(const t3_config_item_t *config, const char *name);
+T3_CONFIG_API t3_config_t *t3_config_get(const t3_config_t *config, const char *name);
 /** Get the type of a (sub-)config.
     See ::t3_config_item_type_t for possible types.
 */
-T3_CONFIG_API t3_config_item_type_t t3_config_get_type(const t3_config_item_t *config);
+T3_CONFIG_API t3_config_item_type_t t3_config_get_type(const t3_config_t *config);
 /** Get the name of the (sub-)config.
     Retrieves the name of the @p config, or @c NULL if @p config is part of a
     list or the top-level config.
 */
-T3_CONFIG_API const char *t3_config_get_name(const t3_config_item_t *config);
+T3_CONFIG_API const char *t3_config_get_name(const t3_config_t *config);
 
 /** Get the boolean value from a config with ::T3_CONFIG_BOOL type.
     @return The boolean value of @p config, or ::t3_false if @p config is @c NULL or not of type ::T3_CONFIG_BOOL.
 */
-T3_CONFIG_API t3_bool t3_config_get_bool(const t3_config_item_t *config);
+T3_CONFIG_API t3_bool t3_config_get_bool(const t3_config_t *config);
 /** Get the integer value from a config with ::T3_CONFIG_INT type.
     @return The integer value of @p config, or @c 0 if @p config is @c NULL or not of type ::T3_CONFIG_INT.
 */
-T3_CONFIG_API t3_config_int_t t3_config_get_int(const t3_config_item_t *config);
+T3_CONFIG_API t3_config_int_t t3_config_get_int(const t3_config_t *config);
 /** Get the floating point value from a config with ::T3_CONFIG_NUMBER type.
     @return The floating point value of @p config, or @c 0.0 if @p config is @c NULL or not of type ::T3_CONFIG_NUMBER.
 */
-T3_CONFIG_API double t3_config_get_number(const t3_config_item_t *config);
+T3_CONFIG_API double t3_config_get_number(const t3_config_t *config);
 /** Get the string value from a config with ::T3_CONFIG_STRING type.
     @return The string value of @p config, or @c NULL if @p config is @c NULL or not of type ::T3_CONFIG_STRING.
 */
-T3_CONFIG_API const char *t3_config_get_string(const t3_config_item_t *config);
+T3_CONFIG_API const char *t3_config_get_string(const t3_config_t *config);
 /** Get the next sub-config from a section or list.
     @return A pointer to the next sub-config or @c NULL if there is no next sub-config.
 
     This can be used in combination with t3_config_get to iterate over a list
     or section:
     @code
-    void iterate(t3_config_item_t *config) {
-        t3_config_item_t *item;
+    void iterate(t3_config_t *config) {
+        t3_config_t *item;
 
         for (item = t3_config_get(config, NULL); item != NULL; item = t3_config_get_next(item)) {
             // Do something with item.
@@ -236,7 +236,7 @@ T3_CONFIG_API const char *t3_config_get_string(const t3_config_item_t *config);
     }
     @endcode
 */
-T3_CONFIG_API t3_config_item_t *t3_config_get_next(const t3_config_item_t *config);
+T3_CONFIG_API t3_config_t *t3_config_get_next(const t3_config_t *config);
 
 /** Find a specific value in a section or list.
     @param config The section or list to search.
@@ -250,8 +250,8 @@ T3_CONFIG_API t3_config_item_t *t3_config_get_next(const t3_config_item_t *confi
     passing the result of the last call as the @p start_from parameter until
     the function returns @c NULL.
 */
-T3_CONFIG_API t3_config_item_t *t3_config_find(const t3_config_item_t *config,
-	t3_bool (*predicate)(t3_config_item_t *, void *), void *data, t3_config_item_t *start_from);
+T3_CONFIG_API t3_config_t *t3_config_find(const t3_config_t *config,
+	t3_bool (*predicate)(t3_config_t *, void *), void *data, t3_config_t *start_from);
 
 /** Get the value of ::T3_CONFIG_VERSION corresponding to the actual used library.
     @ingroup t3window_other

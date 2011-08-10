@@ -15,16 +15,16 @@
 #define T3_CONFIG_INTERNAL_H
 #include "config.h"
 
-struct t3_config_item_t {
+struct t3_config_t {
 	t3_config_item_type_t type;
-	struct t3_config_item_t *next;
+	struct t3_config_t *next;
 	char *name;
 	union {
 		void *ptr; /* First member can be assigned. */
 		char *string;
 		int integer;
 		double number;
-		struct t3_config_item_t *list;
+		struct t3_config_t *list;
 		t3_bool boolean;
 	} value;
 };
@@ -39,7 +39,7 @@ typedef void* yyscan_t;
 
 typedef struct {
 	yyscan_t scanner;
-	t3_config_item_t *config;
+	t3_config_t *config;
 	int scan_type;
 	FILE *file;
 	const char *buffer;
