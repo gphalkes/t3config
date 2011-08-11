@@ -15,9 +15,13 @@
 # C-compiler flags
 CFLAGS=-O2
 
-# Configuration flags. Remove -DHAVE_STRDUP if your system does not provide
-# the strdup function.
-CONFIGFLAGS=-DHAVE_STRDUP
+# Configuration flags. Remove -DHAS_STRDUP if your system does not provide
+# the strdup function. If your system does not provide the
+# newlocale/uselocale/freelocale set of functions, remove -DHAS_USELOCALE. If
+# your system does provide the *locale set of functions, but requires the
+# xlocale.h header file instead of the locale.h header file, add
+# -DUSE_XLOCALE_H.
+CONFIGFLAGS=-DHAS_STRDUP -DHAS_USELOCALE
 
 # Gettext configuration
 # GETTEXTFLAGS should contain -DUSE_GETTEXT to enable gettext translations

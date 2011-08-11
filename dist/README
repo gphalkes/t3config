@@ -4,21 +4,24 @@ Introduction
 The libt3config library provides functions for reading and writing simple
 structured configuration files. libt3config provides the following features:
 
-- simple structured syntax
-- simple API for reading and manipulating configurations
-- parsed configurations use typed data (boolean, integer, floating point number
-  string, list, section)
-- thread safe (with the exception that set_locale should not be called at the
-  same time in another thread)
+- Simple structured syntax.
+- Simple API for reading and manipulating configurations.
+- Parsed configurations use typed data (boolean, integer, floating point number
+  string, list, section).
+- Thread safe (with the exception that if uselocale is not available,
+  set_locale should not be called at the same time in another thread).
 
 libt3config is part of the Tilde Terminal Toolkit (T3)
 [http://os.ghalkes.nl/t3/]
+
+libt3config is licensed under the GNU General Public License version 3. See the
+file COPYING for details.
 
 
 Prerequisites and installation
 ==============================
 
-libt3config requires the GNU libtool utility to be compiled.
+libt3config requires GNU libtool to be compiled.
 
 There are two ways in which to compile libt3config:
 

@@ -29,5 +29,34 @@ int main(int argc, char *argv[]) {
 EOF
 	test_link "strdup" && CONFIGFLAGS="${CONFIGFLAGS} -DHAS_STRDUP"
 
+	clean_c
+	cat > .config.c <<EOF
+#include <locale.h>
+
+int main(int argc, char *argv[]) {
+	locale_t c_locale = newlocale(LC_ALL, "C", (locale_t) 0);
+	uselocale(c_locale);
+	freelocale(c_locale);
+	return 0;
+}
+EOF
+	if test_link "newlocale/uselocale/freelocale in locale.h" ; then
+		CONFIGFLAGS="${CONFIGFLAGS} -DHAS_USELOCALE"
+	else
+		clean_c
+		cat > .config.c <<EOF
+#include <locale.h>
+#include <xlocale.h>
+
+int main(int argc, char *argv[]) {
+	locale_t c_locale = newlocale(LC_ALL, "C", (locale_t) 0);
+	uselocale(c_locale);
+	freelocale(c_locale);
+	return 0;
+}
+EOF
+		test_link "newlocale/uselocale/freelocale in xlocale.h" && CONFIGFLAGS="${CONFIGFLAGS} -DHAS_USELOCALE -DUSE_XLOCALE_H"
+	fi
+
 	create_makefile "CONFIGFLAGS=${CONFIGFLAGS}"
 }

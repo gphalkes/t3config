@@ -16,6 +16,9 @@
 #include <locale.h>
 #include <errno.h>
 #include <math.h>
+#ifdef USE_XLOCALE_H
+#include <xlocale.h>
+#endif
 
 #include "config_internal.h"
 #include "parser.h"
@@ -29,7 +32,7 @@
 
 static void write_section(t3_config_t *config, FILE *file, int indent);
 
-#ifndef HAVE_STRDUP
+#ifndef HAS_STRDUP
 /** strdup implementation if none is provided by the environment. */
 char *_t3_config_strdup(const char *str) {
 	char *result;
@@ -110,7 +113,26 @@ t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_er
 	return config_read(&context, error);
 }
 
+#ifdef HAS_USELOCALE
+/** Locale independent strtod implemenation. */
+double _t3_config_strtod(char *text) {
+	double result;
+	locale_t prev_locale, c_locale;
+
+	c_locale = newlocale(LC_ALL, "C", (locale_t) 0);
+	prev_locale = uselocale(c_locale);
+
+	result = strtod(text, NULL);
+
+	uselocale(prev_locale);
+	freelocale(c_locale);
+
+	return result;
+}
+#else
 /** Locale independent strtod implemenation.
+
+    @internal
     Wraps the locale dependent strtod implementation from the C library. The
     rationale for not using dtoa.c is that it has too many configuration
     options with platform dependencies such as endianess. The C library
@@ -213,13 +235,14 @@ double _t3_config_strtod(char *text) {
 	buffer[idx] = 0;
 	return strtod(buffer, NULL);
 }
+#endif
 
 /** Write indentation to the output. */
 static void write_indent(FILE *file, int indent) {
 	static const char tabs[8] = "\t\t\t\t\t\t\t\t";
-	while (indent > 8) {
-		fwrite(tabs, 1, 8, file);
-		indent -= 8;
+	while (indent > (int) sizeof(tabs)) {
+		fwrite(tabs, 1, sizeof(tabs), file);
+		indent -= sizeof(tabs);
 	}
 	fwrite(tabs, 1, indent, file);
 }
@@ -229,6 +252,40 @@ static void write_int(FILE *file, t3_config_int_t value) {
 	fprintf(file, "%d", value);
 }
 
+#ifdef HAS_USELOCALE
+/** Write a floating point number to the output. */
+static void write_number(FILE *file, double value) {
+	char buffer[160];
+	locale_t prev_locale, c_locale;
+
+	/* Make sure that we have standard representations for not-a-number and
+	   infinity. Especially NaN is allowed to have extra characters in the C
+	   specification.
+	*/
+	if (isnan(value)) {
+		fprintf(file, "%sNaN", signbit(value) ? "-" : "");
+		return;
+	} else if (isinf(value)) {
+		fprintf(file, "%sInfinity", signbit(value) ? "-" : "");
+		return;
+	}
+
+	c_locale = newlocale(LC_ALL, "C", (locale_t) 0);
+	prev_locale = uselocale(c_locale);
+
+	/* Print to buffer, because we want to add .0 if there is no decimal point. */
+	sprintf(buffer, "%.18g", value);
+
+	uselocale(prev_locale);
+	freelocale(c_locale);
+
+	/* If there is no decimal point, add .0 */
+	if (strchr(buffer, '.') == NULL)
+		strcat(buffer, ".0");
+	fputs(buffer, file);
+	return;
+}
+#else
 /** Write a floating point number to the output. */
 static void write_number(FILE *file, double value) {
 	char buffer[160], *decimal_point;
@@ -246,7 +303,7 @@ static void write_number(FILE *file, double value) {
 		return;
 	}
 
-	snprintf(buffer, sizeof(buffer), "%.17g", value);
+	sprintf(buffer, "%.18g", value);
 	/* Replace locale dependent decimal point with '.' */
 	if (strcmp(ldata->decimal_point, ".") != 0) {
 		decimal_point = strstr(buffer, ldata->decimal_point);
@@ -257,10 +314,12 @@ static void write_number(FILE *file, double value) {
 		}
 	}
 
+	/* If there is no decimal point, add .0 */
 	if (strchr(buffer, '.') == NULL)
 		strcat(buffer, ".0");
 	fputs(buffer, file);
 }
+#endif
 
 /** Determine the number of quote characters in a string.
     @param value The string to check.
