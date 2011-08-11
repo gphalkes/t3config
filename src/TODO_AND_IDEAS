@@ -11,8 +11,8 @@
 
 types {
 	attribute {
-		# using a list within the list indicates a list of the type(s) in the list
-		type = ( "string", ( "string" ) )
+		type = "list"
+		item_type = "string"
 	}
 	attributes {
 		type = "section"
@@ -30,7 +30,7 @@ allowed_keys {
 	}
 	config_version {
 		type = "int"
-		allowed_values = ( ( 0, 256) ) # using a list within a list specfies a range
+		allowed_values = ( { min = 0; max = 256} )
 		required = true
 		default = 1
 	}
@@ -57,7 +57,7 @@ allowed_keys {
 				}
 				key_timeout {
 					type = "int"
-					allowed_values = ( (-10000, 10000) )
+					allowed_values = ( { min = -10000; max = 10000 } )
 				}
 				attributes {
 					type = "attributes"
