@@ -249,7 +249,7 @@ static void write_indent(FILE *file, int indent) {
 
 /** Write a single integer to the output. */
 static void write_int(FILE *file, t3_config_int_t value) {
-	fprintf(file, "%d", value);
+	fprintf(file, "%" T3_CONFIG_INT_PRI "d", value);
 }
 
 #ifdef HAS_USELOCALE
