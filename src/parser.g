@@ -115,6 +115,32 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_t *item, t3_conf
 	}
 }
 
+static t3_bool transform_percent_list(struct _t3_config_this *LLthis, t3_config_t *item, t3_config_t **last_dptr) {
+	t3_config_t *list;
+
+	if ((*last_dptr)->name[0] != '%')
+		return t3_false;
+
+	if ((list = t3_config_get(item, (*last_dptr)->name + 1)) == NULL) {
+		/* No existing list found. Transform the current item into new plist. */
+		list = allocate_item(LLthis, t3_false);
+		list->type = T3_CONFIG_PLIST;
+		list->name = (*last_dptr)->name;
+		(*last_dptr)->name = NULL;
+		memmove(list->name, list->name + 1, strlen(list->name));
+		list->value.list = *last_dptr;
+		*last_dptr = list;
+		return t3_false;
+	}
+
+	if (list->type != T3_CONFIG_PLIST)
+		LLabort(LLthis, T3_ERR_DUPLICATE_KEY);
+
+	t3_config_add_existing(list, NULL, *last_dptr);
+	*last_dptr = NULL;
+	return t3_true;
+}
+
 T3_CONFIG_LOCAL int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis);
 int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis) {
 	if (LLreissue == LL_NEW_TOKEN) {
@@ -230,7 +256,8 @@ section_contents(t3_config_t *item) {
 		{
 			if (t3_config_get(item, (*next_ptr)->name) != *next_ptr)
 				LLabort(LLthis, T3_ERR_DUPLICATE_KEY);
-			next_ptr = &(*next_ptr)->next;
+			if (!transform_percent_list(LLthis, item, next_ptr))
+				next_ptr = &(*next_ptr)->next;
 		}
 		[ [';' | '\n'] '\n'* ] ..?
 	]*

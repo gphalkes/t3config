@@ -51,7 +51,8 @@ typedef enum {
 	T3_CONFIG_STRING, /**< String value. */
 	T3_CONFIG_NUMBER, /**< Floating point value (double). */
 	T3_CONFIG_LIST, /**< A list of un-named items. */
-	T3_CONFIG_SECTION /**< A list of named items. */
+	T3_CONFIG_SECTION, /**< A list of named items. */
+	T3_CONFIG_PLIST /**< A list of un-named items, written using %<name> notation. */
 } t3_config_item_type_t;
 
 /** @struct t3_config_t

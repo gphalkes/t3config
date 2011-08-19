@@ -30,6 +30,7 @@
 #define _(x) (x)
 #endif
 
+static void write_list(t3_config_t *config, FILE *file, int indent);
 static void write_section(t3_config_t *config, FILE *file, int indent);
 
 #ifndef HAS_STRDUP
@@ -365,17 +366,8 @@ static void write_string(FILE *file, const char *value) {
 	fputc(quote_char, file);
 }
 
-/** Write a list to the output. */
-static void write_list(t3_config_t *config, FILE *file, int indent) {
-	t3_bool first = t3_true;
-	while (config != NULL) {
-		if (first)
-			first = t3_false;
-		else
-			fputc(',', file);
-
-		fputc(' ', file);
-
+/** Write a single value out to file. */
+static void write_value(t3_config_t *config, FILE *file, int indent) {
 		switch (config->type) {
 			case T3_CONFIG_BOOL:
 				fputs(config->value.boolean ? "true" : "false", file);
@@ -390,7 +382,8 @@ static void write_list(t3_config_t *config, FILE *file, int indent) {
 				write_string(file, config->value.string);
 				break;
 			case T3_CONFIG_LIST:
-				fputc('(', file);
+			case T3_CONFIG_PLIST:
+				fputs("( ", file);
 				write_list(config->value.list, file, indent + 1);
 				fputs(" )", file);
 				break;
@@ -404,6 +397,55 @@ static void write_list(t3_config_t *config, FILE *file, int indent) {
 				/* This can only happen if the client screws up the list. */
 				break;
 		}
+
+}
+
+/** Write a list to the output. */
+static void write_list(t3_config_t *config, FILE *file, int indent) {
+	t3_bool first = t3_true;
+	while (config != NULL) {
+		if (first)
+			first = t3_false;
+		else
+			fputs(", ", file);
+
+		write_value(config, file, indent);
+
+		config = config->next;
+	}
+}
+
+/** Write a plist to the output. */
+static void write_plist(t3_config_t *config, FILE *file, int indent) {
+	t3_config_t *base = config;
+	config = config->value.list;
+
+	while (config != NULL) {
+		write_indent(file, indent);
+		fputc('%', file);
+		fputs(base->name, file);
+
+		switch (config->type) {
+			case T3_CONFIG_BOOL:
+			case T3_CONFIG_INT:
+			case T3_CONFIG_NUMBER:
+			case T3_CONFIG_STRING:
+			case T3_CONFIG_PLIST:
+			case T3_CONFIG_LIST:
+				fputs(" = ", file);
+				write_value(config, file, indent);
+				fputc('\n', file);
+				break;
+			case T3_CONFIG_SECTION:
+				fputc(' ', file);
+				write_value(config, file, indent);
+				fputc('\n', file);
+				break;
+			default:
+				/* This can only happen if the client screws up the list, which
+				   the interface does not allow by itself. */
+				break;
+		}
 		config = config->next;
 	}
 }
@@ -411,39 +453,28 @@ static void write_list(t3_config_t *config, FILE *file, int indent) {
 /** Write a section to the output. */
 static void write_section(t3_config_t *config, FILE *file, int indent) {
 	while (config != NULL) {
+		if (config->type == T3_CONFIG_PLIST) {
+			write_plist(config, file, indent);
+			config = config->next;
+			continue;
+		}
+
 		write_indent(file, indent);
 		fputs(config->name, file);
 		switch (config->type) {
 			case T3_CONFIG_BOOL:
-				fputs(" = ", file);
-				fputs(config->value.boolean ? "true" : "false", file);
-				fputc('\n', file);
-				break;
 			case T3_CONFIG_INT:
-				fputs(" = ", file);
-				write_int(file, config->value.integer);
-				fputc('\n', file);
-				break;
 			case T3_CONFIG_NUMBER:
-				fputs(" = ", file);
-				write_number(file, config->value.number);
-				fputc('\n', file);
-				break;
 			case T3_CONFIG_STRING:
-				fputs(" = ", file);
-				write_string(file, config->value.string);
-				fputc('\n', file);
-				break;
 			case T3_CONFIG_LIST:
-				fputs(" = (", file);
-				write_list(config->value.list, file, indent);
-				fputs(" )\n", file);
+				fputs(" = ", file);
+				write_value(config, file, indent);
+				fputc('\n', file);
 				break;
 			case T3_CONFIG_SECTION:
-				fputs(" {\n", file);
-				write_section(config->value.list, file, indent + 1);
-				write_indent(file, indent);
-				fputs("}\n", file);
+				fputc(' ', file);
+				write_value(config, file, indent);
+				fputc('\n', file);
 				break;
 			default:
 				/* This can only happen if the client screws up the list, which
@@ -473,6 +504,7 @@ void t3_config_delete(t3_config_t *config) {
 				free(ptr->value.string);
 				break;
 			case T3_CONFIG_LIST:
+			case T3_CONFIG_PLIST:
 			case T3_CONFIG_SECTION:
 				t3_config_delete(ptr->value.list);
 				break;
@@ -514,7 +546,7 @@ t3_config_t *t3_config_unlink(t3_config_t *config, const char *name) {
 t3_config_t *t3_config_unlink_from_list(t3_config_t *list, t3_config_t *item) {
 	t3_config_t *ptr, *prev;
 
-	if (list == NULL || (list->type != T3_CONFIG_SECTION && list->type != T3_CONFIG_LIST))
+	if (list == NULL || (list->type != T3_CONFIG_SECTION && list->type != T3_CONFIG_LIST && list->type != T3_CONFIG_PLIST))
 		return NULL;
 
 	prev = NULL;
@@ -546,7 +578,7 @@ void t3_config_erase_from_list(t3_config_t *list, t3_config_t *item) {
 }
 
 /** Allocate a new item and link it to the end of the list.
-    @p config must be either ::T3_CONFIG_LIST or ::T3_CONFIG_SECTION .
+    @p config must be either ::T3_CONFIG_LIST, ::T3_CONFIG_PLIST or ::T3_CONFIG_SECTION .
 */
 static t3_config_t *config_add(t3_config_t *config, const char *name, t3_config_item_type_t type) {
 	t3_config_t *result;
@@ -575,11 +607,11 @@ static t3_config_t *config_add(t3_config_t *config, const char *name, t3_config_
 	return result;
 }
 
-/** Check whether @p config is either ::T3_CONFIG_LIST or ::T3_CONFIG_SECTION . */
+/** Check whether @p config is either ::T3_CONFIG_LIST, ::T3_CONFIG_PLIST or ::T3_CONFIG_SECTION . */
 static t3_bool can_add(t3_config_t *config, const char *name) {
 	return config != NULL &&
 		((config->type == T3_CONFIG_SECTION && name != NULL) ||
-		(config->type == T3_CONFIG_LIST && name == NULL));
+		((config->type == T3_CONFIG_LIST || config->type == T3_CONFIG_PLIST) && name == NULL));
 }
 
 /** Check whether @p name is a valid key. */
@@ -599,7 +631,7 @@ static t3_config_t *add_or_replace(t3_config_t *config, const char *name, t3_con
 
 	if (item->type == T3_CONFIG_STRING)
 		free(item->value.string);
-	else if (item->type == T3_CONFIG_SECTION || item->type == T3_CONFIG_LIST)
+	else if (item->type == T3_CONFIG_SECTION || item->type == T3_CONFIG_LIST || item->type == T3_CONFIG_PLIST)
 		t3_config_delete(item->value.list);
 
 	item->type = type;
@@ -649,6 +681,7 @@ t3_config_t *t3_config_add_##type(t3_config_t *config, const char *name, int *er
 }
 
 ADD_AGGREGATE(list, T3_CONFIG_LIST)
+ADD_AGGREGATE(plist, T3_CONFIG_PLIST)
 ADD_AGGREGATE(section, T3_CONFIG_SECTION)
 
 int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *value) {
@@ -673,9 +706,9 @@ int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *v
 
 t3_config_t *t3_config_get(const t3_config_t *config, const char *name) {
 	t3_config_t *result;
-	if (config == NULL || (config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_LIST))
+	if (config == NULL || (config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_PLIST))
 		return NULL;
-	if (name != NULL && config->type == T3_CONFIG_LIST)
+	if (name != NULL && (config->type == T3_CONFIG_LIST || config->type == T3_CONFIG_PLIST))
 		return NULL;
 	if (name == NULL)
 		return config->value.list;
@@ -712,7 +745,7 @@ t3_config_t *t3_config_find(const t3_config_t *config,
 		t3_bool (*predicate)(t3_config_t *, void *), void *data, t3_config_t *start_from)
 {
 	t3_config_t *item;
-	if (config == NULL || (config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_SECTION))
+	if (config == NULL || (config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_PLIST))
 		return NULL;
 
 	item = config->value.list;
