@@ -704,6 +704,15 @@ int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *v
 	return T3_ERR_SUCCESS;
 }
 
+int t3_config_set_list_type(t3_config_t *config, t3_config_item_type_t type) {
+	if (config == NULL ||
+			(config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_PLIST) ||
+			(type != T3_CONFIG_LIST && type != T3_CONFIG_PLIST))
+		return T3_ERR_BAD_ARG;
+	config->type = type;
+	return T3_ERR_SUCCESS;
+}
+
 t3_config_t *t3_config_get(const t3_config_t *config, const char *name) {
 	t3_config_t *result;
 	if (config == NULL || (config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_PLIST))
@@ -721,6 +730,10 @@ t3_config_t *t3_config_get(const t3_config_t *config, const char *name) {
 
 t3_config_item_type_t t3_config_get_type(const t3_config_t *config) {
 	return config != NULL ? config->type : T3_CONFIG_NONE;
+}
+
+t3_bool t3_config_is_list(const t3_config_t *config) {
+	return config != NULL && (config->type == T3_CONFIG_LIST || config->type == T3_CONFIG_PLIST);
 }
 
 const char *t3_config_get_name(const t3_config_t *config) {

@@ -174,6 +174,10 @@ T3_CONFIG_API int t3_config_add_string(t3_config_t *config, const char *name, co
     to replacing the value, but after checking for argument validity.
 */
 T3_CONFIG_API t3_config_t *t3_config_add_list(t3_config_t *config, const char *name, int *error);
+/** Add (or overwrite) a plist to the (sub-)config.
+    See ::t3_config_add_list for details.
+*/
+T3_CONFIG_API t3_config_t *t3_config_add_plist(t3_config_t *config, const char *name, int *error);
 /** Add (or overwrite) a section to the (sub-)config.
     See ::t3_config_add_list for details.
 */
@@ -186,6 +190,8 @@ T3_CONFIG_API t3_config_t *t3_config_add_section(t3_config_t *config, const char
     See ::t3_config_add_bool for details.
 */
 T3_CONFIG_API int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *value);
+/** Set the type of list of an existing list-type (sub-)config. */
+T3_CONFIG_API int t3_config_set_list_type(t3_config_t *config, t3_config_item_type_t type);
 
 /** Retrieve a sub-config.
     @param config The (sub-)config to retrieve from.
@@ -200,6 +206,8 @@ T3_CONFIG_API t3_config_t *t3_config_get(const t3_config_t *config, const char *
     See ::t3_config_item_type_t for possible types.
 */
 T3_CONFIG_API t3_config_item_type_t t3_config_get_type(const t3_config_t *config);
+/** Check if a (sub-)config is a ::T3_CONFIG_LIST or ::T3_CONFIG_PLIST. */
+T3_CONFIG_API t3_bool t3_config_is_list(const t3_config_t *config);
 /** Get the name of the (sub-)config.
     Retrieves the name of the @p config, or @c NULL if @p config is part of a
     list or the top-level config.
