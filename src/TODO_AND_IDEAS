@@ -1,5 +1,13 @@
 - how should we handle out-of-range values? Reporting an error may not always
   be the best idea
+- a new method of specifying lists
+	%key = 10
+	%key = 13
+	%key = 17
+	->
+	key = (10, 13, 17)
+  mostly useful for sections, in which case it gives a cleaner layout
+
 - make testsuite
 - allow validation based on description in own format
 	- what should validation do exactly? provide messages on what is wrong, or

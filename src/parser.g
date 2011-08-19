@@ -141,23 +141,10 @@ void LLmessage(struct _t3_config_this *LLthis, int LLtoken) {
 //=========================== RULES ============================
 
 config {
-	t3_config_t **next_ptr;
 	_t3_config_data->LLthis = LLthis;
 	_t3_config_data->config = allocate_item(LLthis, t3_false);
-	_t3_config_data->config->type = T3_CONFIG_SECTION;
-	_t3_config_data->config->value.list = NULL;
-	next_ptr = &_t3_config_data->config->value.list;
 } :
-	'\n' *
-	[
-		item(next_ptr)
-		{
-			if (t3_config_get(_t3_config_data->config, (*next_ptr)->name) != *next_ptr)
-				LLabort(LLthis, T3_ERR_DUPLICATE_KEY);
-			next_ptr = &(*next_ptr)->next;
-		}
-		[ '\n'+ ] ..?
-	]*
+	section_contents(_t3_config_data->config)
 ;
 
 value(t3_config_t *item) {
@@ -225,12 +212,18 @@ item(t3_config_t **item) :
 	]
 ;
 
-section(t3_config_t *item) {
+section(t3_config_t *item)
+ :
+	'{'
+	section_contents(item)
+	'}'
+;
+
+section_contents(t3_config_t *item) {
 	t3_config_t **next_ptr = &item->value.list;
 	item->type = T3_CONFIG_SECTION;
 	item->value.list = NULL;
 } :
-	'{'
 	'\n'*
 	[
 		item(next_ptr)
@@ -241,5 +234,4 @@ section(t3_config_t *item) {
 		}
 		[ [';' | '\n'] '\n'* ] ..?
 	]*
-	'}'
 ;
