@@ -195,6 +195,31 @@ value(t3_config_t *item) {
 	{
 		set_value(LLthis, item, T3_CONFIG_STRING);
 	}
+	[
+		'+'
+		'\n'*
+		STRING
+		{
+			/* We won't be adding the entire yytext, so we can safely ignore the
+			   nul byte. */
+			int i, j;
+			char *text = _t3_config_get_text(_t3_config_data->scanner);
+			char *value = realloc(item->value.string, strlen(text) + strlen(item->value.string));
+			if (value == NULL)
+				LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+			item->value.string = value;
+			value += strlen(value);
+
+			for (i = 1, j = 0; !(text[i] == text[0] && text[i + 1] == 0); i++, j++) {
+				value[j] = text[i];
+				/* Because the only quotes that can occur in the string itself
+				   are doubled (checked by lexing), we don't have to check the
+				   next character. */
+				if (text[i] == text[0])
+					i++;
+			}
+		}
+	]*
 |
 	'('
 	{
