@@ -14,5 +14,5 @@
 all: doxygen
 .PHONY: all
 
-T3NAME:=unicode
+T3NAME:=config
 include ../../t3shared/doc-rules.mk
