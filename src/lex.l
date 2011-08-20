@@ -55,8 +55,8 @@ NUMBER_PAT     -?([0-9]*\.[0-9]+([eE][+-][0-9]+)?)|(?i:nan|inf(inity)?)
 %%
 
 -?[0-9]+|0x[0-9A-Fa-f]                 return INT;
-\"(\"\"|[^"])*\"                       return STRING;
-'(''|[^'])*'                           return STRING;
+\"(\"\"|[^"\0])*\"                     return STRING;
+'(''|[^'\0])*'                         return STRING;
 {NUMBER_PAT}                           return NUMBER;
 (?i:(true|yes))                        return BOOL_TRUE;
 (?i:(false|no))                        return BOOL_FALSE;
