@@ -23,5 +23,6 @@ T3_CONFIG_LOCAL char *_t3_config_strdup(const char *str);
 #endif
 
 T3_CONFIG_LOCAL void _t3_unescape(char *dest, const char *src);
+T3_CONFIG_LOCAL double _t3_config_strtod(char *text);
 
 #endif
