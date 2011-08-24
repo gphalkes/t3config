@@ -18,6 +18,7 @@
 %option extra-type="parse_context_t *"
 
 %{
+#include "expression.h"
 #include "parser.h"
 
 /* Hide symbols from generated code. This is ugly, but unfortunately I have not
@@ -51,6 +52,8 @@ T3_CONFIG_LOCAL void _t3_config_set_column(int column_no, yyscan_t yyscanner);
 
 %}
 
+%s OPERATORS
+
 NUMBER_PAT     [-+]?([0-9]*\.[0-9]+([eE][-+][0-9]+)?)|(?i:nan|inf(inity)?)
 %%
 
@@ -66,5 +69,10 @@ NUMBER_PAT     [-+]?([0-9]*\.[0-9]+([eE][-+][0-9]+)?)|(?i:nan|inf(inity)?)
 #.*                                    /* Ignore comments */
 .                                      return (unsigned char) yytext[0];
 
+<OPERATORS>{
+>=                                     return GE;
+\<=                                    return LE;
+!=                                     return NE;
+}
 %%
 

@@ -16,6 +16,7 @@
 #include <errno.h>
 
 #include "config_internal.h"
+#include "expression.h"
 #include "parser.h"
 
 #ifdef USE_GETTEXT
@@ -43,8 +44,7 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 	int retval;
 
 	context->line_number = 1;
-	context->config = NULL;
-	context->value_count = 0;
+	context->result = NULL;
 
 	/* Initialize lexer. */
 	if (_t3_config_lex_init_extra(context, &context->scanner) != 0) {
@@ -62,13 +62,13 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 			error->line_number = _t3_config_get_extra(context->scanner)->line_number;
 		}
 		/* On failure, we free all memory allocated by the partial parse ... */
-		t3_config_delete(context->config);
+		t3_config_delete(context->result);
 		/* ... and set context->config to NULL so we return NULL at the end. */
-		context->config = NULL;
+		context->result = NULL;
 	}
 	/* Free memory allocated by lexer. */
 	_t3_config_lex_destroy(context->scanner);
-	return context->config;
+	return context->result;
 }
 
 

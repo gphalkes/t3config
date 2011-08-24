@@ -40,14 +40,16 @@ typedef void* yyscan_t;
 
 typedef struct {
 	yyscan_t scanner;
-	t3_config_t *config;
+	void *result,
+		*scratch;
+
 	int scan_type;
 	FILE *file;
 	const char *buffer;
 	size_t buffer_size,
 		buffer_idx;
+
 	int line_number;
-	unsigned value_count;
 	void *LLthis;
 } parse_context_t;
 

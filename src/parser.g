@@ -21,8 +21,7 @@
 %token INT, NUMBER, STRING, IDENTIFIER, BOOL_TRUE, BOOL_FALSE;
 
 %top {
-#include "config_api.h"
-#include "config_internal.h"
+#include "expression.h"
 
 struct _t3_config_this;
 T3_CONFIG_LOCAL int _t3_config_parse(parse_context_t * LLuserData);
@@ -165,9 +164,9 @@ void LLmessage(struct _t3_config_this *LLthis, int LLtoken) {
 
 config {
 	_t3_config_data->LLthis = LLthis;
-	_t3_config_data->config = allocate_item(LLthis, t3_false);
+	_t3_config_data->result = allocate_item(LLthis, t3_false);
 } :
-	section_contents(_t3_config_data->config)
+	section_contents(_t3_config_data->result)
 ;
 
 value(t3_config_t *item) {
@@ -276,3 +275,158 @@ section_contents(t3_config_t *item) {
 		[ [';' | '\n'] '\n'* ] ..?
 	]*
 ;
+
+//=========================== CONSTRAINTS PARSER ============================
+%token NE, LE, GE;
+%start _t3_config_parse_constraint, constraint;
+
+{
+static int get_priority(int operator) {
+	switch (operator) {
+		case '|':
+		case '^':
+		case '&':
+			return 0;
+		case '=':
+		case NE:
+		case '<':
+		case LE:
+		case '>':
+		case GE:
+			return 1;
+	}
+	/* This point should never be reached. */
+	return 1000;
+}
+
+static expr_type_t symb2expr(int symb) {
+	static const struct {
+		int symb;
+		expr_type_t type;
+	} map[] = {
+		{ '=', EXPR_EQ },
+		{ NE, EXPR_NE },
+		{ '<', EXPR_LT },
+		{ LE, EXPR_LE },
+		{ '>', EXPR_GT },
+		{ GE, EXPR_GE },
+		{ '&', EXPR_AND },
+		{ '|', EXPR_OR },
+		{ '^', EXPR_XOR }
+	};
+	size_t i;
+
+	for (i = 0; i < sizeof(map) / sizeof(map[0]); i++)
+		if (map[i].symb == symb)
+			return map[i].type;
+	return EXPR_EQ;
+}
+
+expr_node_t *new_expression(struct _t3_config_this *LLthis, expr_type_t type, expr_node_t *operand_0, expr_node_t *operand_1) {
+	expr_node_t *result;
+	/* We use a t3_config_t to reuse the conversion stuff we wrote for that. */
+	t3_config_t config_node;
+
+	/* Convert this first, such that when it jumps out because of insufficient
+	   memory, we don't cause a memory leak. */
+	switch (type) {
+		case EXPR_INT_CONST:
+			set_value(LLthis, &config_node, T3_CONFIG_INT);
+			break;
+		case EXPR_NUMBER_CONST:
+			set_value(LLthis, &config_node, T3_CONFIG_NUMBER);
+			break;
+		case EXPR_STRING_CONST:
+			set_value(LLthis, &config_node, T3_CONFIG_STRING);
+			break;
+		default:
+			break;
+	}
+
+	if ((result = malloc(sizeof(expr_node_t))) == NULL)
+		LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+	result->type = type;
+	result->value.operand[0] = operand_0;
+	result->value.operand[1] = operand_1;
+
+	switch (type) {
+		case EXPR_BOOL_CONST:
+			result->value.boolean = LLsymb == BOOL_TRUE;
+			break;
+		case EXPR_INT_CONST:
+			result->value.integer = config_node.value.integer;
+			break;
+		case EXPR_NUMBER_CONST:
+			result->value.number = config_node.value.number;
+			break;
+		case EXPR_STRING_CONST:
+			result->value.string = config_node.value.string;
+			break;
+		default:
+			break;
+	}
+	return result;
+}
+
+}
+
+constraint {
+	_t3_config_data->LLthis = LLthis;
+	_t3_config_data->result = NULL;
+	_t3_config_data->scratch = NULL;
+} :
+	expression(0, (expr_node_t **) &_t3_config_data->result)
+;
+
+expression(int priority, expr_node_t **node) {
+	int operator;
+} :
+	factor(node)
+	[
+		%while (get_priority(LLsymb) >= priority)
+		[ '=' | NE | '<' | LE | '>' | GE | '&' | '|' | '^' ]
+		{
+			operator = LLsymb;
+		}
+		expression(get_priority(operator) + 1, (expr_node_t **) &_t3_config_data->scratch)
+		{
+			*node = new_expression(LLthis, symb2expr(operator), *node, _t3_config_data->scratch);
+			_t3_config_data->scratch = NULL;
+		}
+	]*
+;
+
+factor(expr_node_t ** node):
+	IDENTIFIER
+|
+	'!'
+	factor(node)
+	{
+		*node = new_expression(LLthis, EXPR_NOT, *node, NULL);
+	}
+|
+	'('
+	expression(0, node)
+	')'
+|
+	STRING
+	{
+		*node = new_expression(LLthis, EXPR_STRING_CONST, NULL, NULL);
+	}
+|
+	INT
+	{
+		*node = new_expression(LLthis, EXPR_INT_CONST, NULL, NULL);
+	}
+|
+	NUMBER
+	{
+		*node = new_expression(LLthis, EXPR_NUMBER_CONST, NULL, NULL);
+	}
+|
+	[ BOOL_FALSE | BOOL_TRUE ]
+	{
+		*node = new_expression(LLthis, EXPR_BOOL_CONST, NULL, NULL);
+	}
+;
+
