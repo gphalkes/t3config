@@ -62,6 +62,10 @@ t3_config_t *t3_config_new(void) {
 static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *error) {
 	int retval;
 
+	context->line_number = 1;
+	context->config = NULL;
+	context->value_count = 0;
+
 	/* Initialize lexer. */
 	if (_t3_config_lex_init_extra(context, &context->scanner) != 0) {
 		if (error != NULL) {
@@ -95,8 +99,6 @@ t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void *opt
 
 	context.scan_type = SCAN_FILE;
 	context.file = file;
-	context.line_number = 1;
-	context.config = NULL;
 	return config_read(&context, error);
 }
 
@@ -109,8 +111,6 @@ t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_er
 	context.buffer = buffer;
 	context.buffer_size = size;
 	context.buffer_idx = 0;
-	context.line_number = 1;
-	context.config = NULL;
 	return config_read(&context, error);
 }
 

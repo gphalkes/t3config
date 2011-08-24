@@ -8,6 +8,11 @@
 		container? That will run afoul when the container itself is required!
 		More obvious answer is that required stuff should have a default value
 		as well, which will be substituted if not provided.
+	- need recursion
+	- we could use something like "requires = ("key")" to indicate that a
+		certain key requires the presence of another key, and similar for
+		conflicts
+	- need to be able to set allowed_keys etc based on value
 
 types {
 	attribute {

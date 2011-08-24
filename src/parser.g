@@ -218,6 +218,7 @@ value(t3_config_t *item) {
 				if (text[i] == text[0])
 					i++;
 			}
+			value[j] = 0;
 		}
 	]*
 |

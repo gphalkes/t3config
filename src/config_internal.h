@@ -46,6 +46,7 @@ typedef struct {
 	size_t buffer_size,
 		buffer_idx;
 	int line_number;
+	int value_count;
 	void *LLthis;
 } parse_context_t;
 

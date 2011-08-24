@@ -49,21 +49,30 @@ T3_CONFIG_LOCAL void _t3_config_set_column(int column_no, yyscan_t yyscanner);
 	} \
 } while (0)
 
+#define value_count yyextra->value_count
 %}
 
-NUMBER_PAT     -?([0-9]*\.[0-9]+([eE][+-][0-9]+)?)|(?i:nan|inf(inity)?)
+%s VALUE
+
+NUMBER_PAT     [-+]?([0-9]*\.[0-9]+([eE][-+][0-9]+)?)|(?i:nan|inf(inity)?)
 %%
 
--?[0-9]+|0x[0-9A-Fa-f]                 return INT;
-\"(\"\"|[^"\0])*\"                     return STRING;
-'(''|[^'\0])*'                         return STRING;
-{NUMBER_PAT}                           return NUMBER;
-(?i:(true|yes))                        return BOOL_TRUE;
-(?i:(false|no))                        return BOOL_FALSE;
+<VALUE>{
+(?i:(true|yes))                        if (value_count == 0) BEGIN(INITIAL); return BOOL_TRUE;
+(?i:(false|no))                        if (value_count == 0) BEGIN(INITIAL); return BOOL_FALSE;
+[-+]?[0-9]+|0x[0-9A-Fa-f]              if (value_count == 0) BEGIN(INITIAL); return INT;
+\"(\"\"|[^"\0])*\"                     if (value_count == 0) BEGIN(INITIAL); return STRING;
+'(''|[^'\0])*'                         if (value_count == 0) BEGIN(INITIAL); return STRING;
+{NUMBER_PAT}                           if (value_count == 0) BEGIN(INITIAL); return NUMBER;
+}
+
 %?[_a-zA-Z][-_0-9a-zA-Z]*              return IDENTIFIER;
 \n                                     return '\n';
 [[:space:]]                            /* Ignore white space */
 #.*                                    /* Ignore comments */
+=                                      BEGIN(VALUE); return '=';
+\(                                     value_count++; BEGIN(VALUE); return '(';
+\)                                     if (--value_count == 0) BEGIN(INITIAL); return ')';
 .                                      return (unsigned char) yytext[0];
 
 %%
