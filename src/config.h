@@ -53,7 +53,7 @@ typedef enum {
 	T3_CONFIG_LIST, /**< A list of un-named items. */
 	T3_CONFIG_SECTION, /**< A list of named items. */
 	T3_CONFIG_PLIST /**< A list of un-named items, written using %<name> notation. */
-} t3_config_item_type_t;
+} t3_config_type_t;
 
 /** @struct t3_config_t
     An opaque struct representing a config or sub-config.
@@ -191,7 +191,7 @@ T3_CONFIG_API t3_config_t *t3_config_add_section(t3_config_t *config, const char
 */
 T3_CONFIG_API int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *value);
 /** Set the type of list of an existing list-type (sub-)config. */
-T3_CONFIG_API int t3_config_set_list_type(t3_config_t *config, t3_config_item_type_t type);
+T3_CONFIG_API int t3_config_set_list_type(t3_config_t *config, t3_config_type_t type);
 
 /** Retrieve a sub-config.
     @param config The (sub-)config to retrieve from.
@@ -203,9 +203,9 @@ T3_CONFIG_API int t3_config_set_list_type(t3_config_t *config, t3_config_item_ty
 */
 T3_CONFIG_API t3_config_t *t3_config_get(const t3_config_t *config, const char *name);
 /** Get the type of a (sub-)config.
-    See ::t3_config_item_type_t for possible types.
+    See ::t3_config_type_t for possible types.
 */
-T3_CONFIG_API t3_config_item_type_t t3_config_get_type(const t3_config_t *config);
+T3_CONFIG_API t3_config_type_t t3_config_get_type(const t3_config_t *config);
 /** Check if a (sub-)config is a ::T3_CONFIG_LIST or ::T3_CONFIG_PLIST. */
 T3_CONFIG_API t3_bool t3_config_is_list(const t3_config_t *config);
 /** Get the name of the (sub-)config.
@@ -213,6 +213,8 @@ T3_CONFIG_API t3_bool t3_config_is_list(const t3_config_t *config);
     list or the top-level config.
 */
 T3_CONFIG_API const char *t3_config_get_name(const t3_config_t *config);
+/** Get the line number at which the (sub-)config was defined. */
+T3_CONFIG_API int t3_config_get_line(const t3_config_t *config);
 
 /** Get the boolean value from a config with ::T3_CONFIG_BOOL type.
     @return The boolean value of @p config, or ::t3_false if @p config is @c NULL or not of type ::T3_CONFIG_BOOL.

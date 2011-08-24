@@ -16,9 +16,10 @@
 #include "config.h"
 
 struct t3_config_t {
-	t3_config_item_type_t type;
+	t3_config_type_t type;
 	struct t3_config_t *next;
 	char *name;
+	int line_number;
 	union {
 		void *ptr; /* First member can be assigned. */
 		char *string;
@@ -46,7 +47,7 @@ typedef struct {
 	size_t buffer_size,
 		buffer_idx;
 	int line_number;
-	int value_count;
+	unsigned value_count;
 	void *LLthis;
 } parse_context_t;
 

@@ -43,6 +43,7 @@ static t3_config_t *allocate_item(struct _t3_config_this *LLthis, t3_bool alloca
 
 	result->next = NULL;
 	result->type = T3_CONFIG_NONE;
+	result->line_number = _t3_config_data->line_number;
 
 	if (allocate_name) {
 		if ((result->name = strdup(_t3_config_get_text(_t3_config_data->scanner))) == NULL)
@@ -54,7 +55,7 @@ static t3_config_t *allocate_item(struct _t3_config_this *LLthis, t3_bool alloca
 	return result;
 }
 
-static void set_value(struct _t3_config_this *LLthis, t3_config_t *item, t3_config_item_type_t type) {
+static void set_value(struct _t3_config_this *LLthis, t3_config_t *item, t3_config_type_t type) {
 	switch (type) {
 		case T3_CONFIG_BOOL:
 			item->type = type;

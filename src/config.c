@@ -580,7 +580,7 @@ void t3_config_erase_from_list(t3_config_t *list, t3_config_t *item) {
 /** Allocate a new item and link it to the end of the list.
     @p config must be either ::T3_CONFIG_LIST, ::T3_CONFIG_PLIST or ::T3_CONFIG_SECTION .
 */
-static t3_config_t *config_add(t3_config_t *config, const char *name, t3_config_item_type_t type) {
+static t3_config_t *config_add(t3_config_t *config, const char *name, t3_config_type_t type) {
 	t3_config_t *result;
 
 	if ((result = malloc(sizeof(t3_config_t))) == NULL)
@@ -595,6 +595,7 @@ static t3_config_t *config_add(t3_config_t *config, const char *name, t3_config_
 	}
 	result->type = type;
 	result->next = NULL;
+	result->line_number = 0;
 
 	if (config->value.list == NULL) {
 		config->value.list = result;
@@ -624,7 +625,7 @@ static t3_bool check_name(const char *name) {
     If an item with @p name already exists in the list in @p config, it will
     be stripped of its values, and returned. Otherwise a new item is created.
 */
-static t3_config_t *add_or_replace(t3_config_t *config, const char *name, t3_config_item_type_t type) {
+static t3_config_t *add_or_replace(t3_config_t *config, const char *name, t3_config_type_t type) {
 	t3_config_t *item;
 	if (name == NULL || (item = t3_config_get(config, name)) == NULL)
 		return config_add(config, name, type);
@@ -659,7 +660,7 @@ ADD(string, const char *, T3_CONFIG_STRING,
 )
 
 /** Add a list or section. */
-static t3_config_t *t3_config_add_aggregate(t3_config_t *config, const char *name, int *error, t3_config_item_type_t type) {
+static t3_config_t *t3_config_add_aggregate(t3_config_t *config, const char *name, int *error, t3_config_type_t type) {
 	t3_config_t *item;
 	if (!can_add(config, name) || !check_name(name)) {
 		if (error != NULL)
@@ -704,7 +705,7 @@ int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *v
 	return T3_ERR_SUCCESS;
 }
 
-int t3_config_set_list_type(t3_config_t *config, t3_config_item_type_t type) {
+int t3_config_set_list_type(t3_config_t *config, t3_config_type_t type) {
 	if (config == NULL ||
 			(config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_PLIST) ||
 			(type != T3_CONFIG_LIST && type != T3_CONFIG_PLIST))
@@ -728,7 +729,7 @@ t3_config_t *t3_config_get(const t3_config_t *config, const char *name) {
 	return result;
 }
 
-t3_config_item_type_t t3_config_get_type(const t3_config_t *config) {
+t3_config_type_t t3_config_get_type(const t3_config_t *config) {
 	return config != NULL ? config->type : T3_CONFIG_NONE;
 }
 
@@ -738,6 +739,10 @@ t3_bool t3_config_is_list(const t3_config_t *config) {
 
 const char *t3_config_get_name(const t3_config_t *config) {
 	return config != NULL ? config->name : NULL;
+}
+
+int t3_config_get_line(const t3_config_t *config) {
+	return config == NULL ? 0 : config->line_number;
 }
 
 #define GET(name_type, arg_type, TYPE, value_name, deflt) \
