@@ -51,12 +51,6 @@ typedef struct {
 	void *LLthis;
 } parse_context_t;
 
-#ifdef HAVE_STRDUP
-#define _t3_config_strdup strdup
-#else
-T3_CONFIG_LOCAL char *_t3_config_strdup(const char *str);
-#endif
-
 T3_CONFIG_LOCAL char *_t3_config_get_text(yyscan_t scanner);
 T3_CONFIG_LOCAL parse_context_t *_t3_config_get_extra(yyscan_t scanner);
 T3_CONFIG_LOCAL void _t3_config_set_extra(parse_context_t *extra, yyscan_t scanner);

@@ -33,19 +33,6 @@
 static void write_list(t3_config_t *config, FILE *file, int indent);
 static void write_section(t3_config_t *config, FILE *file, int indent);
 
-#ifndef HAS_STRDUP
-/** strdup implementation if none is provided by the environment. */
-char *_t3_config_strdup(const char *str) {
-	char *result;
-	size_t len = strlen(str) + 1;
-
-	if ((result = malloc(len)) == NULL)
-		return NULL;
-	memcpy(result, str, len);
-	return result;
-}
-#endif
-
 t3_config_t *t3_config_new(void) {
 	t3_config_t *result;
 

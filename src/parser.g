@@ -34,6 +34,7 @@ T3_CONFIG_LOCAL void _t3_config_abort(struct _t3_config_this *, int);
 #include <errno.h>
 #include <limits.h>
 #include "config.h"
+#include "util.h"
 
 static t3_config_t *allocate_item(struct _t3_config_this *LLthis, t3_bool allocate_name) {
 	t3_config_t *result;
@@ -91,17 +92,12 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_t *item, t3_conf
 			/* Don't need to allocate full yytext, because we drop the quotes. */
 			char *text = _t3_config_get_text(_t3_config_data->scanner);
 			char *value = malloc(strlen(text));
-			size_t i, j;
 
-			for (i = 1, j = 0; !(text[i] == text[0] && text[i + 1] == 0); i++, j++) {
-				value[j] = text[i];
-				/* Because the only quotes that can occur in the string itself
-				   are doubled (checked by lexing), we don't have to check the
-				   next character. */
-				if (text[i] == text[0])
-					i++;
-			}
-			value[j] = 0;
+			if (value == NULL)
+				LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+
+			_t3_unescape(value, text);
+
 			item->type = type;
 			item->value.string = value;
 			break;
@@ -203,23 +199,14 @@ value(t3_config_t *item) {
 		{
 			/* We won't be adding the entire yytext, so we can safely ignore the
 			   nul byte. */
-			int i, j;
 			char *text = _t3_config_get_text(_t3_config_data->scanner);
 			char *value = realloc(item->value.string, strlen(text) + strlen(item->value.string));
 			if (value == NULL)
 				LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+
 			item->value.string = value;
 			value += strlen(value);
-
-			for (i = 1, j = 0; !(text[i] == text[0] && text[i + 1] == 0); i++, j++) {
-				value[j] = text[i];
-				/* Because the only quotes that can occur in the string itself
-				   are doubled (checked by lexing), we don't have to check the
-				   next character. */
-				if (text[i] == text[0])
-					i++;
-			}
-			value[j] = 0;
+			_t3_unescape(value, text);
 		}
 	]*
 |
