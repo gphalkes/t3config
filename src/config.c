@@ -615,10 +615,27 @@ static t3_bool can_add(t3_config_t *config, const char *name) {
 		((config->type == T3_CONFIG_LIST || config->type == T3_CONFIG_PLIST) && name == NULL));
 }
 
+static t3_bool istrcmp(const char *name, const char *str) {
+	for ( ; *name != 0 && *str != 0; name++, str++) {
+		if (((*name) | ('a' ^ 'A')) != ((*str) | ('a' ^ 'A')))
+			return t3_false;
+	}
+	return *name == *str;
+}
+
 /** Check whether @p name is a valid key. */
 static t3_bool check_name(const char *name) {
-	return name == NULL || (strspn(name, "-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen(name) &&
-		strchr("-0123456789", name[0]) == NULL);
+	if (name == NULL)
+		return t3_true;
+	if (!(strspn(name, "-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == strlen(name) &&
+			strchr("-0123456789", name[0]) == NULL))
+		return t3_false;
+
+	if (istrcmp(name, "yes") || istrcmp(name, "no") || istrcmp(name, "true") || istrcmp(name, "false") ||
+			istrcmp(name, "nan") || istrcmp(name, "inf") || istrcmp(name, "infinity"))
+		return t3_false;
+
+	return t3_true;
 }
 
 /** Add or replace an item.
