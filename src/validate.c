@@ -184,42 +184,47 @@ static t3_bool parse_constraints(t3_config_t *schema, t3_config_error_t *error) 
 	return t3_true;
 }
 
-t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, void *opts) {
-	t3_config_t *config = NULL, *meta_schema = NULL;
+static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_config_error_t *error) {
+	t3_config_t *meta_schema = NULL;
 	t3_config_error_t local_error;
 
 	if ((meta_schema = t3_config_read_buffer(meta_schema_buffer, sizeof(meta_schema_buffer), &local_error, NULL)) == NULL||
 			!parse_constraints(meta_schema, &local_error))
 	{
 		if (error != NULL) {
-			error->error = local_error.error == T3_ERR_OUT_OF_MEMORY ? T3_ERR_OUT_OF_MEMORY : T3_ERR_UNKNOWN;
+			error->error = local_error.error == T3_ERR_OUT_OF_MEMORY ? T3_ERR_OUT_OF_MEMORY : T3_ERR_INTERNAL;
 			error->line_number = 0;
 		}
-		goto end;
+		goto error_end;
 	}
 	meta_schema->type = T3_CONFIG_SCHEMA;
 
-	if ((config = t3_config_read_file(file, error, opts)) == NULL)
-		goto end;
-
-
-	if (!t3_config_validate(config, meta_schema, error)) {
-		t3_config_delete(config);
-		config = NULL;
-		goto end;
-	}
-
-	if (!parse_constraints(config, error)) {
-		t3_config_delete(config);
-		config = NULL;
-		goto end;
-	}
+	if (!t3_config_validate(config, meta_schema, error) || !parse_constraints(config, error))
+		goto error_end;
 
 	config->type = T3_CONFIG_SCHEMA;
-end:
+	return config;
+
+error_end:
+	t3_config_delete(config);
 	t3_config_delete(meta_schema);
 	return config;
 }
+
+t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, void *opts) {
+	t3_config_t *config;
+	if ((config = t3_config_read_file(file, error, opts)) == NULL)
+		return NULL;
+	return handle_schema_validation(config, error);
+}
+
+t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts) {
+	t3_config_t *config;
+	if ((config = t3_config_read_buffer(buffer, size, error, opts)) == NULL)
+		return NULL;
+	return handle_schema_validation(config, error);
+}
+
 
 void t3_config_delete_schema(t3_config_schema_t *schema) {
 	t3_config_delete(schema);
