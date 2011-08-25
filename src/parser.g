@@ -166,6 +166,7 @@ void LLmessage(struct _t3_config_this *LLthis, int LLtoken) {
 config {
 	_t3_config_data->LLthis = LLthis;
 	_t3_config_data->result = allocate_item(LLthis, t3_false);
+	((t3_config_t *) _t3_config_data->result)->line_number = 0;
 } :
 	section_contents(_t3_config_data->result)
 ;

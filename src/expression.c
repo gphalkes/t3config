@@ -53,7 +53,21 @@ static t3_bool get_bool_operand(const expr_node_t *expression, const t3_config_t
 	return expression->value.boolean;
 }
 
+static t3_config_int_t get_int_operand(const expr_node_t *expression, const t3_config_t *config) {
+	if (expression->type == EXPR_IDENT)
+		return t3_config_get_int(t3_config_get(config, expression->value.string));
+	return expression->value.integer;
+}
+
+static double get_number_operand(const expr_node_t *expression, const t3_config_t *config) {
+	if (expression->type == EXPR_IDENT)
+		return t3_config_get_number(t3_config_get(config, expression->value.string));
+	return expression->value.number;
+}
+
 t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_t *config) {
+	t3_config_type_t type;
+
 	switch (expression->type) {
 		case EXPR_AND:
 			return _t3_config_evaluate_expr(expression->value.operand[0], config) && _t3_config_evaluate_expr(expression->value.operand[1], config);
@@ -66,17 +80,26 @@ t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_
 		case EXPR_IDENT:
 			return t3_config_get(config, expression->value.string) != NULL;
 
-		/* FIXME: implement comparisons for < > <= >= */
-/*		case EXPR_LT:
-		case EXPR_LE:
-		case EXPR_GT:
-		case EXPR_GE: */
-
+#define COMPARE(expr_type, operator) \
+		case expr_type: \
+			if (!is_present(expression->value.operand[0], config) || !is_present(expression->value.operand[1], config)) \
+				return t3_false; \
+			type = operand_type(expression->value.operand[0], config); \
+			if (type == T3_CONFIG_INT) { \
+				return get_int_operand(expression->value.operand[0], config) operator \
+					get_int_operand(expression->value.operand[1], config); \
+			} else if (type == T3_CONFIG_NUMBER) { \
+				return get_number_operand(expression->value.operand[0], config) operator \
+					get_number_operand(expression->value.operand[1], config); \
+			} \
+			return t3_false;
+		COMPARE(EXPR_LT, <)
+		COMPARE(EXPR_LE, <=)
+		COMPARE(EXPR_GT, >)
+		COMPARE(EXPR_GE, >=)
 
 		case EXPR_NE:
-		case EXPR_EQ: {
-			t3_config_type_t type;
-
+		case EXPR_EQ:
 			if (!is_present(expression->value.operand[0], config) || !is_present(expression->value.operand[1], config))
 				return t3_false;
 
@@ -89,10 +112,17 @@ t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_
 				return (get_bool_operand(expression->value.operand[0], config) ==
 					get_bool_operand(expression->value.operand[1], config)) ^
 					(expression->type == EXPR_NE);
+			} else if (type == T3_CONFIG_INT) {
+				return (get_int_operand(expression->value.operand[0], config) ==
+					get_int_operand(expression->value.operand[1], config)) ^
+					(expression->type == EXPR_NE);
+			} else if (type == T3_CONFIG_NUMBER) {
+				return (get_number_operand(expression->value.operand[0], config) ==
+					get_number_operand(expression->value.operand[1], config)) ^
+					(expression->type == EXPR_NE);
 			}
 			/* FIXME: implement number and integer comparisons */
 			return t3_false;
-		}
 		default:
 			return t3_false;
 	}
