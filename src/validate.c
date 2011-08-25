@@ -19,7 +19,7 @@
 #include "parser.h"
 
 static char meta_schema_buffer[] = {
-#include ".objects/meta_schema.c"
+#include "meta_schema.c"
 };
 
 static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_config_t *schema_part,
