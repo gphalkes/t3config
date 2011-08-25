@@ -46,6 +46,7 @@ allowed-keys {
 	types {
 		type = "section"
 		item-type = "type"
+		%constraint = "!int & !number & !bool & !string & !section & !list"
 	}
 	allowed-keys {
 		type = "allowed-keys"
@@ -60,4 +61,4 @@ allowed-keys {
 }
 
 %constraint = "!(allowed-keys & item-type)"
-%constraint = "!(types & !(allowed-keys | item-types))"
+%constraint = "!(types & !(allowed-keys | item-type))"

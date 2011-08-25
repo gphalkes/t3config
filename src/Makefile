@@ -16,6 +16,11 @@ SOURCES.libt3config.la = lex.l parser.g config.c config_shared.c util.c write.c 
 LDLIBS.libt3config.la = -lm
 CFLAGS.lex = -Wno-unused -Wno-unused-parameter -Wno-switch-default
 
+SOURCES.test = test.c
+LDFLAGS.test = -L.libs
+LDLIBS.test = -lt3config
+
+TARGETS := test
 LTTARGETS := libt3config.la
 #================================================#
 # NO RULES SHOULD BE DEFINED BEFORE THIS INCLUDE #
@@ -38,9 +43,11 @@ CFLAGS += -DHAS_USELOCALE
 .objects/lex.lo: .objects/parser.h .objects/lex_hide.h
 .objects/config.lo: .objects/parser.h
 
-.objects/validate.lo: .objects/basic_types.c .objects/meta_schema.c
+.objects/validate.lo: .objects/meta_schema.c
 
 .objects/%.c: %.schema
-	$(_VERBOSE_GEN) xxd -i < $< > $@
+	$(_VERBOSE_GEN) sed -r '/^#/d;s/#.*//' $< | xxd -i > $@
+
+test: | libt3config.la
 
 .SECONDARY: .objects/parser.c .objects/parser.h .objects/lex.c .objects/lex_hide.h

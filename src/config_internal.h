@@ -48,8 +48,7 @@ typedef void* yyscan_t;
 
 typedef struct {
 	yyscan_t scanner;
-	void *result,
-		*scratch;
+	void *result;
 
 	int scan_type;
 	FILE *file;

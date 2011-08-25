@@ -292,11 +292,9 @@ T3_CONFIG_API int t3_config_get_version(void);
 T3_CONFIG_API const char *t3_config_strerror(int error);
 
 /* FIXME: document these functions! */
-T3_CONFIG_API int t3_config_init_schemas(void);
-T3_CONFIG_API void t3_config_release_schemas(void);
 T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, void *opts);
 T3_CONFIG_API t3_bool t3_config_validate(t3_config_t *config, t3_config_schema_t *schema, t3_config_error_t *error);
-
+T3_CONFIG_API void t3_config_delete_schema(t3_config_schema_t *schema);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

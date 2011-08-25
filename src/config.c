@@ -109,6 +109,9 @@ void t3_config_delete(t3_config_t *config) {
 			case T3_CONFIG_SCHEMA:
 				t3_config_delete(ptr->value.list);
 				break;
+			case T3_CONFIG_EXPRESSION:
+				_t3_config_delete_expr(ptr->value.expr);
+				break;
 			default:
 				break;
 		}
@@ -413,6 +416,14 @@ const char *t3_config_strerror(int error) {
 			return _("parse error");
 		case T3_ERR_DUPLICATE_KEY:
 			return _("duplicate key");
+		case T3_ERR_INVALID_SCHEMA:
+			return _("invalid schema");
+		case T3_ERR_INVALID_KEY_TYPE:
+			return _("key has invalid type");
+		case T3_ERR_INVALID_KEY:
+			return _("key is not allowed here");
+		case T3_ERR_CONSTRAINT_VIOLATION:
+			return _("schema constraint violated in section or list");
 	}
 }
 

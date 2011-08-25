@@ -1,7 +1,0 @@
-basic_types {
-	section { type = "section" }
-	list { type = "list" }
-	string { type = "string" }
-	number { type = "number" }
-	int { type = "int" }
-}

@@ -17,7 +17,7 @@
 #include "config_api.h"
 #include "config_internal.h"
 
-#ifdef HAVE_STRDUP
+#ifdef HAS_STRDUP
 #define _t3_config_strdup strdup
 #else
 T3_CONFIG_LOCAL char *_t3_config_strdup(const char *str);

@@ -11,46 +11,45 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <string.h>
+#include <stdlib.h>
 
-#define _T3_CONFIG_CONST const
 #include "config_internal.h"
 #include "util.h"
+#include "parser.h"
 
-static t3_bool validate_aggregate_keys(t3_config_t *config_part, const t3_config_t *schema_part,
-	const t3_config_t *types, t3_config_error_t *error);
-
-static char basic_types_buffer[] = {
-#include ".objects/basic_types.c"
-};
 static char meta_schema_buffer[] = {
 #include ".objects/meta_schema.c"
 };
 
-static t3_config_t *basic_types, *meta_schema;
+static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_config_t *schema_part,
+	const t3_config_t *types, t3_config_error_t *error);
 
-static const t3_config_t *resolve_type(const t3_config_t *types, const char *type_name) {
+static t3_config_type_t resolve_type(const char *type_name, const t3_config_t *types, const t3_config_t **schema) {
+	t3_config_type_t config_type;
 	t3_config_t *type_schema;
-	if ((type_schema = t3_config_get(basic_types, type_name)) != NULL)
-		return type_schema;
 
+	if ((config_type = _t3_config_str2type(type_name)) != T3_CONFIG_NONE)
+		return config_type;
+
+	/* This will generally result in a single lookup, because most type
+	   definitions are elaborations on the basic types. The only reason not
+	   to do so, is to have a single name that (for now) is used as a place
+	   holder elsewhere in the schema that allows easy change. */
 	while ((type_schema = t3_config_get(types, type_name)) != NULL) {
 		type_name = t3_config_get_string(t3_config_get(type_schema, "type"));
-		if (_t3_config_str2type(type_name) != T3_CONFIG_NONE)
-			return type_schema;
+		if ((config_type = _t3_config_str2type(type_name)) != T3_CONFIG_NONE) {
+			*schema = type_schema;
+			return config_type;
+		}
 	}
-	return NULL;
+	return T3_CONFIG_NONE;
 }
 
-static t3_bool validate_key(t3_config_t *config_part, const t3_config_t *schema_part,
+static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t type, const t3_config_t *schema_part,
 		const t3_config_t *types, t3_config_error_t *error)
 {
-	/* Make sure that we have the most complete definition of the type name. This
-	   can be one of the definitions from basic_types, or a definition from the
-	   types definition. */
-	const t3_config_t *type_schema = resolve_type(types, t3_config_get_string(t3_config_get(schema_part, "type")));
-	t3_config_type_t type = _t3_config_str2type(t3_config_get_string(t3_config_get(type_schema, "type")));
-
-	if (type != config_part->type) {
+	if (type != config_part->type && !(type == T3_CONFIG_LIST && config_part->type == T3_CONFIG_PLIST)) {
 		if (error != NULL) {
 			error->line_number = config_part->line_number;
 			error->error = T3_ERR_INVALID_KEY_TYPE;
@@ -59,26 +58,30 @@ static t3_bool validate_key(t3_config_t *config_part, const t3_config_t *schema_
 	}
 
 	if (type == T3_CONFIG_SECTION)
-		return validate_aggregate_keys(config_part, type_schema, types, error);
-	else if (type == T3_CONFIG_LIST && t3_config_get(type_schema, "item-type") != NULL)
-		return validate_aggregate_keys(config_part, type_schema, types, error);
+		return validate_aggregate_keys(config_part, schema_part, types, error);
+	else if (type == T3_CONFIG_LIST && t3_config_get(schema_part, "item-type") != NULL)
+		return validate_aggregate_keys(config_part, schema_part, types, error);
 
 	return t3_true;
 }
 
-static t3_bool validate_aggregate_keys(t3_config_t *config_part, const t3_config_t *schema_part,
+static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_config_t *schema_part,
 		const t3_config_t *types, t3_config_error_t *error)
 {
-	t3_config_t *allowed_keys = t3_config_get(schema_part, "allowed_keys"),
+	const t3_config_t *allowed_keys = t3_config_get(schema_part, "allowed-keys"),
 		*item_type = t3_config_get(schema_part, "item-type"),
-		*sub_part, *sub_schema, *constraints;
+		*sub_part, *sub_schema, *constraint;
+	t3_config_type_t resolved_type;
 
 	for (sub_part = t3_config_get(config_part, NULL); sub_part != NULL; sub_part = t3_config_get_next(sub_part)) {
 		if (allowed_keys != NULL && (sub_schema = t3_config_get(allowed_keys, sub_part->name)) != NULL) {
-			if (!validate_key(sub_part, sub_schema, types, error))
+			resolved_type = resolve_type(t3_config_get_string(t3_config_get(sub_schema, "type")), types, &sub_schema);
+			if (!validate_key(sub_part, resolved_type, sub_schema, types, error))
 				return t3_false;
 		} else if (item_type != NULL) {
-			if (!validate_key(sub_part, resolve_type(types, t3_config_get_string(item_type)), types, error))
+			sub_schema = NULL;
+			resolved_type = resolve_type(t3_config_get_string(item_type), types, &sub_schema);
+			if (!validate_key(sub_part, resolved_type, sub_schema, types, error))
 				return t3_false;
 		} else {
 			if (error != NULL) {
@@ -89,10 +92,10 @@ static t3_bool validate_aggregate_keys(t3_config_t *config_part, const t3_config
 		}
 	}
 
-	for (constraints = t3_config_get(t3_config_get(schema_part, "constraint"), NULL);
-			constraints != NULL; constraints = t3_config_get_next(constraints))
+	for (constraint = t3_config_get(t3_config_get(schema_part, "constraint"), NULL);
+			constraint != NULL; constraint = t3_config_get_next(constraint))
 	{
-		if (!_t3_config_evaluate_expr(constraints->value.expr, config_part)) {
+		if (constraint->type == T3_CONFIG_EXPRESSION && !_t3_config_evaluate_expr(constraint->value.expr, config_part)) {
 			if (error != NULL) {
 				error->error = T3_ERR_CONSTRAINT_VIOLATION;
 				error->line_number = config_part->line_number;
@@ -114,39 +117,110 @@ t3_bool t3_config_validate(t3_config_t *config, t3_config_schema_t *schema, t3_c
 	return validate_aggregate_keys(config, schema, t3_config_get(schema, "types"), error);
 }
 
-t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, void *opts) {
-	t3_config_t *config = t3_config_read_file(file, error, opts);
-	if (config == NULL)
+static expr_node_t *parse_constraint_string(const char *constraint, int *error) {
+	parse_context_t context;
+	int retval;
+
+	context.scan_type = SCAN_BUFFER;
+	context.buffer = constraint;
+	context.buffer_size = strlen(constraint);
+	context.buffer_idx = 0;
+	context.line_number = 1;
+	context.result = NULL;
+
+	/* Initialize lexer. */
+	if (_t3_config_lex_init_extra(&context, &context.scanner) != 0)
 		return NULL;
 
-	if (!t3_config_validate(config, meta_schema, error))
-		return NULL;
-	//FIXME: parse all constraints
+	/* Perform parse. */
+	if ((retval = _t3_config_parse_constraint(&context)) != 0) {
+		if (error != NULL)
+			*error = retval;
+		/* On failure, we free all memory allocated by the partial parse ... */
+		_t3_config_delete_expr(context.result);
+		/* ... and set context->config to NULL so we return NULL at the end. */
+		context.result = NULL;
+	}
+	/* Free memory allocated by lexer. */
+	_t3_config_lex_destroy(context.scanner);
+	return context.result;
+}
+
+static t3_bool parse_constraints(t3_config_t *schema, t3_config_error_t *error) {
+	t3_config_t *constraint;
+	t3_config_t *part;
+
+	for (constraint = t3_config_get(t3_config_get(schema, "constraint"), NULL);
+			constraint != NULL; constraint = t3_config_get_next(constraint))
+	{
+		expr_node_t *expr = parse_constraint_string(t3_config_get_string(constraint), error == NULL ? NULL : &error->error);
+		if (expr == NULL) {
+			if (error != NULL)
+				error->line_number = constraint->line_number;
+			return t3_false;
+		}
+		if (!_t3_config_validate_expr(expr, schema)) {
+			_t3_config_delete_expr(expr);
+			if (error != NULL) {
+				error->error = T3_ERR_INVALID_SCHEMA;
+				error->line_number = constraint->line_number;
+			}
+			return t3_false;
+		}
+		constraint->type = T3_CONFIG_EXPRESSION;
+		free(constraint->value.string);
+		constraint->value.expr = expr;
+	}
+
+	for (schema = t3_config_get(schema, NULL); schema != NULL; schema = t3_config_get_next(schema)) {
+		if (schema->type != T3_CONFIG_SECTION)
+			continue;
+
+		for (part = t3_config_get(schema, NULL); part != NULL; part = t3_config_get_next(part)) {
+			if (!parse_constraints(part, error))
+				return t3_false;
+		}
+	}
+	return t3_true;
+}
+
+t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, void *opts) {
+	t3_config_t *config = NULL, *meta_schema = NULL;
+	t3_config_error_t local_error;
+
+	if ((meta_schema = t3_config_read_buffer(meta_schema_buffer, sizeof(meta_schema_buffer), &local_error, NULL)) == NULL||
+			!parse_constraints(meta_schema, &local_error))
+	{
+		if (error != NULL) {
+			error->error = local_error.error == T3_ERR_OUT_OF_MEMORY ? T3_ERR_OUT_OF_MEMORY : T3_ERR_UNKNOWN;
+			error->line_number = 0;
+		}
+		goto end;
+	}
+	meta_schema->type = T3_CONFIG_SCHEMA;
+
+	if ((config = t3_config_read_file(file, error, opts)) == NULL)
+		goto end;
+
+
+	if (!t3_config_validate(config, meta_schema, error)) {
+		t3_config_delete(config);
+		config = NULL;
+		goto end;
+	}
+
+	if (!parse_constraints(config, error)) {
+		t3_config_delete(config);
+		config = NULL;
+		goto end;
+	}
 
 	config->type = T3_CONFIG_SCHEMA;
+end:
+	t3_config_delete(meta_schema);
 	return config;
 }
 
-int t3_config_init_schemas(void) {
-	t3_config_error_t error;
-
-	if (basic_types != NULL)
-		return T3_ERR_SUCCESS;
-
-	if ((basic_types = t3_config_read_buffer(basic_types_buffer, sizeof(basic_types_buffer), &error, NULL)) == NULL)
-		return error.error;
-	if ((meta_schema = t3_config_read_buffer(meta_schema_buffer, sizeof(meta_schema_buffer), &error, NULL)) == NULL) {
-		t3_config_delete(basic_types);
-		return error.error;
-	}
-	//FIXME: parse all constraints
-	meta_schema->type = T3_CONFIG_SCHEMA;
-	return T3_ERR_SUCCESS;
-}
-
-void t3_config_release_schemas(void) {
-	t3_config_delete(basic_types);
-	basic_types = NULL;
-	t3_config_delete(meta_schema);
-	meta_schema = NULL;
+void t3_config_delete_schema(t3_config_schema_t *schema) {
+	t3_config_delete(schema);
 }

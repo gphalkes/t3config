@@ -32,6 +32,7 @@ T3_CONFIG_LOCAL void _t3_config_abort(struct _t3_config_this *, int);
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
+#include <string.h>
 #include "config.h"
 #include "util.h"
 
@@ -46,7 +47,7 @@ static t3_config_t *allocate_item(struct _t3_config_this *LLthis, t3_bool alloca
 	result->line_number = _t3_config_data->line_number;
 
 	if (allocate_name) {
-		if ((result->name = strdup(_t3_config_get_text(_t3_config_data->scanner))) == NULL)
+		if ((result->name = _t3_config_strdup(_t3_config_get_text(_t3_config_data->scanner))) == NULL)
 			LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
 	} else {
 		result->name = NULL;
@@ -294,9 +295,11 @@ static int get_priority(int operator) {
 		case '>':
 		case GE:
 			return 1;
+		default:
+			break;
 	}
 	/* This point should never be reached. */
-	return 1000;
+	return -1;
 }
 
 static expr_type_t symb2expr(int symb) {
@@ -362,6 +365,12 @@ expr_node_t *new_expression(struct _t3_config_this *LLthis, expr_type_t type, ex
 		case EXPR_STRING_CONST:
 			result->value.string = config_node.value.string;
 			break;
+		case EXPR_IDENT:
+			if ((result->value.string = _t3_config_strdup(_t3_config_get_text(_t3_config_data->scanner))) == NULL) {
+				free(result);
+				LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+			}
+			break;
 		default:
 			break;
 	}
@@ -373,7 +382,6 @@ expr_node_t *new_expression(struct _t3_config_this *LLthis, expr_type_t type, ex
 constraint {
 	_t3_config_data->LLthis = LLthis;
 	_t3_config_data->result = NULL;
-	_t3_config_data->scratch = NULL;
 } :
 	expression(0, (expr_node_t **) &_t3_config_data->result)
 ;
@@ -386,18 +394,18 @@ expression(int priority, expr_node_t **node) {
 		%while (get_priority(LLsymb) >= priority)
 		[ '=' | NE | '<' | LE | '>' | GE | '&' | '|' | '^' ]
 		{
+			*node = new_expression(LLthis, symb2expr(LLsymb), *node, NULL);
 			operator = LLsymb;
 		}
-		expression(get_priority(operator) + 1, (expr_node_t **) &_t3_config_data->scratch)
-		{
-			*node = new_expression(LLthis, symb2expr(operator), *node, _t3_config_data->scratch);
-			_t3_config_data->scratch = NULL;
-		}
+		expression(get_priority(operator) + 1, &(*node)->value.operand[1])
 	]*
 ;
 
-factor(expr_node_t ** node):
+factor(expr_node_t **node):
 	IDENTIFIER
+	{
+		*node = new_expression(LLthis, EXPR_IDENT, NULL, NULL);
+	}
 |
 	'!'
 	factor(node)

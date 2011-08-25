@@ -54,6 +54,7 @@ struct expr_node_t {
 };
 
 
-T3_CONFIG_LOCAL t3_bool _t3_config_evaluate_expr(expr_node_t *expression, t3_config_t *config);
-T3_CONFIG_LOCAL t3_bool _t3_config_validate_expr(expr_node_t *expression, t3_config_t *config);
+T3_CONFIG_LOCAL t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_t *config);
+T3_CONFIG_LOCAL t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_t *config);
+T3_CONFIG_LOCAL void _t3_config_delete_expr(expr_node_t *expr);
 #endif
