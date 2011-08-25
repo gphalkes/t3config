@@ -15,6 +15,7 @@
 #define T3_CONFIG_UTIL_H
 
 #include "config_api.h"
+#include "config_internal.h"
 
 #ifdef HAVE_STRDUP
 #define _t3_config_strdup strdup
@@ -24,5 +25,5 @@ T3_CONFIG_LOCAL char *_t3_config_strdup(const char *str);
 
 T3_CONFIG_LOCAL void _t3_unescape(char *dest, const char *src);
 T3_CONFIG_LOCAL double _t3_config_strtod(char *text);
-
+T3_CONFIG_LOCAL t3_config_type_t _t3_config_str2type(const char *name);
 #endif

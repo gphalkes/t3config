@@ -60,6 +60,11 @@ typedef enum {
 */
 typedef struct t3_config_t t3_config_t;
 
+/** @struct t3_config_schema_t
+    An opaque struct representing a schema.
+*/
+typedef void t3_config_schema_t;
+
 /** A structure representing an error, with line number.
     Used by ::t3_config_read_file and ::t3_config_read_buffer. If @p error
     equals ::T3_ERR_PARSE_ERROR, @p line_number will be set to the line
@@ -78,6 +83,11 @@ typedef struct {
 #define T3_ERR_PARSE_ERROR (-79)
 /** Error code: Key already exists. */
 #define T3_ERR_DUPLICATE_KEY (-78)
+
+#define T3_ERR_INVALID_SCHEMA (-77)
+#define T3_ERR_INVALID_KEY_TYPE (-76)
+#define T3_ERR_INVALID_KEY (-75)
+#define T3_ERR_CONSTRAINT_VIOLATION (-74)
 /*@}*/
 
 #if INT_MAX < 2147483647
@@ -280,6 +290,12 @@ T3_CONFIG_API int t3_config_get_version(void);
     @return An internationalized string description for the error code.
 */
 T3_CONFIG_API const char *t3_config_strerror(int error);
+
+/* FIXME: document these functions! */
+T3_CONFIG_API int t3_config_init_schemas(void);
+T3_CONFIG_API void t3_config_release_schemas(void);
+T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, void *opts);
+T3_CONFIG_API t3_bool t3_config_validate(t3_config_t *config, t3_config_schema_t *schema, t3_config_error_t *error);
 
 #ifdef __cplusplus
 } /* extern "C" */

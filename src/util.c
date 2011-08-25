@@ -169,3 +169,23 @@ double _t3_config_strtod(char *text) {
 	return strtod(buffer, NULL);
 }
 #endif
+
+t3_config_type_t _t3_config_str2type(const char *name) {
+	static const struct {
+		const char *name;
+		t3_config_type_t type;
+	} map[] = {
+		{ "int", T3_CONFIG_INT },
+		{ "bool", T3_CONFIG_BOOL },
+		{ "number", T3_CONFIG_NUMBER },
+		{ "string", T3_CONFIG_STRING },
+		{ "section", T3_CONFIG_SECTION },
+		{ "list", T3_CONFIG_LIST }
+	};
+
+	size_t i;
+	for (i = 0; i < sizeof(map) / sizeof(map[0]); i++)
+		if (strcmp(name, map[i].name) == 0)
+			return map[i].type;
+	return T3_CONFIG_NONE;
+}

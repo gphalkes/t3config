@@ -15,19 +15,27 @@
 #define T3_CONFIG_INTERNAL_H
 #include "config.h"
 
+#include "expression.h"
+
 struct t3_config_t {
 	t3_config_type_t type;
 	struct t3_config_t *next;
 	char *name;
 	int line_number;
 	union {
-		void *ptr; /* First member can be assigned. */
+		const void *ptr; /* First member can be assigned. */
 		char *string;
 		int integer;
 		double number;
 		struct t3_config_t *list;
 		t3_bool boolean;
+		expr_node_t *expr;
 	} value;
+};
+
+enum {
+	T3_CONFIG_SCHEMA = 128,
+	T3_CONFIG_EXPRESSION
 };
 
 #ifndef YY_TYPEDEF_YY_SCANNER_T

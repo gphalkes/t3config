@@ -14,7 +14,7 @@
 #include <string.h>
 
 #include "config_internal.h"
-#include "expression.h"
+#include "util.h"
 
 static t3_bool is_present(expr_node_t *expression, t3_config_t *config) {
 	if (expression->type != EXPR_IDENT)
@@ -52,16 +52,16 @@ static t3_bool get_bool_operand(expr_node_t *expression, t3_config_t *config) {
 	return expression->value.boolean;
 }
 
-t3_bool _t3_evaluate_expr(expr_node_t *expression, t3_config_t *config) {
+t3_bool _t3_config_evaluate_expr(expr_node_t *expression, t3_config_t *config) {
 	switch (expression->type) {
 		case EXPR_AND:
-			return _t3_evaluate_expr(expression->value.operand[0], config) && _t3_evaluate_expr(expression->value.operand[1], config);
+			return _t3_config_evaluate_expr(expression->value.operand[0], config) && _t3_config_evaluate_expr(expression->value.operand[1], config);
 		case EXPR_OR:
-			return _t3_evaluate_expr(expression->value.operand[0], config) || _t3_evaluate_expr(expression->value.operand[1], config);
+			return _t3_config_evaluate_expr(expression->value.operand[0], config) || _t3_config_evaluate_expr(expression->value.operand[1], config);
 		case EXPR_XOR:
-			return _t3_evaluate_expr(expression->value.operand[0], config) ^ _t3_evaluate_expr(expression->value.operand[1], config);
+			return _t3_config_evaluate_expr(expression->value.operand[0], config) ^ _t3_config_evaluate_expr(expression->value.operand[1], config);
 		case EXPR_NOT:
-			return !_t3_evaluate_expr(expression->value.operand[0], config);
+			return !_t3_config_evaluate_expr(expression->value.operand[0], config);
 		case EXPR_IDENT:
 			return t3_config_get(config, expression->value.string) != NULL;
 
@@ -98,21 +98,8 @@ t3_bool _t3_evaluate_expr(expr_node_t *expression, t3_config_t *config) {
 }
 
 static t3_config_type_t operand_type_meta(expr_node_t *expression, t3_config_t *config) {
-	static const struct {
-		const char *name;
-		t3_config_type_t type;
-	} str2type[] = {
-		{ "int", T3_CONFIG_INT },
-		{ "bool", T3_CONFIG_BOOL },
-		{ "number", T3_CONFIG_NUMBER },
-		{ "string", T3_CONFIG_STRING },
-		{ "section", T3_CONFIG_SECTION },
-		{ "list", T3_CONFIG_LIST }
-	};
-
 	t3_config_t *allowed_keys, *key;
 	const char *type;
-	size_t i;
 
 	switch (expression->type) {
 		case EXPR_STRING_CONST:
@@ -132,24 +119,21 @@ static t3_config_type_t operand_type_meta(expr_node_t *expression, t3_config_t *
 			} else if ((type = t3_config_get_string(t3_config_get(config, "item-type"))) == NULL) {
 				return T3_CONFIG_NONE;
 			}
-			for (i = 0; i < sizeof(str2type) / sizeof(str2type[0]); i++)
-				if (strcmp(type, str2type[i].name) == 0)
-					return str2type[i].type;
-			return T3_CONFIG_NONE;
+			return _t3_config_str2type(type);
 		default:
 			return T3_CONFIG_NONE;
 	}
 }
 
-t3_bool _t3_validate_expr(expr_node_t *expression, t3_config_t *config) {
+t3_bool _t3_config_validate_expr(expr_node_t *expression, t3_config_t *config) {
 	switch (expression->type) {
 		case EXPR_AND:
 		case EXPR_OR:
 		case EXPR_XOR:
-			return _t3_validate_expr(expression->value.operand[0], config) &&
-				_t3_validate_expr(expression->value.operand[1], config);
+			return _t3_config_validate_expr(expression->value.operand[0], config) &&
+				_t3_config_validate_expr(expression->value.operand[1], config);
 		case EXPR_NOT:
-			return _t3_validate_expr(expression->value.operand[0], config);
+			return _t3_config_validate_expr(expression->value.operand[0], config);
 		case EXPR_IDENT: {
 			t3_config_t *allowed_keys;
 			if ((allowed_keys = t3_config_get(config, "allowed-keys")) != NULL)

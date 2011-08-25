@@ -14,6 +14,8 @@
 #ifndef T3_CONFIG_EXPRESSION_H
 #define T3_CONFIG_EXPRESSION_H
 
+typedef struct expr_node_t expr_node_t;
+
 #include "config_api.h"
 #include "config_internal.h"
 
@@ -40,7 +42,7 @@ typedef enum {
 } expr_type_t;
 
 
-typedef struct expr_node_t {
+struct expr_node_t {
 	expr_type_t type;
 	union {
 		struct expr_node_t *operand[2];
@@ -49,6 +51,9 @@ typedef struct expr_node_t {
 		double number;
 		t3_bool boolean;
 	} value;
-} expr_node_t;
+};
 
+
+T3_CONFIG_LOCAL t3_bool _t3_config_evaluate_expr(expr_node_t *expression, t3_config_t *config);
+T3_CONFIG_LOCAL t3_bool _t3_config_validate_expr(expr_node_t *expression, t3_config_t *config);
 #endif
