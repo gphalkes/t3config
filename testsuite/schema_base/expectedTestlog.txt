@@ -15,3 +15,5 @@ Error loading input: key is not allowed here @ 4
 Error loading input: schema constraint violated in section or list @ 0
 ==== Testcase ../incorrect/unknown_type2.schema ====
 Error loading input: schema constraint violated in section or list @ 2
+==== Testcase ../incorrect/unknown_type3.schema ====
+Error loading input: schema constraint violated in section or list @ 2

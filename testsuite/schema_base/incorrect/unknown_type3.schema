@@ -1,0 +1,6 @@
+allowed-keys {
+	foo {
+		type = "list"
+		item-type = "bar"
+	}
+}
