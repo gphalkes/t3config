@@ -16,12 +16,12 @@ make -q -C test || make -C test
 	echo "====== CORRECT TESTCASES ======"
 	for i in `ls ../correct/*`; do
 		echo "==== Testcase $i ===="
-		LD_LIBRARY_PATH=../../../src/.libs ../test/test "$i" 2>&1
+		../_runtest.sh "$i" 2>&1
 	done
 	echo "====== INCORRECT TESTCASES ======"
 	for i in `ls ../incorrect/*`; do
 		echo "==== Testcase $i ===="
-		LD_LIBRARY_PATH=../../../src/.libs ../test/test "$i" 2>&1
+		../_runtest.sh "$i" 2>&1
 	done
 ) > testlog.txt
 
