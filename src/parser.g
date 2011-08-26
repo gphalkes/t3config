@@ -108,7 +108,7 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_t *item, t3_conf
 			item->value.list = NULL;
 			break;
 		default:
-			LLabort(LLthis, T3_ERR_UNKNOWN);
+			LLabort(LLthis, T3_ERR_INTERNAL);
 	}
 }
 
@@ -381,10 +381,24 @@ expr_node_t *new_expression(struct _t3_config_this *LLthis, expr_type_t type, ex
 }
 
 constraint {
+	expr_node_t *top;
 	_t3_config_data->LLthis = LLthis;
 	_t3_config_data->result = NULL;
+
+	if ((top = malloc(sizeof(expr_node_t))) == NULL)
+		LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+	top->type = EXPR_TOP;
+	top->value.operand[0] = NULL;
+	top->value.operand[1] = NULL;
+	_t3_config_data->result = top;
 } :
-	expression(0, (expr_node_t **) &_t3_config_data->result)
+	expression(0, &top->value.operand[0])
+	{
+		if ((top->value.operand[1] = malloc(sizeof(expr_node_t))) == NULL)
+			LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+		top->value.operand[1]->type = EXPR_STRING_CONST;
+		top->value.operand[1]->value.string = NULL;
+	}
 ;
 
 expression(int priority, expr_node_t **node) {

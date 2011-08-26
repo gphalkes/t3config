@@ -69,6 +69,8 @@ t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_
 	t3_config_type_t type;
 
 	switch (expression->type) {
+		case EXPR_TOP:
+			return _t3_config_evaluate_expr(expression->value.operand[0], config);
 		case EXPR_AND:
 			return _t3_config_evaluate_expr(expression->value.operand[0], config) && _t3_config_evaluate_expr(expression->value.operand[1], config);
 		case EXPR_OR:
@@ -163,6 +165,7 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 		case EXPR_XOR:
 			return _t3_config_validate_expr(expression->value.operand[0], config) &&
 				_t3_config_validate_expr(expression->value.operand[1], config);
+		case EXPR_TOP:
 		case EXPR_NOT:
 			return _t3_config_validate_expr(expression->value.operand[0], config);
 		case EXPR_IDENT: {
@@ -204,6 +207,7 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 
 void _t3_config_delete_expr(expr_node_t *expr) {
 	switch (expr->type) {
+		case EXPR_TOP:
 		case EXPR_AND:
 		case EXPR_OR:
 		case EXPR_XOR:

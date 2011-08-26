@@ -51,8 +51,9 @@ static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t typ
 {
 	if (type != config_part->type && !(type == T3_CONFIG_LIST && config_part->type == T3_CONFIG_PLIST)) {
 		if (error != NULL) {
-			error->line_number = config_part->line_number;
 			error->error = T3_ERR_INVALID_KEY_TYPE;
+			error->line_number = config_part->line_number;
+			error->extra = config_part->name;
 		}
 		return t3_false;
 	}
@@ -85,8 +86,9 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 				return t3_false;
 		} else {
 			if (error != NULL) {
-				error->line_number = sub_part->line_number;
 				error->error = T3_ERR_INVALID_KEY;
+				error->line_number = sub_part->line_number;
+				error->extra = sub_part->name;
 			}
 			return t3_false;
 		}
@@ -99,6 +101,7 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 			if (error != NULL) {
 				error->error = T3_ERR_CONSTRAINT_VIOLATION;
 				error->line_number = config_part->line_number;
+				error->extra = constraint->value.expr->value.operand[1]->value.string;
 			}
 			return t3_false;
 		}
@@ -111,6 +114,7 @@ t3_bool t3_config_validate(t3_config_t *config, t3_config_schema_t *schema, t3_c
 		if (error != NULL) {
 			error->error = T3_ERR_INVALID_SCHEMA;
 			error->line_number = 0;
+			error->extra = NULL;
 		}
 		return t3_false;
 	}
@@ -164,11 +168,12 @@ static t3_bool parse_constraints(t3_config_t *schema, t3_config_error_t *error) 
 			if (error != NULL) {
 				error->error = T3_ERR_INVALID_SCHEMA;
 				error->line_number = constraint->line_number;
+				error->extra = NULL;
 			}
 			return t3_false;
 		}
 		constraint->type = T3_CONFIG_EXPRESSION;
-		free(constraint->value.string);
+		expr->value.operand[1]->value.string = constraint->value.string;
 		constraint->value.expr = expr;
 	}
 
@@ -194,6 +199,7 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 		if (error != NULL) {
 			error->error = local_error.error == T3_ERR_OUT_OF_MEMORY ? T3_ERR_OUT_OF_MEMORY : T3_ERR_INTERNAL;
 			error->line_number = 0;
+			error->extra = NULL;
 		}
 		goto error_end;
 	}
@@ -206,9 +212,11 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 	return config;
 
 error_end:
+	if (error != NULL)
+		error->extra = NULL;
 	t3_config_delete(config);
 	t3_config_delete(meta_schema);
-	return config;
+	return NULL;
 }
 
 t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, void *opts) {
@@ -224,7 +232,6 @@ t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size
 		return NULL;
 	return handle_schema_validation(config, error);
 }
-
 
 void t3_config_delete_schema(t3_config_schema_t *schema) {
 	t3_config_delete(schema);

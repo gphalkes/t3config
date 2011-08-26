@@ -51,6 +51,7 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 		if (error != NULL) {
 			error->error = T3_ERR_OUT_OF_MEMORY;
 			error->line_number = 0;
+			error->extra = NULL;
 		}
 		return NULL;
 	}
@@ -60,6 +61,7 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 		if (error != NULL) {
 			error->error = retval;
 			error->line_number = _t3_config_get_extra(context->scanner)->line_number;
+			error->extra = NULL;
 		}
 		/* On failure, we free all memory allocated by the partial parse ... */
 		t3_config_delete(context->result);

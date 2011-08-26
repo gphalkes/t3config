@@ -102,7 +102,8 @@ int main(int argc, char *argv[]) {
 	}
 	/* Read file. */
 	if ((config = t3_config_read_file(file, &error, NULL)) == NULL)
-		fatal("Error loading input: %s @ %d\n", t3_config_strerror(error.error), error.line_number);
+		fatal("Error loading input: %s %s @ %d\n", t3_config_strerror(error.error),
+			error.extra == NULL ? "" : error.extra, error.line_number);
 	fclose(file);
 
 	/* Write new file. */

@@ -20,6 +20,7 @@ typedef struct expr_node_t expr_node_t;
 #include "config_internal.h"
 
 typedef enum {
+	EXPR_TOP,
 	EXPR_AND,
 	EXPR_OR,
 	EXPR_XOR,

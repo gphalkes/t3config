@@ -1,0 +1,7 @@
+types {
+	int {
+		type = "section"
+	}
+}
+
+item-type = "int"

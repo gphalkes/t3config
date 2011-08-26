@@ -73,6 +73,7 @@ typedef void t3_config_schema_t;
 typedef struct {
 	int error;
 	int line_number;
+	const char *extra;
 } t3_config_error_t;
 
 /** @name Error codes (libt3config specific) */

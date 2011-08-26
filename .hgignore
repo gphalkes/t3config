@@ -12,8 +12,9 @@ src/libt3config.la
 doc/API
 doc/doxygen.conf
 doc/DoxygenLayout.xml
-testsuite/basic/test/.objects
-testsuite/basic/test/.deps
+testsuite/*/test/.objects
+testsuite/*/test/.deps
+testsuite/*/test/test
 testsuite/*/testlog*
 testsuite/*/work
 
