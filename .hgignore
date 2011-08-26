@@ -1,4 +1,5 @@
 syntax: glob
+testsuite/basic/test/test
 libt3config-*.tar.bz2
 src/config_shared.c
 src/config_errors.h
@@ -11,3 +12,6 @@ src/libt3config.la
 doc/API
 doc/doxygen.conf
 doc/DoxygenLayout.xml
+testsuite/basic/test/.objects
+testsuite/basic/test/.deps
+testsuite/*/testlog*
