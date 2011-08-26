@@ -1,0 +1,5 @@
+allowed-keys {
+	foo {
+		type = "bar"
+	}
+}

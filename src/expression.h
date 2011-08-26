@@ -39,7 +39,15 @@ typedef enum {
 	EXPR_STRING_CONST,
 	EXPR_INT_CONST,
 	EXPR_NUMBER_CONST,
-	EXPR_BOOL_CONST
+	EXPR_BOOL_CONST,
+
+	EXPR_PATH,
+	EXPR_PATH_ROOT,
+	EXPR_DEREF,
+
+	/* Used only to store the result of resolve, such that each lookup_node
+	   only has to be called onde. */
+	EXPR_CONFIG
 } expr_type_t;
 
 
@@ -51,11 +59,12 @@ struct expr_node_t {
 		t3_config_int_t integer;
 		double number;
 		t3_bool boolean;
+		const t3_config_t *config;
 	} value;
 };
 
 
-T3_CONFIG_LOCAL t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_t *config);
-T3_CONFIG_LOCAL t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_t *config);
+T3_CONFIG_LOCAL t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_t *config, const t3_config_t *root);
+T3_CONFIG_LOCAL t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_t *config, const t3_config_t *root);
 T3_CONFIG_LOCAL void _t3_config_delete_expr(expr_node_t *expr);
 #endif

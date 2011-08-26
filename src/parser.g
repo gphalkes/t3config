@@ -296,6 +296,8 @@ static int get_priority(int operator) {
 		case '>':
 		case GE:
 			return 1;
+		case '/':
+			return 2;
 		default:
 			break;
 	}
@@ -316,7 +318,8 @@ static expr_type_t symb2expr(int symb) {
 		{ GE, EXPR_GE },
 		{ '&', EXPR_AND },
 		{ '|', EXPR_OR },
-		{ '^', EXPR_XOR }
+		{ '^', EXPR_XOR },
+		{ '/', EXPR_PATH }
 	};
 	size_t i;
 
@@ -407,7 +410,7 @@ expression(int priority, expr_node_t **node) {
 	factor(node)
 	[
 		%while (get_priority(LLsymb) >= priority)
-		[ '=' | NE | '<' | LE | '>' | GE | '&' | '|' | '^' ]
+		[ '=' | NE | '<' | LE | '>' | GE | '&' | '|' | '^' | '/' ]
 		{
 			*node = new_expression(LLthis, symb2expr(LLsymb), *node, NULL);
 			operator = LLsymb;
@@ -419,6 +422,10 @@ expression(int priority, expr_node_t **node) {
 factor(expr_node_t **node):
 	IDENTIFIER
 	{
+		/* Identifiers may have a leading percentage sign. In constraint
+		   expressions this is invalid, and treated as a parse error. */
+		if (*_t3_config_get_text(_t3_config_data->scanner) == '%')
+			LLabort(LLthis, T3_ERR_PARSE_ERROR);
 		*node = new_expression(LLthis, EXPR_IDENT, NULL, NULL);
 	}
 |
@@ -450,6 +457,27 @@ factor(expr_node_t **node):
 	[ BOOL_FALSE | BOOL_TRUE ]
 	{
 		*node = new_expression(LLthis, EXPR_BOOL_CONST, NULL, NULL);
+	}
+|
+	'/'
+	[
+		%prefer
+		factor(node)
+		{
+			*node = new_expression(LLthis, EXPR_PATH, NULL, *node);
+			(*node)->value.operand[0] = new_expression(LLthis, EXPR_PATH_ROOT, NULL, NULL);
+		}
+	|
+		{
+			*node = new_expression(LLthis, EXPR_PATH_ROOT, NULL, NULL);
+		}
+	]
+|
+	'['
+	factor(node)
+	']'
+	{
+		*node = new_expression(LLthis, EXPR_DEREF, *node, NULL);
 	}
 ;
 
