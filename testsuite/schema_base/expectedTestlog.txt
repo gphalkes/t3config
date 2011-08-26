@@ -5,5 +5,9 @@
 ====== INCORRECT TESTCASES ======
 ==== Testcase ../incorrect/base_type.schema ====
 Error loading input: schema constraint violated in section or list @ 1
+==== Testcase ../incorrect/disallowed_key.schema ====
+Error loading input: key is not allowed here @ 4
+==== Testcase ../incorrect/missing_allowed_or_item_type.schema ====
+Error loading input: schema constraint violated in section or list @ 0
 ==== Testcase ../incorrect/test.cfg ====
 Error loading input: key is not allowed here @ 4

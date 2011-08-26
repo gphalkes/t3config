@@ -208,6 +208,7 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 	if (!t3_config_validate(config, meta_schema, error) || !parse_constraints(config, error))
 		goto error_end;
 
+	t3_config_delete(meta_schema);
 	config->type = T3_CONFIG_SCHEMA;
 	return config;
 
