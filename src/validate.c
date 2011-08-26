@@ -204,7 +204,7 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 		goto error_end;
 	}
 	meta_schema->type = T3_CONFIG_SCHEMA;
-
+#warning FIXME: check for type loops: types { recursive { type = "recurse" } recurse { type = "recursive" } }
 	if (!t3_config_validate(config, meta_schema, error) || !parse_constraints(config, config, error))
 		goto error_end;
 

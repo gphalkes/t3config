@@ -1,0 +1,55 @@
+schema {
+	types {
+		recursive {
+			type = "section"
+			allowed-keys {
+				bar {
+					type = "recursive"
+				}
+				terminate {
+					type = "int"
+				}
+			}
+		}
+	}
+
+	allowed-keys {
+		foo {
+			type = "int"
+		}
+		bar {
+			type = "recursive"
+		}
+	}
+}
+
+%correct {
+	foo = 3
+}
+%correct {
+	bar {
+		bar {
+			bar {
+				terminate = 0
+			}
+		}
+	}
+}
+
+%incorrect {
+	bla = yes
+}
+%incorrect {
+	bar {
+		bar = 0
+	}
+}
+%incorrect {
+	bar {
+		foo = 7
+	}
+}
+%incorrect {
+	terminate = 0
+}
+

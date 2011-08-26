@@ -1,0 +1,7 @@
+types {
+	recursive {
+		type = "recursive"
+	}
+}
+
+item-type = "recursive"
