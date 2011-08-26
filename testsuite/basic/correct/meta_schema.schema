@@ -1,0 +1,64 @@
+# Copyright (C) 2011 G.P. Halkes
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3, as
+# published by the Free Software Foundation.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Meta schema for libt3config
+
+types {
+	allowed-keys {
+		type = "section"
+		item-type = "type"
+	}
+	type {
+		type = "section"
+		allowed-keys {
+			type {
+				type = "string"
+			}
+			allowed-keys {
+				type = "allowed-keys"
+			}
+			item-type {
+				type = "string"
+			}
+			constraint {
+				type = "list"
+				item-type = "string"
+			}
+		}
+		%constraint = "type"
+		%constraint = "type = 'section' | (!allowed-keys & !constraint)"
+		%constraint = "type = 'section' | type = 'list' | !item-type"
+		%constraint = "!(allowed-keys & item-type)"
+	}
+}
+
+allowed-keys {
+	types {
+		type = "section"
+		item-type = "type"
+		%constraint = "!int & !number & !bool & !string & !section & !list"
+	}
+	allowed-keys {
+		type = "allowed-keys"
+	}
+	item-type {
+		type = "string"
+	}
+	constraint {
+		type = "list"
+		item-type = "string"
+	}
+}
+
+%constraint = "!(allowed-keys & item-type)"
+%constraint = "!(types & !(allowed-keys | item-type))"

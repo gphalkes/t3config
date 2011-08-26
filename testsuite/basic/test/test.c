@@ -38,9 +38,9 @@ static void compare_config(t3_config_t *a, t3_config_t *b) {
 		fatal("Different type at lines %d/%d: %d != %d\n",
 			t3_config_get_line(a), t3_config_get_line(a),
 			t3_config_get_type(a), t3_config_get_type(b));
-	if (t3_config_get_name(a) == NULL && t3_config_get_name(b) != NULL ||
-			t3_config_get_name(a) != NULL && t3_config_get_name(b) == NULL ||
-			strcmp(t3_config_get_name(a), t3_config_get_name(b)) != 0)
+	if ((t3_config_get_name(a) == NULL && t3_config_get_name(b) != NULL) ||
+			(t3_config_get_name(a) != NULL && t3_config_get_name(b) == NULL) ||
+			(t3_config_get_name(a) != NULL && strcmp(t3_config_get_name(a), t3_config_get_name(b)) != 0))
 		fatal("Differently named keys at lines %d/%d: %s != %s\n",
 			t3_config_get_line(a), t3_config_get_line(a),
 			t3_config_get_name(a), t3_config_get_name(b));
