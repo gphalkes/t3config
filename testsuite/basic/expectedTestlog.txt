@@ -3,6 +3,6 @@
 ==== Testcase ../correct/test.cfg ====
 ====== INCORRECT TESTCASES ======
 ==== Testcase ../incorrect/duplicate_key ====
-Error loading input: duplicate key @ 3
+Error loading input: duplicate key  @ 3
 ==== Testcase ../incorrect/missing_parenthesis ====
-Error loading input: parse error @ 1
+Error loading input: parse error  @ 1

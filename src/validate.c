@@ -109,7 +109,7 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 	return t3_true;
 }
 
-t3_bool t3_config_validate(t3_config_t *config, t3_config_schema_t *schema, t3_config_error_t *error) {
+t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema, t3_config_error_t *error) {
 	if (((t3_config_t *) schema)->type != T3_CONFIG_SCHEMA) {
 		if (error != NULL) {
 			error->error = T3_ERR_INVALID_SCHEMA;
@@ -118,7 +118,8 @@ t3_bool t3_config_validate(t3_config_t *config, t3_config_schema_t *schema, t3_c
 		}
 		return t3_false;
 	}
-	return validate_aggregate_keys(config, schema, t3_config_get(schema, "types"), config, error);
+	return validate_aggregate_keys(config, (const t3_config_t *) schema,
+		t3_config_get((const t3_config_t *) schema, "types"), config, error);
 }
 
 static expr_node_t *parse_constraint_string(const char *constraint, int *error) {
@@ -205,12 +206,12 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 	}
 	meta_schema->type = T3_CONFIG_SCHEMA;
 #warning FIXME: check for type loops: types { recursive { type = "recurse" } recurse { type = "recursive" } }
-	if (!t3_config_validate(config, meta_schema, error) || !parse_constraints(config, config, error))
+	if (!t3_config_validate(config, (t3_config_schema_t *) meta_schema, error) || !parse_constraints(config, config, error))
 		goto error_end;
 
 	t3_config_delete(meta_schema);
 	config->type = T3_CONFIG_SCHEMA;
-	return config;
+	return (t3_config_schema_t *) config;
 
 error_end:
 	if (error != NULL)
@@ -235,5 +236,5 @@ t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size
 }
 
 void t3_config_delete_schema(t3_config_schema_t *schema) {
-	t3_config_delete(schema);
+	t3_config_delete((t3_config_t *) schema);
 }
