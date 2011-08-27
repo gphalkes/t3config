@@ -12,7 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 SOURCES.libt3config.la = lex.l parser.g config.c config_shared.c util.c write.c \
-	expression.c validate.c
+	expression.c schema.c
 LDLIBS.libt3config.la = -lm
 CFLAGS.lex = -Wno-unused -Wno-unused-parameter -Wno-switch-default
 
@@ -46,7 +46,7 @@ CFLAGS += -DHAS_USELOCALE
 .objects/validate.lo: .objects/meta_schema.c
 
 .objects/%.c: %.schema
-	$(_VERBOSE_GEN) sed -r '/^#/d;s/#.*//' $< | xxd -i > $@
+	$(_VERBOSE_GEN) sed -r 's/^[[:space:]]+//;/^#/d;/^$$/d' $< | xxd -i > $@
 
 test: | libt3config.la
 
