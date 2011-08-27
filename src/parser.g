@@ -25,6 +25,7 @@
 
 struct _t3_config_this;
 T3_CONFIG_LOCAL int _t3_config_parse(parse_context_t * LLuserData);
+T3_CONFIG_LOCAL int _t3_config_parse_constraint(parse_context_t * LLuserData);
 T3_CONFIG_LOCAL void _t3_config_abort(struct _t3_config_this *, int);
 }
 
@@ -329,7 +330,7 @@ static expr_type_t symb2expr(int symb) {
 	return EXPR_EQ;
 }
 
-expr_node_t *new_expression(struct _t3_config_this *LLthis, expr_type_t type, expr_node_t *operand_0, expr_node_t *operand_1) {
+static expr_node_t *new_expression(struct _t3_config_this *LLthis, expr_type_t type, expr_node_t *operand_0, expr_node_t *operand_1) {
 	expr_node_t *result;
 	/* We use a t3_config_t to reuse the conversion stuff we wrote for that. */
 	t3_config_t config_node;
