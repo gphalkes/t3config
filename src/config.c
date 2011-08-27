@@ -426,6 +426,8 @@ const char *t3_config_strerror(int error) {
 			return _("key is not allowed here");
 		case T3_ERR_CONSTRAINT_VIOLATION:
 			return _("schema constraint violated in section or list");
+		case T3_ERR_RECURSIVE_TYPE:
+			return _("recursive type definition");
 	}
 }
 

@@ -190,6 +190,45 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t
 	return t3_true;
 }
 
+
+static t3_bool check_type_for_loop(t3_config_t *type, const t3_config_t *types) {
+	const char *referred_type;
+	int saved_line_number = type->line_number;
+	t3_bool result;
+
+	if (type->line_number < 0)
+		return t3_true;
+
+	referred_type = t3_config_get(type, "type")->value.string;
+	if (_t3_config_str2type(referred_type) != T3_CONFIG_NONE)
+		return t3_false;
+
+	type->line_number = -1;
+	result = check_type_for_loop(t3_config_get(types, referred_type), types);
+	type->line_number = saved_line_number;
+	return result;
+}
+
+static t3_bool has_loops(const t3_config_t *schema, t3_config_error_t *error) {
+	const t3_config_t *types = t3_config_get(schema, "types");
+	t3_config_t *type;
+
+	if (types == NULL)
+		return t3_false;
+
+	for (type = t3_config_get(types, NULL); type != NULL; type = t3_config_get_next(type)) {
+		if (check_type_for_loop(type, types)) {
+			if (error != NULL) {
+				error->error = T3_ERR_RECURSIVE_TYPE;
+				error->line_number = type->line_number;
+				error->extra = NULL;
+			}
+			return t3_true;
+		}
+	}
+	return t3_false;
+}
+
 static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_config_error_t *error) {
 	t3_config_t *meta_schema = NULL;
 	t3_config_error_t local_error;
@@ -205,8 +244,10 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 		goto error_end;
 	}
 	meta_schema->type = T3_CONFIG_SCHEMA;
-#warning FIXME: check for type loops: types { recursive { type = "recurse" } recurse { type = "recursive" } }
-	if (!t3_config_validate(config, (t3_config_schema_t *) meta_schema, error) || !parse_constraints(config, config, error))
+
+	if (!t3_config_validate(config, (t3_config_schema_t *) meta_schema, error) ||
+			has_loops(config, error) ||
+			!parse_constraints(config, config, error))
 		goto error_end;
 
 	t3_config_delete(meta_schema);

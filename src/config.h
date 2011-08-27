@@ -89,6 +89,7 @@ typedef struct {
 #define T3_ERR_INVALID_KEY_TYPE (-76)
 #define T3_ERR_INVALID_KEY (-75)
 #define T3_ERR_CONSTRAINT_VIOLATION (-74)
+#define T3_ERR_RECURSIVE_TYPE (-73)
 /*@}*/
 
 #if INT_MAX < 2147483647

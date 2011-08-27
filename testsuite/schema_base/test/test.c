@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 		fatal("Error loading input: %s @ %d\n", t3_config_strerror(error.error), error.line_number);
 	fclose(file);
 
-	t3_config_delete(schema);
+	t3_config_delete_schema(schema);
 
 	return EXIT_SUCCESS;
 }
