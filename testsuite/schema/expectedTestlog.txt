@@ -1,2 +1,4 @@
 ==== Testcase ../tests/reference01 ====
+==== Testcase ../tests/reference02 ====
+==== Testcase ../tests/reference03 ====
 ==== Testcase ../tests/simple ====

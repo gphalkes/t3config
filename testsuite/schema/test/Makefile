@@ -27,4 +27,5 @@ include ../../../../makesys/rules.mk
 .objects/test.o: .objects/meta_schema.bytes
 
 .objects/%.bytes: %.schema
+	@[ -d .objects/`dirname '$<'` ] || mkdir -p .objects/`dirname '$<'`
 	$(_VERBOSE_GEN) sed -r 's/^[[:space:]]+//;/^#/d;/^$$/d' $< | xxd -i > $@

@@ -1,0 +1,38 @@
+schema {
+	allowed-keys {
+		test {
+			type = "string"
+		}
+	}
+	item-type = "string"
+	%constraint = "!test | [test] = 'blah'"
+}
+
+%correct {
+	test = "foo"
+	foo = "blah"
+}
+%correct {
+}
+%correct {
+	foo = "blah"
+}
+%correct {
+	foo = "bar"
+}
+
+%incorrect {
+	test = "foo"
+	foo = "bar"
+}
+%incorrect {
+	test = "foo"
+}
+%incorrect {
+	test = "bar"
+	foo = "x"
+}
+%incorrect {
+	test = "foo"
+	foo = 3
+}
