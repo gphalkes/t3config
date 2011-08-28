@@ -43,9 +43,9 @@ CFLAGS += -DHAS_USELOCALE
 .objects/lex.lo: .objects/parser.h .objects/lex_hide.h
 .objects/config.lo: .objects/parser.h
 
-.objects/validate.lo: .objects/meta_schema.c
+.objects/schema.lo: .objects/meta_schema.bytes
 
-.objects/%.c: %.schema
+.objects/%.bytes: %.schema
 	$(_VERBOSE_GEN) sed -r 's/^[[:space:]]+//;/^#/d;/^$$/d' $< | xxd -i > $@
 
 test: | libt3config.la

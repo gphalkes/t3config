@@ -1,0 +1,16 @@
+allowed-keys {
+	schema {
+		type = "section"
+		item-type = "any"
+	}
+	correct {
+		type = "list"
+		item-type = "section"
+	}
+	incorrect {
+		type = "list"
+		item-type = "section"
+	}
+}
+%constraint = "schema"
+%constraint = "incorrect | correct"

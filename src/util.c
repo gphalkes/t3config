@@ -180,7 +180,8 @@ t3_config_type_t _t3_config_str2type(const char *name) {
 		{ "number", T3_CONFIG_NUMBER },
 		{ "string", T3_CONFIG_STRING },
 		{ "section", T3_CONFIG_SECTION },
-		{ "list", T3_CONFIG_LIST }
+		{ "list", T3_CONFIG_LIST },
+		{ "any", T3_CONFIG_ANY }
 	};
 
 	size_t i;

@@ -41,10 +41,12 @@ types {
 		%constraint = "!(allowed-keys & item-type)"
 
 		%constraint = "type = 'int' | type = 'number' | type = 'bool' | " +
-			"type = 'string' | type = 'section' | type = 'list' | /types/[type]"
+			"type = 'string' | type = 'section' | type = 'list' | type = 'any' | " +
+			"/types/[type]"
 
 		%constraint = "!item-type | item-type = 'int' | item-type = 'number' | item-type = 'bool' | " +
-			"item-type = 'string' | item-type = 'section' | item-type = 'list' | /types/[item-type]"
+			"item-type = 'string' | item-type = 'section' | item-type = 'list' | " +
+			"item-type = 'any' | /types/[item-type]"
 	}
 }
 

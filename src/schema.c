@@ -19,7 +19,7 @@
 #include "parser.h"
 
 static char meta_schema_buffer[] = {
-#include "meta_schema.c"
+#include "meta_schema.bytes"
 };
 
 static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_config_t *schema_part,
@@ -49,7 +49,7 @@ static t3_config_type_t resolve_type(const char *type_name, const t3_config_t *t
 static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t type, const t3_config_t *schema_part,
 		const t3_config_t *types, const t3_config_t *root, t3_config_error_t *error)
 {
-	if (type != config_part->type && !(type == T3_CONFIG_LIST && config_part->type == T3_CONFIG_PLIST)) {
+	if (type != config_part->type && !(type == T3_CONFIG_LIST && config_part->type == T3_CONFIG_PLIST) && type != T3_CONFIG_ANY) {
 		if (error != NULL) {
 			error->error = T3_ERR_INVALID_KEY_TYPE;
 			error->line_number = config_part->line_number;
@@ -279,3 +279,9 @@ t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size
 void t3_config_delete_schema(t3_config_schema_t *schema) {
 	t3_config_delete((t3_config_t *) schema);
 }
+
+#ifdef DEBUG
+t3_config_schema_t *_t3_config_config2schema(t3_config_t *config, t3_config_error_t *error) {
+	return handle_schema_validation(config, error);
+}
+#endif
