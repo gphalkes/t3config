@@ -9,6 +9,8 @@ Error loading input: schema constraint violated in section or list @ 1
 Error loading input: key is not allowed here @ 4
 ==== Testcase ../incorrect/missing_allowed_or_item_type.schema ====
 Error loading input: schema constraint violated in section or list @ 0
+==== Testcase ../incorrect/recursive.schema ====
+Error loading input: recursive type definition @ 2
 ==== Testcase ../incorrect/test.cfg ====
 Error loading input: key is not allowed here @ 4
 ==== Testcase ../incorrect/unknown_type1.schema ====

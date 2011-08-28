@@ -74,23 +74,25 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 		*sub_part, *sub_schema, *constraint;
 	t3_config_type_t resolved_type;
 
-	for (sub_part = t3_config_get(config_part, NULL); sub_part != NULL; sub_part = t3_config_get_next(sub_part)) {
-		if (allowed_keys != NULL && (sub_schema = t3_config_get(allowed_keys, sub_part->name)) != NULL) {
-			resolved_type = resolve_type(t3_config_get_string(t3_config_get(sub_schema, "type")), types, &sub_schema);
-			if (!validate_key(sub_part, resolved_type, sub_schema, types, root, error))
+	if (allowed_keys != NULL || item_type != NULL) {
+		for (sub_part = t3_config_get(config_part, NULL); sub_part != NULL; sub_part = t3_config_get_next(sub_part)) {
+			if (allowed_keys != NULL && (sub_schema = t3_config_get(allowed_keys, sub_part->name)) != NULL) {
+				resolved_type = resolve_type(t3_config_get_string(t3_config_get(sub_schema, "type")), types, &sub_schema);
+				if (!validate_key(sub_part, resolved_type, sub_schema, types, root, error))
+					return t3_false;
+			} else if (item_type != NULL) {
+				sub_schema = NULL;
+				resolved_type = resolve_type(t3_config_get_string(item_type), types, &sub_schema);
+				if (!validate_key(sub_part, resolved_type, sub_schema, types, root, error))
+					return t3_false;
+			} else {
+				if (error != NULL) {
+					error->error = T3_ERR_INVALID_KEY;
+					error->line_number = sub_part->line_number;
+					error->extra = sub_part->name;
+				}
 				return t3_false;
-		} else if (item_type != NULL) {
-			sub_schema = NULL;
-			resolved_type = resolve_type(t3_config_get_string(item_type), types, &sub_schema);
-			if (!validate_key(sub_part, resolved_type, sub_schema, types, root, error))
-				return t3_false;
-		} else {
-			if (error != NULL) {
-				error->error = T3_ERR_INVALID_KEY;
-				error->line_number = sub_part->line_number;
-				error->extra = sub_part->name;
 			}
-			return t3_false;
 		}
 	}
 

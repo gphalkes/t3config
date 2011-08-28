@@ -70,14 +70,19 @@ int main(int argc, char *argv[]) {
 	if ((schema = _t3_config_config2schema(t3_config_get(test, "schema"), &error)) == NULL)
 		fatal("test schema can not be converted: %s @ %d (%s)\n", t3_config_strerror(error.error), error.line_number, error.extra);
 
-	for (testcase = t3_config_get(test, "correct"), testnr = 1; testcase != NULL; testcase = t3_config_get_next(testcase)) {
+	for (testcase = t3_config_get(t3_config_get(test, "correct"), NULL), testnr = 1;
+			testcase != NULL; testcase = t3_config_get_next(testcase), testnr++)
+	{
 		if (!t3_config_validate(testcase, schema, &error)) {
 			failed++;
 			fprintf(stderr, "Correct test %d failed: %s @ %d (%s)\n", testnr, t3_config_strerror(error.error),
 				error.line_number, error.extra);
 		}
 	}
-	for (testcase = t3_config_get(test, "incorrect"), testnr = 1; testcase != NULL; testcase = t3_config_get_next(testcase)) {
+
+	for (testcase = t3_config_get(t3_config_get(test, "incorrect"), NULL), testnr = 1;
+			testcase != NULL; testcase = t3_config_get_next(testcase), testnr++)
+	{
 		if (t3_config_validate(testcase, schema, &error)) {
 			failed++;
 			fprintf(stderr, "Incorrect test %d failed (i.e. passed validation)\n", testnr);
