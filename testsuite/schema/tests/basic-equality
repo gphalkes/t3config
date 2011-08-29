@@ -1,0 +1,31 @@
+schema {
+	allowed-keys {
+		a-int {
+			type = "int"
+		}
+		b-int {
+			type = "int"
+		}
+	}
+	%constraint = "a-int ^ !b-int"
+	%constraint = "!a-int | a-int > b-int"
+}
+
+%correct {
+}
+%correct {
+	a-int = 7
+	b-int = 3
+}
+
+%incorrect {
+	b-int = 3
+}
+%incorrect {
+	a-int = 7
+	b-int = 7
+}
+%incorrect {
+	a-int = 7
+	b-int = 10
+}
