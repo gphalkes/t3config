@@ -1,0 +1,44 @@
+schema {
+	types {
+		l-int {
+			type = "int"
+			%constraint = '% >= 0 | /negative = true'
+		}
+	}
+	allowed-keys {
+		negative {
+			type = "bool"
+		}
+		values {
+			type = "list"
+			item-type = "l-int"
+		}
+	}
+	%constraint = 'values'
+}
+
+%correct {
+	values = ( 1, 2, 3, 4 )
+}
+%correct {
+	negative = yes
+	values = ( -1, 3, 4, -10 )
+}
+%correct {
+	negative = no
+	values = ( 1, 2, 3, 4 )
+}
+
+%incorrect {
+	values = ( -1, 3, 4, -10 )
+}
+%incorrect {
+	negative = no
+	values = ( -1, 3, 4, -10 )
+}
+%incorrect {
+	negative = yes
+}
+%incorrect {
+	values = ( 1.0 )
+}

@@ -480,5 +480,10 @@ factor(expr_node_t **node):
 	{
 		*node = new_expression(LLthis, EXPR_DEREF, *node, NULL);
 	}
+|
+	'%'
+	{
+		*node = new_expression(LLthis, EXPR_THIS, NULL, NULL);
+	}
 ;
 

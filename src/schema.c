@@ -46,6 +46,26 @@ static t3_config_type_t resolve_type(const char *type_name, const t3_config_t *t
 	return T3_CONFIG_NONE;
 }
 
+static t3_bool validate_constraints(const t3_config_t *config_part, const t3_config_t *schema_part,
+		const t3_config_t *root, t3_config_error_t *error)
+{
+	const t3_config_t *constraint;
+
+	for (constraint = t3_config_get(t3_config_get(schema_part, "constraint"), NULL);
+			constraint != NULL; constraint = t3_config_get_next(constraint))
+	{
+		if (constraint->type == T3_CONFIG_EXPRESSION && !_t3_config_evaluate_expr(constraint->value.expr, config_part, root)) {
+			if (error != NULL) {
+				error->error = T3_ERR_CONSTRAINT_VIOLATION;
+				error->line_number = config_part->line_number;
+				error->extra = constraint->value.expr->value.operand[1]->value.string;
+			}
+			return t3_false;
+		}
+	}
+	return t3_true;
+}
+
 static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t type, const t3_config_t *schema_part,
 		const t3_config_t *types, const t3_config_t *root, t3_config_error_t *error)
 {
@@ -62,8 +82,8 @@ static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t typ
 		return validate_aggregate_keys(config_part, schema_part, types, root, error);
 	else if (type == T3_CONFIG_LIST && t3_config_get(schema_part, "item-type") != NULL)
 		return validate_aggregate_keys(config_part, schema_part, types, root, error);
-
-	return t3_true;
+	else
+		return validate_constraints(config_part, schema_part, root, error);
 }
 
 static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_config_t *schema_part,
@@ -71,7 +91,7 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 {
 	const t3_config_t *allowed_keys = t3_config_get(schema_part, "allowed-keys"),
 		*item_type = t3_config_get(schema_part, "item-type"),
-		*sub_part, *sub_schema, *constraint;
+		*sub_part, *sub_schema;
 	t3_config_type_t resolved_type;
 
 	if (allowed_keys != NULL || item_type != NULL) {
@@ -96,19 +116,7 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 		}
 	}
 
-	for (constraint = t3_config_get(t3_config_get(schema_part, "constraint"), NULL);
-			constraint != NULL; constraint = t3_config_get_next(constraint))
-	{
-		if (constraint->type == T3_CONFIG_EXPRESSION && !_t3_config_evaluate_expr(constraint->value.expr, config_part, root)) {
-			if (error != NULL) {
-				error->error = T3_ERR_CONSTRAINT_VIOLATION;
-				error->line_number = config_part->line_number;
-				error->extra = constraint->value.expr->value.operand[1]->value.string;
-			}
-			return t3_false;
-		}
-	}
-	return t3_true;
+	return validate_constraints(config_part, schema_part, root, error);
 }
 
 t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema, t3_config_error_t *error) {

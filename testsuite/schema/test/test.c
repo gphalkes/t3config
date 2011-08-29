@@ -86,6 +86,9 @@ int main(int argc, char *argv[]) {
 		if (t3_config_validate(testcase, schema, &error)) {
 			failed++;
 			fprintf(stderr, "Incorrect test %d failed (i.e. passed validation)\n", testnr);
+		} else {
+			fprintf(stderr, "Error for incorrect test %d: %s @ %d (%s)\n", testnr,
+				t3_config_strerror(error.error), error.line_number, error.extra);
 		}
 	}
 	t3_config_delete(test);

@@ -36,7 +36,7 @@ types {
 			}
 		}
 		%constraint = "type"
-		%constraint = "type = 'section' | (!allowed-keys & !constraint)"
+		%constraint = "type = 'section' | !allowed-keys"
 		%constraint = "type = 'section' | type = 'list' | !item-type"
 
 		%constraint = "type = 'int' | type = 'number' | type = 'bool' | " +

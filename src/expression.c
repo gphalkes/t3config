@@ -34,6 +34,8 @@ static const t3_config_t *lookup_node(const expr_node_t *expr, const t3_config_t
 				return NULL;
 			return t3_config_get(config, value->value.string);
 		}
+		case EXPR_THIS:
+			return config;
 		default:
 			return NULL;
 	}
@@ -50,6 +52,7 @@ static t3_bool resolve(const expr_node_t *expr, const t3_config_t *config, const
 		case EXPR_PATH:
 		case EXPR_DEREF:
 		case EXPR_IDENT:
+		case EXPR_THIS:
 			result->type = EXPR_CONFIG;
 			result->value.config = lookup_node(expr, config, root, config);
 			return result->value.config != NULL;
@@ -113,6 +116,7 @@ t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_
 		case EXPR_PATH:
 		case EXPR_DEREF:
 		case EXPR_IDENT:
+		case EXPR_THIS:
 			return lookup_node(expression, config, root, config) != NULL;
 
 #define COMPARE(expr_type, operator) \
@@ -236,6 +240,10 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expression, const t
 		}
 		case EXPR_DEREF:
 			return T3_CONFIG_ANY;
+		case EXPR_THIS:
+			if ((type = t3_config_get_string(t3_config_get(config, "type"))) == NULL)
+				return T3_CONFIG_NONE;
+			return _t3_config_str2type(type);
 		default:
 			return T3_CONFIG_NONE;
 	}
