@@ -304,7 +304,7 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 		case EXPR_INT_CONST:
 		case EXPR_NUMBER_CONST:
 		case EXPR_STRING_CONST:
-			return t3_true;
+			return t3_false;
 
 		default:
 			return t3_false;
@@ -312,6 +312,9 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 }
 
 void _t3_config_delete_expr(expr_node_t *expr) {
+	if (expr == NULL)
+		return;
+
 	switch (expr->type) {
 		case EXPR_TOP:
 		case EXPR_AND:
