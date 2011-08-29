@@ -1,21 +1,21 @@
 ====== CORRECT TESTCASES ======
-==== Testcase ../correct/meta_schema.schema ====
-==== Testcase ../correct/style.schema ====
-==== Testcase ../correct/syntax.schema ====
+==== Testcase correct/meta_schema.schema ====
+==== Testcase correct/style.schema ====
+==== Testcase correct/syntax.schema ====
 ====== INCORRECT TESTCASES ======
-==== Testcase ../incorrect/base_type.schema ====
+==== Testcase incorrect/base_type.schema ====
 Error loading input: schema constraint violated in section or list @ 1
-==== Testcase ../incorrect/disallowed_key.schema ====
+==== Testcase incorrect/disallowed_key.schema ====
 Error loading input: key is not allowed here @ 4
-==== Testcase ../incorrect/missing_allowed_or_item_type.schema ====
+==== Testcase incorrect/missing_allowed_or_item_type.schema ====
 Error loading input: schema constraint violated in section or list @ 0
-==== Testcase ../incorrect/recursive.schema ====
+==== Testcase incorrect/recursive.schema ====
 Error loading input: recursive type definition @ 2
-==== Testcase ../incorrect/test.cfg ====
+==== Testcase incorrect/test.cfg ====
 Error loading input: key is not allowed here @ 4
-==== Testcase ../incorrect/unknown_type1.schema ====
+==== Testcase incorrect/unknown_type1.schema ====
 Error loading input: schema constraint violated in section or list @ 0
-==== Testcase ../incorrect/unknown_type2.schema ====
+==== Testcase incorrect/unknown_type2.schema ====
 Error loading input: schema constraint violated in section or list @ 2
-==== Testcase ../incorrect/unknown_type3.schema ====
+==== Testcase incorrect/unknown_type3.schema ====
 Error loading input: schema constraint violated in section or list @ 2

@@ -1,3 +1,5 @@
 #!/bin/bash
 
-LD_LIBRARY_PATH=../../../src/.libs ../test/test "$@"
+DIR="`dirname \"$0\"`"
+
+LD_LIBRARY_PATH="$DIR"/../../src/.libs "$DIR"/test/test "$@"

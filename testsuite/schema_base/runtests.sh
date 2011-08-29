@@ -8,22 +8,18 @@ if [ $? -eq 0 ] ; then
 fi
 
 make -q -C test || make -C test
-
-[ -d work ] || mkdir work
-
-(
-	cd work
+{
 	echo "====== CORRECT TESTCASES ======"
-	for i in `ls ../correct/*`; do
+	for i in `ls correct/*`; do
 		echo "==== Testcase $i ===="
-		../_runtest.sh "$i" 2>&1
+		./_runtest.sh "$i" 2>&1
 	done
 	echo "====== INCORRECT TESTCASES ======"
-	for i in `ls ../incorrect/*`; do
+	for i in `ls incorrect/*`; do
 		echo "==== Testcase $i ===="
-		../_runtest.sh "$i" 2>&1
+		./_runtest.sh "$i" 2>&1
 	done
-) > testlog.txt
+} > testlog.txt
 
 if ! diff -q testlog.txt expectedTestlog.txt 2>&1 >/dev/null ; then
 	echo "!! Output was not what was expected"
