@@ -191,7 +191,6 @@ static const t3_config_t *lookup_node_meta(const expr_node_t *expr, const t3_con
 
 				return result;
 			} else if ((type = t3_config_get_string(t3_config_get(config, "item-type"))) != NULL) {
-				//ARGHHH! we need to have something for the basic types as well!!!!
 				return t3_config_get(t3_config_get(root, "types"), type);
 			}
 			*success = t3_false;
@@ -204,6 +203,7 @@ static const t3_config_t *lookup_node_meta(const expr_node_t *expr, const t3_con
 		case EXPR_DEREF:
 			return NULL;
 		default:
+			*success = t3_false;
 			return NULL;
 	}
 }
@@ -268,6 +268,7 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 		}
 
 		case EXPR_PATH_ROOT:
+		case EXPR_THIS:
 			return t3_false;
 		case EXPR_DEREF:
 			return t3_true;
@@ -304,7 +305,6 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 		case EXPR_NUMBER_CONST:
 		case EXPR_STRING_CONST:
 			return t3_true;
-
 
 		default:
 			return t3_false;
