@@ -46,13 +46,15 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 	context->line_number = 1;
 	context->result = NULL;
 	context->constraint_parser = t3_false;
+	context->error_extra = NULL;
 
 	/* Initialize lexer. */
 	if (_t3_config_lex_init_extra(context, &context->scanner) != 0) {
 		if (error != NULL) {
 			error->error = T3_ERR_OUT_OF_MEMORY;
 			error->line_number = 0;
-			error->extra = NULL;
+			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+				error->extra = NULL;
 		}
 		return NULL;
 	}
@@ -62,7 +64,8 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 		if (error != NULL) {
 			error->error = retval;
 			error->line_number = _t3_config_get_extra(context->scanner)->line_number;
-			error->extra = NULL;
+			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+				error->extra = context->error_extra;
 		}
 		/* On failure, we free all memory allocated by the partial parse ... */
 		t3_config_delete(context->result);
@@ -82,6 +85,7 @@ t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, const t3_
 
 	context.scan_type = SCAN_FILE;
 	context.file = file;
+	context.opts = opts;
 	return config_read(&context, error);
 }
 
@@ -94,6 +98,7 @@ t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_er
 	context.buffer = buffer;
 	context.buffer_size = size;
 	context.buffer_idx = 0;
+	context.opts = opts;
 	return config_read(&context, error);
 }
 
@@ -419,18 +424,15 @@ const char *t3_config_strerror(int error) {
 			return _("parse error");
 		case T3_ERR_DUPLICATE_KEY:
 			return _("duplicate key");
-		case T3_ERR_INVALID_SCHEMA:
-			return _("invalid schema");
+		case T3_ERR_INVALID_CONSTRAINT:
+			return _("invalid constraint");
 		case T3_ERR_INVALID_KEY_TYPE:
 			return _("key has invalid type");
 		case T3_ERR_INVALID_KEY:
 			return _("key is not allowed here");
 		case T3_ERR_CONSTRAINT_VIOLATION:
-			return _("schema constraint violated in section or list");
+			return _("schema constraint violated");
 		case T3_ERR_RECURSIVE_TYPE:
 			return _("recursive type definition");
-		case T3_ERR_INVALID_CONSTRAINT:
-			return _("invalid constraint");
 	}
 }
-

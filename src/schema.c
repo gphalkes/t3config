@@ -18,12 +18,19 @@
 #include "util.h"
 #include "parser.h"
 
+
+typedef struct {
+	const t3_config_t *root, *types;
+	t3_config_error_t *error;
+	const t3_config_opts_t *opts;
+} validation_context_t;
+
 static char meta_schema_buffer[] = {
 #include "meta_schema.bytes"
 };
 
 static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_config_t *schema_part,
-	const t3_config_t *types, const t3_config_t *root, t3_config_error_t *error);
+	validation_context_t *context);
 
 static t3_config_type_t resolve_type(const char *type_name, const t3_config_t *types, const t3_config_t **schema) {
 	t3_config_type_t config_type;
@@ -47,18 +54,19 @@ static t3_config_type_t resolve_type(const char *type_name, const t3_config_t *t
 }
 
 static t3_bool validate_constraints(const t3_config_t *config_part, const t3_config_t *schema_part,
-		const t3_config_t *root, t3_config_error_t *error)
+		validation_context_t *context)
 {
 	const t3_config_t *constraint;
 
 	for (constraint = t3_config_get(t3_config_get(schema_part, "constraint"), NULL);
 			constraint != NULL; constraint = t3_config_get_next(constraint))
 	{
-		if (constraint->type == T3_CONFIG_EXPRESSION && !_t3_config_evaluate_expr(constraint->value.expr, config_part, root)) {
-			if (error != NULL) {
-				error->error = T3_ERR_CONSTRAINT_VIOLATION;
-				error->line_number = config_part->line_number;
-				error->extra = constraint->value.expr->value.operand[1]->value.string;
+		if (constraint->type == T3_CONFIG_EXPRESSION && !_t3_config_evaluate_expr(constraint->value.expr, config_part, context->root)) {
+			if (context->error != NULL) {
+				context->error->error = T3_ERR_CONSTRAINT_VIOLATION;
+				context->error->line_number = config_part->line_number;
+				if (context->opts != NULL && (context->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+					context->error->extra = _t3_config_strdup(constraint->value.expr->value.operand[1]->value.string);
 			}
 			return t3_false;
 		}
@@ -67,27 +75,28 @@ static t3_bool validate_constraints(const t3_config_t *config_part, const t3_con
 }
 
 static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t type, const t3_config_t *schema_part,
-		const t3_config_t *types, const t3_config_t *root, t3_config_error_t *error)
+		validation_context_t *context)
 {
 	if (type != config_part->type && !(type == T3_CONFIG_LIST && config_part->type == T3_CONFIG_PLIST) && type != T3_CONFIG_ANY) {
-		if (error != NULL) {
-			error->error = T3_ERR_INVALID_KEY_TYPE;
-			error->line_number = config_part->line_number;
-			error->extra = config_part->name;
+		if (context->error != NULL) {
+			context->error->error = T3_ERR_INVALID_KEY_TYPE;
+			context->error->line_number = config_part->line_number;
+			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+				context->error->extra = config_part->name == NULL ? NULL : _t3_config_strdup(config_part->name);
 		}
 		return t3_false;
 	}
 
 	if (type == T3_CONFIG_SECTION)
-		return validate_aggregate_keys(config_part, schema_part, types, root, error);
+		return validate_aggregate_keys(config_part, schema_part, context);
 	else if (type == T3_CONFIG_LIST && t3_config_get(schema_part, "item-type") != NULL)
-		return validate_aggregate_keys(config_part, schema_part, types, root, error);
+		return validate_aggregate_keys(config_part, schema_part, context);
 	else
-		return validate_constraints(config_part, schema_part, root, error);
+		return validate_constraints(config_part, schema_part, context);
 }
 
 static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_config_t *schema_part,
-		const t3_config_t *types, const t3_config_t *root, t3_config_error_t *error)
+		validation_context_t *context)
 {
 	const t3_config_t *allowed_keys = t3_config_get(schema_part, "allowed-keys"),
 		*item_type = t3_config_get(schema_part, "item-type"),
@@ -97,42 +106,50 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 	if (allowed_keys != NULL || item_type != NULL) {
 		for (sub_part = t3_config_get(config_part, NULL); sub_part != NULL; sub_part = t3_config_get_next(sub_part)) {
 			if (allowed_keys != NULL && (sub_schema = t3_config_get(allowed_keys, sub_part->name)) != NULL) {
-				resolved_type = resolve_type(t3_config_get_string(t3_config_get(sub_schema, "type")), types, &sub_schema);
-				if (!validate_key(sub_part, resolved_type, sub_schema, types, root, error))
+				resolved_type = resolve_type(t3_config_get_string(t3_config_get(sub_schema, "type")), context->types, &sub_schema);
+				if (!validate_key(sub_part, resolved_type, sub_schema, context))
 					return t3_false;
 			} else if (item_type != NULL) {
 				sub_schema = NULL;
-				resolved_type = resolve_type(t3_config_get_string(item_type), types, &sub_schema);
-				if (!validate_key(sub_part, resolved_type, sub_schema, types, root, error))
+				resolved_type = resolve_type(t3_config_get_string(item_type), context->types, &sub_schema);
+				if (!validate_key(sub_part, resolved_type, sub_schema, context))
 					return t3_false;
 			} else {
-				if (error != NULL) {
-					error->error = T3_ERR_INVALID_KEY;
-					error->line_number = sub_part->line_number;
-					error->extra = sub_part->name;
+				if (context->error != NULL) {
+					context->error->error = T3_ERR_INVALID_KEY;
+					context->error->line_number = sub_part->line_number;
+					if (context->opts != NULL && (context->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+						context->error->extra = _t3_config_strdup(sub_part->name);
 				}
 				return t3_false;
 			}
 		}
 	}
 
-	return validate_constraints(config_part, schema_part, root, error);
+	return validate_constraints(config_part, schema_part, context);
 }
 
 t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema,
 		t3_config_error_t *error, const t3_config_opts_t *opts)
 {
-	(void) opts;
+	validation_context_t context;
+
 	if (((t3_config_t *) schema)->type != T3_CONFIG_SCHEMA) {
 		if (error != NULL) {
-			error->error = T3_ERR_INVALID_SCHEMA;
+			error->error = T3_ERR_BAD_ARG;
 			error->line_number = 0;
-			error->extra = NULL;
+			if (opts != NULL && (opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+				error->extra = NULL;
 		}
 		return t3_false;
 	}
-	return validate_aggregate_keys(config, (const t3_config_t *) schema,
-		t3_config_get((const t3_config_t *) schema, "types"), config, error);
+
+	context.root = config;
+	context.types = t3_config_get((const t3_config_t *) schema, "types");
+	context.error = error;
+	context.opts = opts;
+
+	return validate_aggregate_keys(config, (const t3_config_t *) schema, &context);
 }
 
 static expr_node_t *parse_constraint_string(const char *constraint, int *error) {
@@ -165,7 +182,7 @@ static expr_node_t *parse_constraint_string(const char *constraint, int *error) 
 	return context.result;
 }
 
-static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t3_config_error_t *error) {
+static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t3_config_error_t *error, const t3_config_opts_t *opts) {
 	t3_config_t *constraint;
 	t3_config_t *part;
 
@@ -183,7 +200,8 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t
 			if (error != NULL) {
 				error->error = T3_ERR_INVALID_CONSTRAINT;
 				error->line_number = constraint->line_number;
-				error->extra = NULL;
+				if (opts != NULL && (opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+					error->extra = NULL;
 			}
 			return t3_false;
 		}
@@ -197,7 +215,7 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t
 			continue;
 
 		for (part = t3_config_get(schema, NULL); part != NULL; part = t3_config_get_next(part)) {
-			if (!parse_constraints(part, root, error))
+			if (!parse_constraints(part, root, error, opts))
 				return t3_false;
 		}
 	}
@@ -223,7 +241,7 @@ static t3_bool check_type_for_loop(t3_config_t *type, const t3_config_t *types) 
 	return result;
 }
 
-static t3_bool has_loops(const t3_config_t *schema, t3_config_error_t *error) {
+static t3_bool has_loops(const t3_config_t *schema, t3_config_error_t *error, const t3_config_opts_t *opts) {
 	const t3_config_t *types = t3_config_get(schema, "types");
 	t3_config_t *type;
 
@@ -235,7 +253,8 @@ static t3_bool has_loops(const t3_config_t *schema, t3_config_error_t *error) {
 			if (error != NULL) {
 				error->error = T3_ERR_RECURSIVE_TYPE;
 				error->line_number = type->line_number;
-				error->extra = NULL;
+				if (opts != NULL && opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR)
+					error->extra = _t3_config_strdup(t3_config_get(type, "type")->value.string);
 			}
 			return t3_true;
 		}
@@ -248,20 +267,21 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 	t3_config_error_t local_error;
 
 	if ((meta_schema = t3_config_read_buffer(meta_schema_buffer, sizeof(meta_schema_buffer), &local_error, NULL)) == NULL||
-			!parse_constraints(meta_schema, meta_schema,  &local_error))
+			!parse_constraints(meta_schema, meta_schema, &local_error, NULL))
 	{
 		if (error != NULL) {
 			error->error = local_error.error == T3_ERR_OUT_OF_MEMORY ? T3_ERR_OUT_OF_MEMORY : T3_ERR_INTERNAL;
 			error->line_number = 0;
-			error->extra = NULL;
+			if (opts != NULL && (opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+				error->extra = NULL;
 		}
 		goto error_end;
 	}
 	meta_schema->type = T3_CONFIG_SCHEMA;
 
 	if (!t3_config_validate(config, (t3_config_schema_t *) meta_schema, error, opts) ||
-			has_loops(config, error) ||
-			!parse_constraints(config, config, error))
+			has_loops(config, error, opts) ||
+			!parse_constraints(config, config, error, opts))
 		goto error_end;
 
 	t3_config_delete(meta_schema);
@@ -269,8 +289,6 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 	return (t3_config_schema_t *) config;
 
 error_end:
-	if (error != NULL)
-		error->extra = NULL;
 	t3_config_delete(config);
 	t3_config_delete(meta_schema);
 	return NULL;

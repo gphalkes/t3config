@@ -24,9 +24,11 @@ int main(int argc, char *argv[]) {
 	FILE *file = stdin;
 	t3_config_t *config;
 	t3_config_schema_t *schema = NULL;
+	t3_config_opts_t opts;
 	int c;
 
 	setlocale(LC_ALL, "");
+	opts.flags = T3_CONFIG_OPT_VERBOSE_ERROR;
 
 	while ((c = getopt(argc, argv, "s:h")) >= 0) {
 		switch (c) {
@@ -36,8 +38,8 @@ int main(int argc, char *argv[]) {
 					fatal("More than one schema option\n");
 				if ((schema_file = fopen(optarg, "r")) == NULL)
 					fatal("Error opening schema '%s': %m\n", optarg);
-				if ((schema = t3_config_read_schema_file(schema_file, &error, NULL)) == NULL)
-					fatal("Error loading schema '%s': %s @ %d\n", optarg, t3_config_strerror(error.error), error.line_number);
+				if ((schema = t3_config_read_schema_file(schema_file, &error, &opts)) == NULL)
+					fatal("Error loading schema '%s': %s %s @ %d\n", optarg, t3_config_strerror(error.error), error.extra, error.line_number);
 				fclose(schema_file);
 				break;
 			}
@@ -56,10 +58,10 @@ int main(int argc, char *argv[]) {
 		fatal("More than one input specified\n");
 	}
 
-	if ((config = t3_config_read_file(file, &error, NULL)) == NULL)
-		fatal("Error loading input: %s @ %d\n", t3_config_strerror(error.error), error.line_number);
+	if ((config = t3_config_read_file(file, &error, &opts)) == NULL)
+		fatal("Error loading input: %s %s @ %d\n", t3_config_strerror(error.error), error.extra, error.line_number);
 	fclose(file);
-	if (schema != NULL && !t3_config_validate(config, schema, &error, NULL))
+	if (schema != NULL && !t3_config_validate(config, schema, &error, &opts))
 		fatal("Error validating input: %s %s @ %d\n", t3_config_strerror(error.error),
 			error.extra == NULL ? "" : error.extra, error.line_number);
 

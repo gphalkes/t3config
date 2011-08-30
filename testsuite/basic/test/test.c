@@ -20,6 +20,8 @@
 #include <stdarg.h>
 #include "config.h"
 
+static const t3_config_opts_t opts = { T3_CONFIG_OPT_VERBOSE_ERROR };
+
 /** Alert the user of a fatal error and quit.
     @param fmt The format string for the message. See fprintf(3) for details.
     @param ... The arguments for printing.
@@ -101,7 +103,7 @@ int main(int argc, char *argv[]) {
 		fatal("Usage: test [<test file>]\n");
 	}
 	/* Read file. */
-	if ((config = t3_config_read_file(file, &error, NULL)) == NULL)
+	if ((config = t3_config_read_file(file, &error, &opts)) == NULL)
 		fatal("Error loading input: %s %s @ %d\n", t3_config_strerror(error.error),
 			error.extra == NULL ? "" : error.extra, error.line_number);
 	fclose(file);

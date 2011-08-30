@@ -36,6 +36,7 @@ static void fatal(const char *fmt, ...) {
 
 int main(int argc, char *argv[]) {
 	t3_config_error_t error;
+	t3_config_opts_t opts = { T3_CONFIG_OPT_VERBOSE_ERROR };
 	FILE *file = stdin;
 	t3_config_schema_t *schema;
 
@@ -48,8 +49,8 @@ int main(int argc, char *argv[]) {
 		fatal("Usage: test [<test file>]\n");
 	}
 	/* Read file. */
-	if ((schema = t3_config_read_schema_file(file, &error, NULL)) == NULL)
-		fatal("Error loading input: %s @ %d\n", t3_config_strerror(error.error), error.line_number);
+	if ((schema = t3_config_read_schema_file(file, &error, &opts)) == NULL)
+		fatal("Error loading input: %s %s @ %d\n", t3_config_strerror(error.error), error.extra, error.line_number);
 	fclose(file);
 
 	t3_config_delete_schema(schema);

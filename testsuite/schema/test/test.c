@@ -20,6 +20,7 @@
 #include <stdarg.h>
 #include "config.h"
 
+static const t3_config_opts_t opts = { T3_CONFIG_OPT_VERBOSE_ERROR };
 t3_config_schema_t *_t3_config_config2schema(t3_config_t *config, t3_config_error_t *error);
 
 static const char meta_schema_buffer[] = {
@@ -55,15 +56,15 @@ int main(int argc, char *argv[]) {
 		fatal("Usage: test [<test file>]\n");
 	}
 	/* Read test file. */
-	if ((test = t3_config_read_file(file, &error, NULL)) == NULL)
+	if ((test = t3_config_read_file(file, &error, &opts)) == NULL)
 		fatal("Error loading input: %s %s @ %d\n", t3_config_strerror(error.error),
 			error.extra == NULL ? "" : error.extra, error.line_number);
 	fclose(file);
 
-	if ((meta_schema = t3_config_read_schema_buffer(meta_schema_buffer, sizeof(meta_schema_buffer), &error, NULL)) == NULL)
+	if ((meta_schema = t3_config_read_schema_buffer(meta_schema_buffer, sizeof(meta_schema_buffer), &error,  &opts)) == NULL)
 		fatal("Could not load meta schema: %s @ %d (%s)\n", t3_config_strerror(error.error), error.line_number, error.extra);
 
-	if (!t3_config_validate(test, meta_schema, &error, NULL))
+	if (!t3_config_validate(test, meta_schema, &error, &opts))
 		fatal("test does not conform to schema: %s @ %d (%s)\n", t3_config_strerror(error.error), error.line_number, error.extra);
 	t3_config_delete_schema(meta_schema);
 
@@ -73,22 +74,24 @@ int main(int argc, char *argv[]) {
 	for (testcase = t3_config_get(t3_config_get(test, "correct"), NULL), testnr = 1;
 			testcase != NULL; testcase = t3_config_get_next(testcase), testnr++)
 	{
-		if (!t3_config_validate(testcase, schema, &error, NULL)) {
+		if (!t3_config_validate(testcase, schema, &error, &opts)) {
 			failed++;
 			fprintf(stderr, "!! Correct test %d failed: %s @ %d (%s)\n", testnr, t3_config_strerror(error.error),
 				error.line_number, error.extra);
+			free(error.extra);
 		}
 	}
 
 	for (testcase = t3_config_get(t3_config_get(test, "incorrect"), NULL), testnr = 1;
 			testcase != NULL; testcase = t3_config_get_next(testcase), testnr++)
 	{
-		if (t3_config_validate(testcase, schema, &error, NULL)) {
+		if (t3_config_validate(testcase, schema, &error, &opts)) {
 			failed++;
 			fprintf(stderr, "!! Incorrect test %d failed (i.e. passed validation)\n", testnr);
 		} else {
 			fprintf(stderr, "  Error for incorrect test %d: %s @ %d (%s)\n", testnr,
 				t3_config_strerror(error.error), error.line_number, error.extra);
+			free(error.extra);
 		}
 	}
 	t3_config_delete(test);

@@ -70,7 +70,7 @@ typedef struct {
 	int flags;
 } t3_config_opts_t;
 
-#define T3_CONFIG_VERBOSE_ERROR (1<<0)
+#define T3_CONFIG_OPT_VERBOSE_ERROR (1<<0)
 
 /** A structure representing an error, with line number.
     Used by ::t3_config_read_file and ::t3_config_read_buffer. If @p error
@@ -80,7 +80,7 @@ typedef struct {
 typedef struct {
 	int error;
 	int line_number;
-	const char *extra;
+	char *extra;
 } t3_config_error_t;
 
 /** @name Error codes (libt3config specific) */
@@ -93,12 +93,11 @@ typedef struct {
 #define T3_ERR_DUPLICATE_KEY (-78)
 
 /* FIXME: documentation! */
-#define T3_ERR_INVALID_SCHEMA (-77)
+#define T3_ERR_INVALID_CONSTRAINT (-77)
 #define T3_ERR_INVALID_KEY_TYPE (-76)
 #define T3_ERR_INVALID_KEY (-75)
 #define T3_ERR_CONSTRAINT_VIOLATION (-74)
 #define T3_ERR_RECURSIVE_TYPE (-73)
-#define T3_ERR_INVALID_CONSTRAINT (-72)
 /*@}*/
 
 #if INT_MAX < 2147483647
