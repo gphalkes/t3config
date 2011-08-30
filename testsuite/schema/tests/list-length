@@ -1,0 +1,42 @@
+schema {
+	allowed-keys {
+		test1 {
+			type = "list"
+			%constraint = "# > 3"
+		}
+		test2 {
+			type = "list"
+		}
+		test3 {
+			type = "any"
+		}
+	}
+	%constraint = "!test2 | #test2 < 3"
+	%constraint = "!test3 | #test3 = 2 | test3 > 0"
+}
+
+%correct {
+	test1 = (1, 2, 3, 4)
+}
+%correct {
+	test2 = (1)
+}
+%correct {
+	test3 = (1, 2)
+}
+%correct {
+	test3 = 7
+}
+
+%incorrect {
+	test1 = (1, 2, 3)
+}
+%incorrect {
+	test2 = (1, 2, 3, 4)
+}
+%incorrect {
+	test3 = (1)
+}
+%incorrect {
+	test3 = no
+}

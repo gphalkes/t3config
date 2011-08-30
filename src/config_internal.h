@@ -59,6 +59,7 @@ typedef struct {
 
 	int line_number;
 	void *LLthis;
+	t3_bool constraint_parser;
 } parse_context_t;
 
 T3_CONFIG_LOCAL char *_t3_config_get_text(yyscan_t scanner);

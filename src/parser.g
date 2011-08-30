@@ -423,10 +423,6 @@ expression(int priority, expr_node_t **node) {
 factor(expr_node_t **node):
 	IDENTIFIER
 	{
-		/* Identifiers may have a leading percentage sign. In constraint
-		   expressions this is invalid, and treated as a parse error. */
-		if (*_t3_config_get_text(_t3_config_data->scanner) == '%')
-			LLabort(LLthis, T3_ERR_PARSE_ERROR);
 		*node = new_expression(LLthis, EXPR_IDENT, NULL, NULL);
 	}
 |
@@ -484,6 +480,15 @@ factor(expr_node_t **node):
 	'%'
 	{
 		*node = new_expression(LLthis, EXPR_THIS, NULL, NULL);
+	}
+|
+	'#'
+	[
+		%while (1)
+		factor(node)
+	]?
+	{
+		*node = new_expression(LLthis, EXPR_LENGTH, *node, NULL);
 	}
 ;
 

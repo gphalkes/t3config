@@ -143,6 +143,7 @@ static expr_node_t *parse_constraint_string(const char *constraint, int *error) 
 	context.buffer_idx = 0;
 	context.line_number = 1;
 	context.result = NULL;
+	context.constraint_parser = t3_true;
 
 	/* Initialize lexer. */
 	if (_t3_config_lex_init_extra(&context, &context.scanner) != 0)

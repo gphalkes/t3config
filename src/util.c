@@ -185,6 +185,10 @@ t3_config_type_t _t3_config_str2type(const char *name) {
 	};
 
 	size_t i;
+
+	if (name == NULL)
+		return T3_CONFIG_NONE;
+
 	for (i = 0; i < sizeof(map) / sizeof(map[0]); i++)
 		if (strcmp(name, map[i].name) == 0)
 			return map[i].type;

@@ -45,6 +45,7 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 
 	context->line_number = 1;
 	context->result = NULL;
+	context->constraint_parser = t3_false;
 
 	/* Initialize lexer. */
 	if (_t3_config_lex_init_extra(context, &context->scanner) != 0) {

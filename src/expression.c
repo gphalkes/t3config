@@ -56,6 +56,22 @@ static t3_bool resolve(const expr_node_t *expr, const t3_config_t *config, const
 			result->type = EXPR_CONFIG;
 			result->value.config = lookup_node(expr, config, root, config);
 			return result->value.config != NULL;
+		case EXPR_LENGTH: {
+			const t3_config_t *list;
+			if (expr->value.operand[0] == NULL)
+				list = config;
+			else
+				list = lookup_node(expr->value.operand[0], config, root, config);
+
+			if (list->type != T3_CONFIG_LIST && list->type != T3_CONFIG_PLIST)
+				return t3_false;
+
+			result->type = EXPR_INT_CONST;
+			result->value.integer = 0;
+			for (list = t3_config_get(list, NULL); list != NULL; list = list->next, result->value.integer++) {}
+
+			return t3_true;
+		}
 		default:
 			return t3_false;
 	}
@@ -225,10 +241,9 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expression, const t
 			if ((allowed_keys = t3_config_get(config, "allowed-keys")) != NULL) {
 				if ((key = t3_config_get(allowed_keys, expression->value.string)) == NULL)
 					return T3_CONFIG_NONE;
-				if ((type = t3_config_get_string(t3_config_get(key, "type"))) == NULL)
-					return T3_CONFIG_NONE;
-			} else if ((type = t3_config_get_string(t3_config_get(config, "item-type"))) == NULL) {
-				return T3_CONFIG_NONE;
+				type = t3_config_get_string(t3_config_get(key, "type"));
+			} else {
+				type = t3_config_get_string(t3_config_get(config, "item-type"));
 			}
 			return _t3_config_str2type(type);
 		case EXPR_PATH: {
@@ -241,9 +256,19 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expression, const t
 		case EXPR_DEREF:
 			return T3_CONFIG_ANY;
 		case EXPR_THIS:
-			if ((type = t3_config_get_string(t3_config_get(config, "type"))) == NULL)
+			return _t3_config_str2type(t3_config_get_string(t3_config_get(config, "type")));
+		case EXPR_LENGTH: {
+			t3_config_type_t type_int;
+			if (expression->value.operand[0] == NULL)
+				type_int = _t3_config_str2type(t3_config_get_string(t3_config_get(config, "type")));
+			else
+				type_int = operand_type_meta(expression->value.operand[0], config, root);
+
+			if (type_int != T3_CONFIG_LIST && type_int != T3_CONFIG_ANY)
 				return T3_CONFIG_NONE;
-			return _t3_config_str2type(type);
+
+			return T3_CONFIG_INT;
+		}
 		default:
 			return T3_CONFIG_NONE;
 	}
@@ -300,11 +325,6 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 				return t3_true;
 			return t3_false;
 		}
-		case EXPR_BOOL_CONST:
-		case EXPR_INT_CONST:
-		case EXPR_NUMBER_CONST:
-		case EXPR_STRING_CONST:
-			return t3_false;
 
 		default:
 			return t3_false;
@@ -332,6 +352,7 @@ void _t3_config_delete_expr(expr_node_t *expr) {
 			break;
 		case EXPR_NOT:
 		case EXPR_DEREF:
+		case EXPR_LENGTH:
 			_t3_config_delete_expr(expr->value.operand[0]);
 			break;
 		case EXPR_STRING_CONST:

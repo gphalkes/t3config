@@ -52,23 +52,37 @@ T3_CONFIG_LOCAL void _t3_config_set_column(int column_no, yyscan_t yyscanner);
 
 %}
 
+%x CONSTRAINT
+
+IDENT_PAT      [_a-zA-Z][-_0-9a-zA-Z]*
 NUMBER_PAT     [-+]?([0-9]*\.[0-9]+([eE][-+][0-9]+)?)|(?i:nan|inf(inity)?)
 %%
+	if (yyextra->constraint_parser)
+		BEGIN(CONSTRAINT);
 
+<INITIAL,CONSTRAINT>{
 (?i:(true|yes))                        return BOOL_TRUE;
 (?i:(false|no))                        return BOOL_FALSE;
 [-+]?[0-9]+|0x[0-9A-Fa-f]              return INT;
 \"(\"\"|[^"\0])*\"                     return STRING;
 '(''|[^'\0])*'                         return STRING;
 {NUMBER_PAT}                           return NUMBER;
-%?[_a-zA-Z][-_0-9a-zA-Z]*              return IDENTIFIER;
-\n                                     return '\n';
-[[:space:]]                            /* Ignore white space */
-#.*                                    /* Ignore comments */
-.                                      return (unsigned char) yytext[0];
+}
 
+<INITIAL>{
+%?{IDENT_PAT}                          return IDENTIFIER;
+\n                                     return '\n';
+#.*                                    /* Ignore comments */
+}
+<CONSTRAINT>{
+{IDENT_PAT}                            return IDENTIFIER;
 >=                                     return GE;
 \<=                                    return LE;
 !=                                     return NE;
-%%
+}
 
+<INITIAL,CONSTRAINT>{
+[[:space:]]                            /* Ignore white space */
+.                                      return (unsigned char) yytext[0];
+}
+%%
