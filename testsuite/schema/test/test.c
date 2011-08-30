@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 	if ((meta_schema = t3_config_read_schema_buffer(meta_schema_buffer, sizeof(meta_schema_buffer), &error, NULL)) == NULL)
 		fatal("Could not load meta schema: %s @ %d (%s)\n", t3_config_strerror(error.error), error.line_number, error.extra);
 
-	if (!t3_config_validate(test, meta_schema, &error))
+	if (!t3_config_validate(test, meta_schema, &error, NULL))
 		fatal("test does not conform to schema: %s @ %d (%s)\n", t3_config_strerror(error.error), error.line_number, error.extra);
 	t3_config_delete_schema(meta_schema);
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
 	for (testcase = t3_config_get(t3_config_get(test, "correct"), NULL), testnr = 1;
 			testcase != NULL; testcase = t3_config_get_next(testcase), testnr++)
 	{
-		if (!t3_config_validate(testcase, schema, &error)) {
+		if (!t3_config_validate(testcase, schema, &error, NULL)) {
 			failed++;
 			fprintf(stderr, "!! Correct test %d failed: %s @ %d (%s)\n", testnr, t3_config_strerror(error.error),
 				error.line_number, error.extra);
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 	for (testcase = t3_config_get(t3_config_get(test, "incorrect"), NULL), testnr = 1;
 			testcase != NULL; testcase = t3_config_get_next(testcase), testnr++)
 	{
-		if (t3_config_validate(testcase, schema, &error)) {
+		if (t3_config_validate(testcase, schema, &error, NULL)) {
 			failed++;
 			fprintf(stderr, "!! Incorrect test %d failed (i.e. passed validation)\n", testnr);
 		} else {

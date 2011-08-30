@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 	if ((config = t3_config_read_file(file, &error, NULL)) == NULL)
 		fatal("Error loading input: %s @ %d\n", t3_config_strerror(error.error), error.line_number);
 	fclose(file);
-	if (schema != NULL && !t3_config_validate(config, schema, &error))
+	if (schema != NULL && !t3_config_validate(config, schema, &error, NULL))
 		fatal("Error validating input: %s %s @ %d\n", t3_config_strerror(error.error),
 			error.extra == NULL ? "" : error.extra, error.line_number);
 
