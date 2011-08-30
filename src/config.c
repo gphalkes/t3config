@@ -75,7 +75,7 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 }
 
 
-t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void *opts) {
+t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, const t3_config_opts_t *opts) {
 	parse_context_t context;
 
 	(void) opts;
@@ -85,7 +85,7 @@ t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void *opt
 	return config_read(&context, error);
 }
 
-t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts) {
+t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, const t3_config_opts_t *opts) {
 	parse_context_t context;
 
 	(void) opts;

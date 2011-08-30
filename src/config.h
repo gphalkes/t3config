@@ -65,6 +65,13 @@ typedef struct t3_config_t t3_config_t;
 */
 typedef struct t3_config_schema_t t3_config_schema_t;
 
+/* FIXME: documentation! */
+typedef struct {
+	int flags;
+} t3_config_opts_t;
+
+#define T3_CONFIG_VERBOSE_ERROR (1<<0)
+
 /** A structure representing an error, with line number.
     Used by ::t3_config_read_file and ::t3_config_read_buffer. If @p error
     equals ::T3_ERR_PARSE_ERROR, @p line_number will be set to the line
@@ -85,6 +92,7 @@ typedef struct {
 /** Error code: Key already exists. */
 #define T3_ERR_DUPLICATE_KEY (-78)
 
+/* FIXME: documentation! */
 #define T3_ERR_INVALID_SCHEMA (-77)
 #define T3_ERR_INVALID_KEY_TYPE (-76)
 #define T3_ERR_INVALID_KEY (-75)
@@ -116,7 +124,7 @@ T3_CONFIG_API t3_config_t *t3_config_new(void);
 	@param opts Unused, should be @c NULL.
     @return A pointer to the new config or @c NULL on error.
 */
-T3_CONFIG_API t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, void *opts);
+T3_CONFIG_API t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, const t3_config_opts_t *opts);
 /** Read a config from memory.
     @param buffer The buffer to parse.
     @param size The size of the buffer.
@@ -124,7 +132,7 @@ T3_CONFIG_API t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *er
 	@param opts Unused, should be @c NULL.
     @return A pointer to the new config or @c NULL on error.
 */
-T3_CONFIG_API t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts);
+T3_CONFIG_API t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, const t3_config_opts_t *opts);
 /** Write a config to a @c FILE.
     @param config The config to write.
     @param file The @c FILE to write to.
@@ -295,9 +303,11 @@ T3_CONFIG_API int t3_config_get_version(void);
 T3_CONFIG_API const char *t3_config_strerror(int error);
 
 /* FIXME: document these functions! */
-T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, void *opts);
-T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts);
-T3_CONFIG_API t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema, t3_config_error_t *error, void *opts);
+T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, const t3_config_opts_t *opts);
+T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size,
+	t3_config_error_t *error, const t3_config_opts_t *opts);
+T3_CONFIG_API t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema,
+	t3_config_error_t *error, const t3_config_opts_t *opts);
 T3_CONFIG_API void t3_config_delete_schema(t3_config_schema_t *schema);
 #ifdef __cplusplus
 } /* extern "C" */

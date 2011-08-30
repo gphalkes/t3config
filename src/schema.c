@@ -119,7 +119,9 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 	return validate_constraints(config_part, schema_part, root, error);
 }
 
-t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema, t3_config_error_t *error, void *opts) {
+t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema,
+		t3_config_error_t *error, const t3_config_opts_t *opts)
+{
 	(void) opts;
 	if (((t3_config_t *) schema)->type != T3_CONFIG_SCHEMA) {
 		if (error != NULL) {
@@ -241,7 +243,7 @@ static t3_bool has_loops(const t3_config_t *schema, t3_config_error_t *error) {
 	return t3_false;
 }
 
-static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_config_error_t *error, void *opts) {
+static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_config_error_t *error, const t3_config_opts_t *opts) {
 	t3_config_t *meta_schema = NULL;
 	t3_config_error_t local_error;
 
@@ -274,14 +276,16 @@ error_end:
 	return NULL;
 }
 
-t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, void *opts) {
+t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, const t3_config_opts_t *opts) {
 	t3_config_t *config;
 	if ((config = t3_config_read_file(file, error, opts)) == NULL)
 		return NULL;
 	return handle_schema_validation(config, error, opts);
 }
 
-t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size, t3_config_error_t *error, void *opts) {
+t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size,
+		t3_config_error_t *error, const t3_config_opts_t *opts)
+{
 	t3_config_t *config;
 	if ((config = t3_config_read_buffer(buffer, size, error, opts)) == NULL)
 		return NULL;
