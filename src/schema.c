@@ -179,7 +179,7 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t
 		if (!_t3_config_validate_expr(expr, schema, root)) {
 			_t3_config_delete_expr(expr);
 			if (error != NULL) {
-				error->error = T3_ERR_INVALID_SCHEMA;
+				error->error = T3_ERR_INVALID_CONSTRAINT;
 				error->line_number = constraint->line_number;
 				error->extra = NULL;
 			}

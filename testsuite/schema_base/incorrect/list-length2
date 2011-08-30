@@ -1,0 +1,7 @@
+allowed-keys {
+	test {
+		type = "int"
+		%constraint = "# < 3"
+	}
+}
+

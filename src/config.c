@@ -429,6 +429,8 @@ const char *t3_config_strerror(int error) {
 			return _("schema constraint violated in section or list");
 		case T3_ERR_RECURSIVE_TYPE:
 			return _("recursive type definition");
+		case T3_ERR_INVALID_CONSTRAINT:
+			return _("invalid constraint");
 	}
 }
 
