@@ -23,29 +23,27 @@ types {
 		allowed-keys {
 			type {
 				type = "string"
+				%constraint = "{type must be a basic type or defined in types}" +
+					"% = 'int' | % = 'number' | % = 'bool' | % = 'string' | " +
+					"% = 'section' | % = 'list' | % = 'any' | /types/[%]"
 			}
 			allowed-keys {
 				type = "allowed-keys"
 			}
 			item-type {
 				type = "string"
+				%constraint = "{item-type must be a basic type or defined in types}" +
+					"% = 'int' | % = 'number' | % = 'bool' | % = 'string' | " +
+					"% = 'section' | % = 'list' | % = 'any' | /types/[%]"
 			}
 			constraint {
 				type = "list"
 				item-type = "string"
 			}
 		}
-		%constraint = "type"
-		%constraint = "type = 'section' | !allowed-keys"
-		%constraint = "type = 'section' | type = 'list' | !item-type"
-
-		%constraint = "type = 'int' | type = 'number' | type = 'bool' | " +
-			"type = 'string' | type = 'section' | type = 'list' | type = 'any' | " +
-			"/types/[type]"
-
-		%constraint = "!item-type | item-type = 'int' | item-type = 'number' | item-type = 'bool' | " +
-			"item-type = 'string' | item-type = 'section' | item-type = 'list' | " +
-			"item-type = 'any' | /types/[item-type]"
+		%constraint = "{type must be specified} type"
+		%constraint = "{allowed-keys only allowed when type is section} type = 'section' | !allowed-keys"
+		%constraint = "{item-type only allowed when type is section or list} type = 'section' | type = 'list' | !item-type"
 	}
 }
 
@@ -53,13 +51,16 @@ allowed-keys {
 	types {
 		type = "section"
 		item-type = "type"
-		%constraint = "!int & !number & !bool & !string & !section & !list"
+		%constraint = "{basic types can not be redefined} !int & !number & !bool & !string & !section & !list"
 	}
 	allowed-keys {
 		type = "allowed-keys"
 	}
 	item-type {
 		type = "string"
+		%constraint = "{item-type must be a basic type or defined in types}" +
+			"% = 'int' | % = 'number' | % = 'bool' | % = 'string' | " +
+			"% = 'section' | % = 'list' | % = 'any' | /types/[%]"
 	}
 	constraint {
 		type = "list"
@@ -67,6 +68,4 @@ allowed-keys {
 	}
 }
 
-%constraint = "!(types & !(allowed-keys | item-type))"
-%constraint = "!item-type | item-type = 'int' | item-type = 'number' | item-type = 'bool' | " +
-	"item-type = 'string' | item-type = 'section' | item-type = 'list' | /types/[item-type]"
+%constraint = "{types definition requires allowed-keys or item-type} !(types & !(allowed-keys | item-type))"

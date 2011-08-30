@@ -8,8 +8,12 @@ structured configuration files. libt3config provides the following features:
 - Simple API for reading and manipulating configurations.
 - Parsed configurations use typed data (boolean, integer, floating point number
   string, list, section).
-- Thread safe (with the exception that if uselocale is not available,
-  set_locale should not be called at the same time in another thread).
+- Schema definitions, allowing verification of the structure of loaded
+  configuration data.
+- No use of global variables, allowing easy use in threaded programs (with the
+  exception that if uselocale is not available, set_locale should not be called
+  at the same time in another thread while reading or writing configuration
+  data).
 
 libt3config is part of the Tilde Terminal Toolkit (T3)
 [http://os.ghalkes.nl/t3/]

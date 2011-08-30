@@ -1,9 +1,3 @@
 - how should we handle out-of-range values? Reporting an error may not always
   be the best idea
 - make testsuite
-- figure out a better way to pass back detailed error information. The current
-  method is ABI incompatible with the existing one, and can't handle many
-  cases in which the memory is discared before return. This happens e.g. in
-  parsing and in validation of schemas. The latter problem can be handled by
-  copying the required memory. However, this puts the burden of freeing the
-  memory on the client wich may be using the existing ABI

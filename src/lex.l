@@ -79,6 +79,7 @@ NUMBER_PAT     [-+]?([0-9]*\.[0-9]+([eE][-+][0-9]+)?)|(?i:nan|inf(inity)?)
 >=                                     return GE;
 \<=                                    return LE;
 !=                                     return NE;
+\{[^}]+\}                              return DESCRIPTION;
 }
 
 <INITIAL,CONSTRAINT>{

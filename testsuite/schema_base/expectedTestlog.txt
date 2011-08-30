@@ -4,7 +4,7 @@
 ==== Testcase correct/syntax.schema ====
 ====== INCORRECT TESTCASES ======
 ==== Testcase incorrect/base_type.schema ====
-Error loading input: schema constraint violated !int & !number & !bool & !string & !section & !list @ 1
+Error loading input: schema constraint violated basic types can not be redefined @ 1
 ==== Testcase incorrect/disallowed_key.schema ====
 Error loading input: key is not allowed here required @ 4
 ==== Testcase incorrect/list-length1 ====
@@ -14,14 +14,14 @@ Error loading input: invalid constraint (null) @ 4
 ==== Testcase incorrect/list-length3 ====
 Error loading input: invalid constraint (null) @ 7
 ==== Testcase incorrect/missing_allowed_or_item_type.schema ====
-Error loading input: schema constraint violated !(types & !(allowed-keys | item-type)) @ 0
+Error loading input: schema constraint violated types definition requires allowed-keys or item-type @ 0
 ==== Testcase incorrect/recursive.schema ====
 Error loading input: recursive type definition recursive @ 2
 ==== Testcase incorrect/test.cfg ====
 Error loading input: key is not allowed here adsf @ 4
 ==== Testcase incorrect/unknown_type1.schema ====
-Error loading input: schema constraint violated !item-type | item-type = 'int' | item-type = 'number' | item-type = 'bool' | item-type = 'string' | item-type = 'section' | item-type = 'list' | /types/[item-type] @ 0
+Error loading input: schema constraint violated item-type must be a basic type or defined in types @ 1
 ==== Testcase incorrect/unknown_type2.schema ====
-Error loading input: schema constraint violated type = 'int' | type = 'number' | type = 'bool' | type = 'string' | type = 'section' | type = 'list' | type = 'any' | /types/[type] @ 2
+Error loading input: schema constraint violated type must be a basic type or defined in types @ 3
 ==== Testcase incorrect/unknown_type3.schema ====
-Error loading input: schema constraint violated !item-type | item-type = 'int' | item-type = 'number' | item-type = 'bool' | item-type = 'string' | item-type = 'section' | item-type = 'list' | item-type = 'any' | /types/[item-type] @ 2
+Error loading input: schema constraint violated item-type must be a basic type or defined in types @ 4

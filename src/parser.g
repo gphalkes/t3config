@@ -286,7 +286,7 @@ section_contents(t3_config_t *item) {
 ;
 
 //=========================== CONSTRAINTS PARSER ============================
-%token NE, LE, GE;
+%token NE, LE, GE, DESCRIPTION;
 %start _t3_config_parse_constraint, constraint;
 
 {
@@ -397,17 +397,32 @@ constraint {
 
 	if ((top = malloc(sizeof(expr_node_t))) == NULL)
 		LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+	_t3_config_data->result = top;
 	top->type = EXPR_TOP;
 	top->value.operand[0] = NULL;
-	top->value.operand[1] = NULL;
-	_t3_config_data->result = top;
+	if ((top->value.operand[1] = malloc(sizeof(expr_node_t))) == NULL)
+		LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+	top->value.operand[1]->type = EXPR_STRING_CONST;
+	top->value.operand[1]->value.string = NULL;
 } :
+	[
+		DESCRIPTION
+		{
+			if ((top->value.operand[1]->value.string = _t3_config_strdup(_t3_config_get_text(_t3_config_data->scanner) + 1)) == NULL)
+				LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+			/* We can safely subtract one from the length of the string because we
+			   know the closing '}' is there. */
+			top->value.operand[1]->value.string[strlen(top->value.operand[1]->value.string) - 1] = 0;
+		}
+	]?
 	expression(0, &top->value.operand[0])
 	{
-		if ((top->value.operand[1] = malloc(sizeof(expr_node_t))) == NULL)
-			LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
-		top->value.operand[1]->type = EXPR_STRING_CONST;
-		top->value.operand[1]->value.string = NULL;
+		if (top->value.operand[1] == NULL) {
+			if ((top->value.operand[1] = malloc(sizeof(expr_node_t))) == NULL)
+				LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+			top->value.operand[1]->type = EXPR_STRING_CONST;
+			top->value.operand[1]->value.string = NULL;
+		}
 	}
 ;
 

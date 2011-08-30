@@ -191,6 +191,7 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t
 	{
 		expr_node_t *expr = parse_constraint_string(t3_config_get_string(constraint), error == NULL ? NULL : &error->error);
 		if (expr == NULL) {
+			#warning FIXME: set error->extra!
 			if (error != NULL)
 				error->line_number = constraint->line_number;
 			return t3_false;
@@ -205,8 +206,12 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t
 			}
 			return t3_false;
 		}
+
 		constraint->type = T3_CONFIG_EXPRESSION;
-		expr->value.operand[1]->value.string = constraint->value.string;
+		if (expr->value.operand[1]->value.string == NULL)
+			expr->value.operand[1]->value.string = constraint->value.string;
+		else
+			free(constraint->value.string);
 		constraint->value.expr = expr;
 	}
 
