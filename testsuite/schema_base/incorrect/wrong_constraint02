@@ -1,0 +1,6 @@
+allowed-keys {
+	test {
+		type = "string"
+		%constraint = "% > true"
+	}
+}

@@ -7,6 +7,16 @@
 Error loading input: schema constraint violated basic types can not be redefined @ 1
 ==== Testcase incorrect/disallowed_key.schema ====
 Error loading input: key is not allowed here required @ 4
+==== Testcase incorrect/invalid_constraint01 ====
+Error loading input: parse error (null) @ 3
+==== Testcase incorrect/invalid_constraint02 ====
+Error loading input: parse error (null) @ 3
+==== Testcase incorrect/invalid_constraint03 ====
+Error loading input: parse error (null) @ 3
+==== Testcase incorrect/invalid_constraint04 ====
+Error loading input: parse error (null) @ 3
+==== Testcase incorrect/invalid_constraint05 ====
+Error loading input: parse error (null) @ 3
 ==== Testcase incorrect/list-length1 ====
 Error loading input: invalid constraint (null) @ 7
 ==== Testcase incorrect/list-length2 ====
@@ -25,3 +35,11 @@ Error loading input: schema constraint violated item-type must be a basic type o
 Error loading input: schema constraint violated type must be a basic type or defined in types @ 3
 ==== Testcase incorrect/unknown_type3.schema ====
 Error loading input: schema constraint violated item-type must be a basic type or defined in types @ 4
+==== Testcase incorrect/wrong_constraint01 ====
+Error loading input: invalid constraint (null) @ 4
+==== Testcase incorrect/wrong_constraint02 ====
+Error loading input: invalid constraint (null) @ 4
+==== Testcase incorrect/wrong_constraint03 ====
+Error loading input: invalid constraint (null) @ 4
+==== Testcase incorrect/wrong_constraint04 ====
+Error loading input: invalid constraint (null) @ 4

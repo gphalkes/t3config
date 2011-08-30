@@ -1,0 +1,13 @@
+types {
+	foo {
+		type = section
+		allowed-keys {
+			test {
+				type = "int"
+			}
+		}
+		%constraint = "# > 0"
+	}
+}
+
+item-type = "foo"
