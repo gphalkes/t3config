@@ -87,8 +87,8 @@ static t3_bool resolve(const expr_node_t *expr, const t3_config_t *config, const
 	}
 }
 
-static t3_config_type_t operand_type(const expr_node_t *expression) {
-	switch (expression->type) {
+static t3_config_type_t operand_type(const expr_node_t *expr) {
+	switch (expr->type) {
 		case EXPR_STRING_CONST:
 			return T3_CONFIG_STRING;
 		case EXPR_INT_CONST:
@@ -98,57 +98,57 @@ static t3_config_type_t operand_type(const expr_node_t *expression) {
 		case EXPR_BOOL_CONST:
 			return T3_CONFIG_BOOL;
 		case EXPR_CONFIG:
-			return expression->value.config->type;
+			return expr->value.config->type;
 		default:
 			return T3_CONFIG_NONE;
 	}
 }
 
-static const char *get_string_operand(const expr_node_t *expression) {
-	return expression->type == EXPR_CONFIG ? expression->value.config->value.string : expression->value.string;
+static const char *get_string_operand(const expr_node_t *expr) {
+	return expr->type == EXPR_CONFIG ? expr->value.config->value.string : expr->value.string;
 }
 
-static t3_bool get_bool_operand(const expr_node_t *expression) {
-	return expression->type == EXPR_CONFIG ? expression->value.config->value.boolean : expression->value.boolean;
+static t3_bool get_bool_operand(const expr_node_t *expr) {
+	return expr->type == EXPR_CONFIG ? expr->value.config->value.boolean : expr->value.boolean;
 }
 
-static t3_config_int_t get_int_operand(const expr_node_t *expression) {
-	return expression->type == EXPR_CONFIG ? expression->value.config->value.integer : expression->value.integer;
+static t3_config_int_t get_int_operand(const expr_node_t *expr) {
+	return expr->type == EXPR_CONFIG ? expr->value.config->value.integer : expr->value.integer;
 }
 
-static double get_number_operand(const expr_node_t *expression) {
-	return expression->type == EXPR_CONFIG ? expression->value.config->value.number : expression->value.number;
+static double get_number_operand(const expr_node_t *expr) {
+	return expr->type == EXPR_CONFIG ? expr->value.config->value.number : expr->value.number;
 }
 
-t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_t *config, const t3_config_t *root) {
+t3_bool _t3_config_evaluate_expr(const expr_node_t *expr, const t3_config_t *config, const t3_config_t *root) {
 	t3_config_type_t type;
 	expr_node_t resolved_nodes[2];
 
-	switch (expression->type) {
+	switch (expr->type) {
 		case EXPR_TOP:
-			return _t3_config_evaluate_expr(expression->value.operand[0], config, root);
+			return _t3_config_evaluate_expr(expr->value.operand[0], config, root);
 		case EXPR_AND:
-			return _t3_config_evaluate_expr(expression->value.operand[0], config, root) &&
-				_t3_config_evaluate_expr(expression->value.operand[1], config, root);
+			return _t3_config_evaluate_expr(expr->value.operand[0], config, root) &&
+				_t3_config_evaluate_expr(expr->value.operand[1], config, root);
 		case EXPR_OR:
-			return _t3_config_evaluate_expr(expression->value.operand[0], config, root) ||
-				_t3_config_evaluate_expr(expression->value.operand[1], config, root);
+			return _t3_config_evaluate_expr(expr->value.operand[0], config, root) ||
+				_t3_config_evaluate_expr(expr->value.operand[1], config, root);
 		case EXPR_XOR:
-			return _t3_config_evaluate_expr(expression->value.operand[0], config, root) ^
-				_t3_config_evaluate_expr(expression->value.operand[1], config, root);
+			return _t3_config_evaluate_expr(expr->value.operand[0], config, root) ^
+				_t3_config_evaluate_expr(expr->value.operand[1], config, root);
 		case EXPR_NOT:
-			return !_t3_config_evaluate_expr(expression->value.operand[0], config, root);
+			return !_t3_config_evaluate_expr(expr->value.operand[0], config, root);
 
 		case EXPR_PATH:
 		case EXPR_DEREF:
 		case EXPR_IDENT:
 		case EXPR_THIS:
-			return lookup_node(expression, config, root, config) != NULL;
+			return lookup_node(expr, config, root, config) != NULL;
 
 #define COMPARE(expr_type, operator) \
 		case expr_type: \
-			if (!resolve(expression->value.operand[0], config, root, &resolved_nodes[0]) || \
-					!resolve(expression->value.operand[1], config, root, &resolved_nodes[1])) \
+			if (!resolve(expr->value.operand[0], config, root, &resolved_nodes[0]) || \
+					!resolve(expr->value.operand[1], config, root, &resolved_nodes[1])) \
 				return t3_false; \
 			type = operand_type(&resolved_nodes[0]); \
 			if (type != operand_type(&resolved_nodes[1])) \
@@ -165,8 +165,8 @@ t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_
 
 		case EXPR_NE:
 		case EXPR_EQ:
-			if (!resolve(expression->value.operand[0], config, root, &resolved_nodes[0]) ||
-					!resolve(expression->value.operand[1], config, root, &resolved_nodes[1]))
+			if (!resolve(expr->value.operand[0], config, root, &resolved_nodes[0]) ||
+					!resolve(expr->value.operand[1], config, root, &resolved_nodes[1]))
 				return t3_false;
 			type = operand_type(&resolved_nodes[0]);
 			if (type != operand_type(&resolved_nodes[1]))
@@ -174,16 +174,16 @@ t3_bool _t3_config_evaluate_expr(const expr_node_t *expression, const t3_config_
 
 			if (type == T3_CONFIG_STRING) {
 				return (strcmp(get_string_operand(&resolved_nodes[0]), get_string_operand(&resolved_nodes[1])) == 0) ^
-					(expression->type == EXPR_NE);
+					(expr->type == EXPR_NE);
 			} else if (type == T3_CONFIG_BOOL) {
 				return (get_bool_operand(&resolved_nodes[0]) == get_bool_operand(&resolved_nodes[1])) ^
-					(expression->type == EXPR_NE);
+					(expr->type == EXPR_NE);
 			} else if (type == T3_CONFIG_INT) {
 				return (get_int_operand(&resolved_nodes[0]) == get_int_operand(&resolved_nodes[1])) ^
-					(expression->type == EXPR_NE);
+					(expr->type == EXPR_NE);
 			} else if (type == T3_CONFIG_NUMBER) {
 				return (get_number_operand(&resolved_nodes[0]) == get_number_operand(&resolved_nodes[1])) ^
-					(expression->type == EXPR_NE);
+					(expr->type == EXPR_NE);
 			}
 			return t3_false;
 		default:
@@ -234,11 +234,11 @@ static const t3_config_t *lookup_node_meta(const expr_node_t *expr, const t3_con
 	}
 }
 
-static t3_config_type_t operand_type_meta(const expr_node_t *expression, const t3_config_t *config, const t3_config_t *root) {
+static t3_config_type_t operand_type_meta(const expr_node_t *expr, const t3_config_t *config, const t3_config_t *root) {
 	t3_config_t *allowed_keys, *key;
 	const char *type;
 
-	switch (expression->type) {
+	switch (expr->type) {
 		case EXPR_STRING_CONST:
 			return T3_CONFIG_STRING;
 		case EXPR_INT_CONST:
@@ -249,7 +249,7 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expression, const t
 			return T3_CONFIG_BOOL;
 		case EXPR_IDENT:
 			if ((allowed_keys = t3_config_get(config, "allowed-keys")) != NULL) {
-				if ((key = t3_config_get(allowed_keys, expression->value.string)) == NULL)
+				if ((key = t3_config_get(allowed_keys, expr->value.string)) == NULL)
 					return T3_CONFIG_NONE;
 				type = t3_config_get_string(t3_config_get(key, "type"));
 			} else {
@@ -258,10 +258,10 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expression, const t
 			return _t3_config_str2type(type);
 		case EXPR_PATH: {
 			t3_bool success = t3_true;
-			const t3_config_t *context = lookup_node_meta(expression->value.operand[0], config, root, config, &success);
+			const t3_config_t *context = lookup_node_meta(expr->value.operand[0], config, root, config, &success);
 			if (!success)
 				return T3_CONFIG_NONE;
-			return operand_type_meta(expression->value.operand[1], context, root);
+			return operand_type_meta(expr->value.operand[1], context, root);
 		}
 		case EXPR_DEREF:
 			return T3_CONFIG_ANY;
@@ -269,12 +269,12 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expression, const t
 			return _t3_config_str2type(t3_config_get_string(t3_config_get(config, "type")));
 		case EXPR_LENGTH: {
 			t3_config_type_t type_int;
-			if (expression->value.operand[0] == NULL)
+			if (expr->value.operand[0] == NULL)
 				type_int = _t3_config_str2type(t3_config_get_string(t3_config_get(config, "type")));
-			else if (expression->value.operand[0]->type == EXPR_LIST)
-				return _t3_config_validate_expr(expression->value.operand[0], config, root) ? T3_CONFIG_INT : T3_CONFIG_NONE;
+			else if (expr->value.operand[0]->type == EXPR_LIST)
+				return _t3_config_validate_expr(expr->value.operand[0], config, root) ? T3_CONFIG_INT : T3_CONFIG_NONE;
 			else
-				type_int = operand_type_meta(expression->value.operand[0], config, root);
+				type_int = operand_type_meta(expr->value.operand[0], config, root);
 
 			if (type_int != T3_CONFIG_LIST && type_int != T3_CONFIG_ANY)
 				return T3_CONFIG_NONE;
@@ -286,16 +286,16 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expression, const t
 	}
 }
 
-t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_t *config, const t3_config_t *root) {
-	switch (expression->type) {
+t3_bool _t3_config_validate_expr(const expr_node_t *expr, const t3_config_t *config, const t3_config_t *root) {
+	switch (expr->type) {
 		case EXPR_AND:
 		case EXPR_OR:
 		case EXPR_XOR:
-			return _t3_config_validate_expr(expression->value.operand[0], config, root) &&
-				_t3_config_validate_expr(expression->value.operand[1], config, root);
+			return _t3_config_validate_expr(expr->value.operand[0], config, root) &&
+				_t3_config_validate_expr(expr->value.operand[1], config, root);
 		case EXPR_LIST: {
 			const expr_node_t *list_item;
-			for (list_item = expression; list_item != NULL; list_item = list_item->value.operand[1]) {
+			for (list_item = expr; list_item != NULL; list_item = list_item->value.operand[1]) {
 				if (!_t3_config_validate_expr(list_item->value.operand[0], config, root))
 					return t3_false;
 			}
@@ -303,12 +303,12 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 		}
 		case EXPR_TOP:
 		case EXPR_NOT:
-			return _t3_config_validate_expr(expression->value.operand[0], config, root);
+			return _t3_config_validate_expr(expr->value.operand[0], config, root);
 
 		case EXPR_PATH:
 		case EXPR_IDENT: {
 			t3_bool success = t3_true;
-			lookup_node_meta(expression, config, root, config, &success);
+			lookup_node_meta(expr, config, root, config, &success);
 			return success;
 		}
 
@@ -325,8 +325,8 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 		case EXPR_EQ:
 		case EXPR_NE: {
 			t3_config_type_t type[2] = {
-				operand_type_meta(expression->value.operand[0], config, root),
-				operand_type_meta(expression->value.operand[1], config, root)
+				operand_type_meta(expr->value.operand[0], config, root),
+				operand_type_meta(expr->value.operand[1], config, root)
 			};
 
 			if (type[0] == T3_CONFIG_NONE || type[1] == T3_CONFIG_NONE)
@@ -339,7 +339,7 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 				return t3_false;
 
 			if (type[0] == T3_CONFIG_STRING || type[0] == T3_CONFIG_BOOL)
-				return expression->type == EXPR_EQ || expression->type == EXPR_NE;
+				return expr->type == EXPR_EQ || expr->type == EXPR_NE;
 
 			if (type[0] == T3_CONFIG_INT || type[0] == T3_CONFIG_NUMBER)
 				return t3_true;
