@@ -1,5 +1,6 @@
 ====== CORRECT TESTCASES ======
 ==== Testcase correct/meta_schema.schema ====
+==== Testcase correct/n-of-m ====
 ==== Testcase correct/style.schema ====
 ==== Testcase correct/syntax.schema ====
 ====== INCORRECT TESTCASES ======
@@ -25,6 +26,10 @@ Error loading input: invalid constraint (null) @ 4
 Error loading input: invalid constraint (null) @ 7
 ==== Testcase incorrect/missing_allowed_or_item_type.schema ====
 Error loading input: schema constraint violated types definition requires allowed-keys or item-type @ 0
+==== Testcase incorrect/n-of-m01 ====
+Error loading input: invalid constraint (null) @ 10
+==== Testcase incorrect/n-of-m02 ====
+Error loading input: invalid constraint (null) @ 10
 ==== Testcase incorrect/recursive.schema ====
 Error loading input: recursive type definition recursive @ 2
 ==== Testcase incorrect/test.cfg ====

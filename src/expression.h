@@ -47,6 +47,7 @@ typedef enum {
 	EXPR_THIS,
 
 	EXPR_LENGTH,
+	EXPR_LIST,
 	/* Used only to store the result of resolve, such that each lookup_node
 	   only has to be called onde. */
 	EXPR_CONFIG

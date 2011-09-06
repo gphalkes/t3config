@@ -12,6 +12,10 @@
   Error for incorrect test 2: schema constraint violated @ 34 (!test2 | #test2 < 3)
   Error for incorrect test 3: schema constraint violated @ 37 (!test3 | #test3 = 2 | test3 > 0)
   Error for incorrect test 4: schema constraint violated @ 40 (!test3 | #test3 = 2 | test3 > 0)
+==== Testcase tests/n-of-m01 ====
+  Error for incorrect test 1: schema constraint violated @ 33 (#(key1, key2, key3) <= 1 | #(key1, key2, key3) = 3)
+  Error for incorrect test 2: schema constraint violated @ 37 (#(key1, key2, key3) <= 1 | #(key1, key2, key3) = 3)
+  Error for incorrect test 3: schema constraint violated @ 41 (#(key1, key2, key3) <= 1 | #(key1, key2, key3) = 3)
 ==== Testcase tests/reference01 ====
   Error for incorrect test 1: schema constraint violated @ 21 (!test | /[test])
   Error for incorrect test 2: schema constraint violated @ 24 (!test | /[test])

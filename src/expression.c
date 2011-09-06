@@ -58,10 +58,20 @@ static t3_bool resolve(const expr_node_t *expr, const t3_config_t *config, const
 			return result->value.config != NULL;
 		case EXPR_LENGTH: {
 			const t3_config_t *list;
-			if (expr->value.operand[0] == NULL)
+			if (expr->value.operand[0] == NULL) {
 				list = config;
-			else
+			} else if (expr->value.operand[0]->type == EXPR_LIST) {
+				const expr_node_t *list_item;
+				result->type = EXPR_INT_CONST;
+				result->value.integer = 0;
+				for (list_item = expr->value.operand[0]; list_item != NULL; list_item = list_item->value.operand[1]) {
+					if (_t3_config_evaluate_expr(list_item->value.operand[0], config, root))
+						result->value.integer++;
+				}
+				return t3_true;
+			} else {
 				list = lookup_node(expr->value.operand[0], config, root, config);
+			}
 
 			if (list->type != T3_CONFIG_LIST && list->type != T3_CONFIG_PLIST)
 				return t3_false;
@@ -261,6 +271,8 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expression, const t
 			t3_config_type_t type_int;
 			if (expression->value.operand[0] == NULL)
 				type_int = _t3_config_str2type(t3_config_get_string(t3_config_get(config, "type")));
+			else if (expression->value.operand[0]->type == EXPR_LIST)
+				return _t3_config_validate_expr(expression->value.operand[0], config, root) ? T3_CONFIG_INT : T3_CONFIG_NONE;
 			else
 				type_int = operand_type_meta(expression->value.operand[0], config, root);
 
@@ -281,6 +293,14 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expression, const t3_config_
 		case EXPR_XOR:
 			return _t3_config_validate_expr(expression->value.operand[0], config, root) &&
 				_t3_config_validate_expr(expression->value.operand[1], config, root);
+		case EXPR_LIST: {
+			const expr_node_t *list_item;
+			for (list_item = expression; list_item != NULL; list_item = list_item->value.operand[1]) {
+				if (!_t3_config_validate_expr(list_item->value.operand[0], config, root))
+					return t3_false;
+			}
+			return t3_true;
+		}
 		case EXPR_TOP:
 		case EXPR_NOT:
 			return _t3_config_validate_expr(expression->value.operand[0], config, root);
@@ -347,6 +367,7 @@ void _t3_config_delete_expr(expr_node_t *expr) {
 		case EXPR_EQ:
 		case EXPR_NE:
 		case EXPR_PATH:
+		case EXPR_LIST:
 			_t3_config_delete_expr(expr->value.operand[0]);
 			_t3_config_delete_expr(expr->value.operand[1]);
 			break;

@@ -1,0 +1,10 @@
+allowed-keys {
+	key1 {
+		type = "int"
+	}
+	key2 {
+		type = "int"
+	}
+}
+
+%constraint = "#(key1, key2) <= 1"

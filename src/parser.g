@@ -505,9 +505,24 @@ factor(expr_node_t **node):
 |
 	'#'
 	[
-		%while (1)
+		%prefer
+		'('
+		[
+			{
+				*node = new_expression(LLthis, EXPR_LIST, NULL, *node);
+			}
+			expression(0, &(*node)->value.operand[0])
+			[
+				','
+				...
+			]*
+		]
+		')'
+	|
+		%prefer
 		factor(node)
-	]?
+	|
+	]
 	{
 		*node = new_expression(LLthis, EXPR_LENGTH, *node, NULL);
 	}
