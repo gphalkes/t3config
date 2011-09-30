@@ -36,7 +36,7 @@ static void fatal(const char *fmt, ...) {
 
 int main(int argc, char *argv[]) {
 	t3_config_error_t error;
-	t3_config_opts_t opts = { T3_CONFIG_OPT_VERBOSE_ERROR };
+	t3_config_opts_t opts = { T3_CONFIG_VERBOSE_ERROR, {{ NULL, 0 }} };
 	FILE *file = stdin;
 	t3_config_schema_t *schema;
 

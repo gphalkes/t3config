@@ -20,7 +20,7 @@
 #include <stdarg.h>
 #include "config.h"
 
-static const t3_config_opts_t opts = { T3_CONFIG_OPT_VERBOSE_ERROR };
+static const t3_config_opts_t opts = { T3_CONFIG_VERBOSE_ERROR, {{ NULL, 0}} };
 t3_config_schema_t *_t3_config_config2schema(t3_config_t *config, t3_config_error_t *error);
 
 static const char meta_schema_buffer[] = {

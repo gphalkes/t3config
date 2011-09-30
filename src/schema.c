@@ -65,7 +65,7 @@ static t3_bool validate_constraints(const t3_config_t *config_part, const t3_con
 			if (context->error != NULL) {
 				context->error->error = T3_ERR_CONSTRAINT_VIOLATION;
 				context->error->line_number = config_part->line_number;
-				if (context->opts != NULL && (context->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+				if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
 					context->error->extra = _t3_config_strdup(constraint->value.expr->value.operand[1]->value.string);
 			}
 			return t3_false;
@@ -81,7 +81,7 @@ static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t typ
 		if (context->error != NULL) {
 			context->error->error = T3_ERR_INVALID_KEY_TYPE;
 			context->error->line_number = config_part->line_number;
-			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
 				context->error->extra = config_part->name == NULL ? NULL : _t3_config_strdup(config_part->name);
 		}
 		return t3_false;
@@ -118,7 +118,7 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 				if (context->error != NULL) {
 					context->error->error = T3_ERR_INVALID_KEY;
 					context->error->line_number = sub_part->line_number;
-					if (context->opts != NULL && (context->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+					if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
 						context->error->extra = _t3_config_strdup(sub_part->name);
 				}
 				return t3_false;
@@ -138,7 +138,7 @@ t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema
 		if (error != NULL) {
 			error->error = T3_ERR_BAD_ARG;
 			error->line_number = 0;
-			if (opts != NULL && (opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+			if (opts != NULL && (opts->flags & T3_CONFIG_VERBOSE_ERROR))
 				error->extra = NULL;
 		}
 		return t3_false;
@@ -193,7 +193,7 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t
 		if (expr == NULL) {
 			if (error != NULL) {
 				error->line_number = constraint->line_number;
-				if (opts != NULL && (opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+				if (opts != NULL && (opts->flags & T3_CONFIG_VERBOSE_ERROR))
 					error->extra = NULL;
 			}
 			return t3_false;
@@ -203,7 +203,7 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t
 			if (error != NULL) {
 				error->error = T3_ERR_INVALID_CONSTRAINT;
 				error->line_number = constraint->line_number;
-				if (opts != NULL && (opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+				if (opts != NULL && (opts->flags & T3_CONFIG_VERBOSE_ERROR))
 					error->extra = NULL;
 			}
 			return t3_false;
@@ -260,7 +260,7 @@ static t3_bool has_loops(const t3_config_t *schema, t3_config_error_t *error, co
 			if (error != NULL) {
 				error->error = T3_ERR_RECURSIVE_TYPE;
 				error->line_number = type->line_number;
-				if (opts != NULL && opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR)
+				if (opts != NULL && opts->flags & T3_CONFIG_VERBOSE_ERROR)
 					error->extra = _t3_config_strdup(t3_config_get(type, "type")->value.string);
 			}
 			return t3_true;
@@ -279,7 +279,7 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 		if (error != NULL) {
 			error->error = local_error.error == T3_ERR_OUT_OF_MEMORY ? T3_ERR_OUT_OF_MEMORY : T3_ERR_INTERNAL;
 			error->line_number = 0;
-			if (opts != NULL && (opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+			if (opts != NULL && (opts->flags & T3_CONFIG_VERBOSE_ERROR))
 				error->extra = NULL;
 		}
 		goto error_end;

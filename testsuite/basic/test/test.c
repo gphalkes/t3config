@@ -20,7 +20,7 @@
 #include <stdarg.h>
 #include "config.h"
 
-static const t3_config_opts_t opts = { T3_CONFIG_OPT_VERBOSE_ERROR };
+static const t3_config_opts_t opts = { T3_CONFIG_VERBOSE_ERROR, {{ NULL, 0 }} };
 
 /** Alert the user of a fatal error and quit.
     @param fmt The format string for the message. See fprintf(3) for details.

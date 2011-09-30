@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 	int c;
 
 	setlocale(LC_ALL, "");
-	opts.flags = T3_CONFIG_OPT_VERBOSE_ERROR;
+	opts.flags = T3_CONFIG_VERBOSE_ERROR;
 
 	while ((c = getopt(argc, argv, "s:h")) >= 0) {
 		switch (c) {

@@ -132,7 +132,7 @@ static t3_bool transform_percent_list(struct _t3_config_this *LLthis, t3_config_
 	}
 
 	if (list->type != T3_CONFIG_PLIST) {
-		if (_t3_config_data->opts != NULL && (_t3_config_data->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+		if (_t3_config_data->opts != NULL && (_t3_config_data->opts->flags & T3_CONFIG_VERBOSE_ERROR))
 			_t3_config_data->error_extra = _t3_config_strdup((*last_dptr)->name);
 		LLabort(LLthis, T3_ERR_DUPLICATE_KEY);
 	}
@@ -274,7 +274,7 @@ section_contents(t3_config_t *item) {
 		item(next_ptr)
 		{
 			if (t3_config_get(item, (*next_ptr)->name) != *next_ptr) {
-				if (_t3_config_data->opts != NULL && (_t3_config_data->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+				if (_t3_config_data->opts != NULL && (_t3_config_data->opts->flags & T3_CONFIG_VERBOSE_ERROR))
 					_t3_config_data->error_extra = _t3_config_strdup((*next_ptr)->name);
 				LLabort(LLthis, T3_ERR_DUPLICATE_KEY);
 				}

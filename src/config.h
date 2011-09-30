@@ -68,9 +68,21 @@ typedef struct t3_config_schema_t t3_config_schema_t;
 /* FIXME: documentation! */
 typedef struct {
 	int flags;
+	union {
+		struct {
+			const char **path;
+			int opts;
+		} dflt;
+		struct {
+			FILE *(*open)(const char *name, void *data);
+			void *data;
+		} user;
+	} include_callback;
 } t3_config_opts_t;
 
-#define T3_CONFIG_OPT_VERBOSE_ERROR (1<<0)
+#define T3_CONFIG_VERBOSE_ERROR (1<<0)
+#define T3_CONFIG_INCLUDE_DFLT (1<<1)
+#define T3_CONFIG_INCLUDE_USER (1<<2)
 
 /** A structure representing an error, with line number.
     Used by ::t3_config_read_file and ::t3_config_read_buffer. If @p error
@@ -293,7 +305,7 @@ T3_CONFIG_API t3_config_t *t3_config_find(const t3_config_t *config,
     information, future library additions may prompt library users to want to operate
     differently depending on the available features.
 */
-T3_CONFIG_API int t3_config_get_version(void);
+T3_CONFIG_API long t3_config_get_version(void);
 
 /** Get a string description for an error code.
     @param error The error code returned by a function in libt3config.
@@ -308,6 +320,10 @@ T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_buffer(const char *buffe
 T3_CONFIG_API t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema,
 	t3_config_error_t *error, const t3_config_opts_t *opts);
 T3_CONFIG_API void t3_config_delete_schema(t3_config_schema_t *schema);
+
+#define T3_CONFIG_SPLIT_PATH (1<<0)
+T3_CONFIG_API FILE *t3_config_open_from_path(const char **path, const char *name, int opts);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

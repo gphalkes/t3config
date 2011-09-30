@@ -16,6 +16,7 @@
 #include <errno.h>
 
 #include "config_internal.h"
+#include "util.h"
 #include "expression.h"
 #include "parser.h"
 
@@ -39,6 +40,64 @@ t3_config_t *t3_config_new(void) {
 	return result;
 }
 
+static t3_bool resolve_includes(parse_context_t *context, t3_config_t **config, t3_config_error_t *error) {
+	t3_config_t *ptr;
+	FILE *file;
+
+	for (; *config != NULL; config = &(*config)->next) {
+		if (strcmp((*config)->name, "include") == 0) {
+			if ((*config)->type != T3_CONFIG_LIST && (*config)->type != T3_CONFIG_PLIST) {
+				if (error != NULL) {
+					error->line_number = (*config)->line_number;
+					error->error = T3_ERR_INVALID_KEY_TYPE;
+					if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
+						error->extra = NULL;
+				}
+				return t3_false;
+			}
+
+			for (ptr = (*config)->value.list; ptr != NULL; ptr = ptr->next) {
+				if (ptr->type != STRING) {
+					if (error != NULL) {
+						error->line_number = ptr->line_number;
+						error->error = T3_ERR_INVALID_KEY_TYPE;
+						/* context->opts can not be NULL, because it needs to be set for the
+						   include mechanism to be invoked. */
+						if (context->opts->flags & T3_CONFIG_VERBOSE_ERROR)
+							error->extra = NULL;
+					}
+					return t3_false;
+				}
+
+				//FIXME: check that file has not already been included!
+
+				if (context->opts->flags & T3_CONFIG_INCLUDE_DFLT)
+					file = t3_config_open_from_path(context->opts->include_callback.dflt.path,
+						ptr->value.string, context->opts->include_callback.dflt.opts);
+				else
+					file = context->opts->include_callback.user.open(ptr->value.string, context->opts->include_callback.user.data);
+
+				if (file == NULL) {
+					if (error != NULL) {
+						error->line_number = ptr->line_number;
+						error->error = T3_ERR_ERRNO;
+						if (context->opts->flags & T3_CONFIG_VERBOSE_ERROR)
+							error->extra = _t3_config_strdup(ptr->value.string);
+					}
+					return t3_false;
+				}
+
+				//FIXME: parse and merge
+
+			}
+		} else if ((*config)->type == T3_CONFIG_SECTION || (*config)->type == T3_CONFIG_LIST || (*config)->type == T3_CONFIG_PLIST) {
+			if (!resolve_includes(context, &(*config)->value.list, error))
+				return t3_false;
+		}
+	}
+	return t3_true;
+}
+
 /** Read config, either from file or from buffer. */
 static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *error) {
 	int retval;
@@ -53,7 +112,7 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 		if (error != NULL) {
 			error->error = T3_ERR_OUT_OF_MEMORY;
 			error->line_number = 0;
-			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
 				error->extra = NULL;
 		}
 		return NULL;
@@ -64,7 +123,7 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 		if (error != NULL) {
 			error->error = retval;
 			error->line_number = _t3_config_get_extra(context->scanner)->line_number;
-			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_OPT_VERBOSE_ERROR))
+			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
 				error->extra = context->error_extra;
 		}
 		/* On failure, we free all memory allocated by the partial parse ... */
@@ -74,6 +133,9 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 	}
 	/* Free memory allocated by lexer. */
 	_t3_config_lex_destroy(context->scanner);
+
+	if (context->opts != NULL && (context->opts->flags & (T3_CONFIG_INCLUDE_DFLT | T3_CONFIG_INCLUDE_USER)))
+		resolve_includes(context, (t3_config_t **) &context->result, error);
 	return context->result;
 }
 
@@ -410,7 +472,7 @@ t3_config_t *t3_config_find(const t3_config_t *config,
 	return item;
 }
 
-int t3_config_get_version(void) {
+long t3_config_get_version(void) {
 	return T3_CONFIG_VERSION;
 }
 
