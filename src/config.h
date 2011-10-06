@@ -71,7 +71,7 @@ typedef struct {
 	union {
 		struct {
 			const char **path;
-			int opts;
+			int flags;
 		} dflt;
 		struct {
 			FILE *(*open)(const char *name, void *data);

@@ -53,7 +53,7 @@ FILE *t3_config_open_from_path(const char **path, const char *name, int opts) {
 		return try_open("", 0, name);
 
 	errno = EINVAL;
-	for (; path != NULL; path++) {
+	for (; *path != NULL; path++) {
 		if (opts & T3_CONFIG_SPLIT_PATH) {
 			const char *search_from, *colon;
 

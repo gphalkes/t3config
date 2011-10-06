@@ -40,78 +40,6 @@ t3_config_t *t3_config_new(void) {
 	return result;
 }
 
-static t3_bool resolve_includes(parse_context_t *context, t3_config_t *config, t3_config_error_t *error) {
-	t3_config_t *ptr;
-	FILE *file;
-
-	for (config_item = config->value.list; config_item != NULL; config_item = config->next) {
-		if (strcmp(config_item->name, "include") != 0) {
-			if (config_item->type == T3_CONFIG_SECTION || config_item->type == T3_CONFIG_LIST || config_item->type == T3_CONFIG_PLIST) {
-				if (!resolve_includes(context, config_item, error))
-					return t3_false;
-			}
-			continue;
-		}
-
-		if (config_item->type != T3_CONFIG_LIST && config_item->type != T3_CONFIG_PLIST) {
-			if (error != NULL) {
-				error->line_number = config->line_number;
-				error->error = T3_ERR_INVALID_KEY_TYPE;
-				if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
-					error->extra = NULL;
-			}
-			return t3_false;
-		}
-
-		for (ptr = config_item->value.list; ptr != NULL; ptr = ptr->next) {
-			if (ptr->type != STRING) {
-				if (error != NULL) {
-					error->line_number = ptr->line_number;
-					error->error = T3_ERR_INVALID_KEY_TYPE;
-					/* context->opts can not be NULL, because it needs to be set for the
-					   include mechanism to be invoked. */
-					if (context->opts->flags & T3_CONFIG_VERBOSE_ERROR)
-						error->extra = NULL;
-				}
-				return t3_false;
-			}
-
-			//FIXME: check that file has not already been included!
-
-			if (context->opts->flags & T3_CONFIG_INCLUDE_DFLT)
-				file = t3_config_open_from_path(context->opts->include_callback.dflt.path,
-					ptr->value.string, context->opts->include_callback.dflt.opts);
-			else
-				file = context->opts->include_callback.user.open(ptr->value.string, context->opts->include_callback.user.data);
-
-			if (file == NULL) {
-				if (error != NULL) {
-					error->line_number = ptr->line_number;
-					error->error = T3_ERR_ERRNO;
-					if (context->opts->flags & T3_CONFIG_VERBOSE_ERROR)
-						error->extra = _t3_config_strdup(ptr->value.string);
-				}
-				return t3_false;
-			}
-
-			context.scan_type = SCAN_FILE;
-			context.file = file;
-			if ((included = config_read(context, error)) == NULL)
-				return t3_false;
-
-			while (included->value.list != NULL) {
-				included_item = t3_config_unlink_from_list(included, included->value.list);
-				//FIXME: PLISTs should be merged, but simply using add_existing will report an error
-				if (!t3_config_add_existing(config, included_item, included_item->name))
-					//kill included_item and included, return false
-			}
-			//FIXME: merge
-
-		}
-	}
-	return t3_true;
-}
-
 /** Read config, either from file or from buffer. */
 static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *error) {
 	int retval;
@@ -147,9 +75,6 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 	}
 	/* Free memory allocated by lexer. */
 	_t3_config_lex_destroy(context->scanner);
-
-	if (context->opts != NULL && (context->opts->flags & (T3_CONFIG_INCLUDE_DFLT | T3_CONFIG_INCLUDE_USER)))
-		resolve_includes(context, (t3_config_t **) &context->result, error);
 	return context->result;
 }
 

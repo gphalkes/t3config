@@ -62,6 +62,8 @@ typedef struct {
 	t3_bool constraint_parser;
 	const t3_config_opts_t *opts;
 	char *error_extra;
+
+	t3_config_t *current_section; /* Used only for including files, to hold the current section. */
 } parse_context_t;
 
 T3_CONFIG_LOCAL char *_t3_config_get_text(yyscan_t scanner);

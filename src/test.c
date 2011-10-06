@@ -25,12 +25,13 @@ int main(int argc, char *argv[]) {
 	t3_config_t *config;
 	t3_config_schema_t *schema = NULL;
 	t3_config_opts_t opts;
+	const char *path[2] = { NULL, NULL };
 	int c;
 
 	setlocale(LC_ALL, "");
 	opts.flags = T3_CONFIG_VERBOSE_ERROR;
 
-	while ((c = getopt(argc, argv, "s:h")) >= 0) {
+	while ((c = getopt(argc, argv, "s:hi::")) >= 0) {
 		switch (c) {
 			case 's': {
 				FILE *schema_file;
@@ -46,6 +47,12 @@ int main(int argc, char *argv[]) {
 			case 'h':
 				printf("Usage: test [-s <schema>] [<input>]\n");
 				exit(EXIT_SUCCESS);
+			case 'i':
+				opts.flags |= T3_CONFIG_INCLUDE_DFLT;
+				path[0] = optarg == 0 ? path[0] = "." : optarg;
+				opts.include_callback.dflt.path = path;
+				opts.include_callback.dflt.flags = 0;
+				break;
 			default:
 				break;
 		}

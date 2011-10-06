@@ -17,6 +17,7 @@
 %lexical _t3_config_yylex_wrapper;
 %datatype "parse_context_t *", "config_internal.h";
 %start _t3_config_parse, config;
+%start _t3_config_parse_include, include_config;
 
 %token INT, NUMBER, STRING, IDENTIFIER, BOOL_TRUE, BOOL_FALSE;
 
@@ -25,6 +26,7 @@
 
 struct _t3_config_this;
 T3_CONFIG_LOCAL int _t3_config_parse(parse_context_t * LLuserData);
+T3_CONFIG_LOCAL int _t3_config_parse_include(parse_context_t * LLuserData);
 T3_CONFIG_LOCAL int _t3_config_parse_constraint(parse_context_t * LLuserData);
 T3_CONFIG_LOCAL void _t3_config_abort(struct _t3_config_this *, int);
 }
@@ -46,6 +48,7 @@ static t3_config_t *allocate_item(struct _t3_config_this *LLthis, t3_bool alloca
 	result->next = NULL;
 	result->type = T3_CONFIG_NONE;
 	result->line_number = _t3_config_data->line_number;
+	result->value.ptr = NULL;
 
 	if (allocate_name) {
 		if ((result->name = _t3_config_strdup(_t3_config_get_text(_t3_config_data->scanner))) == NULL)
@@ -163,6 +166,70 @@ void LLmessage(struct _t3_config_this *LLthis, int LLtoken) {
 	LLabort(LLthis, T3_ERR_PARSE_ERROR);
 }
 
+static void include_file(struct _t3_config_this *LLthis, t3_config_t *item, t3_config_t *include) {
+	/* Location to save data from current lexer. */
+	yyscan_t scanner;
+	int scan_type;
+	FILE *file;
+
+	yyscan_t new_scanner;
+	FILE *new_file;
+	int result;
+
+	/* FIXME: check for recursive includes! */
+
+	/* Use either the default or the user supplied include-callback function to open
+	   the include file. */
+	if (_t3_config_data->opts->flags & T3_CONFIG_INCLUDE_DFLT)
+		new_file = t3_config_open_from_path(_t3_config_data->opts->include_callback.dflt.path,
+			include->value.string, _t3_config_data->opts->include_callback.dflt.flags);
+	else
+		new_file = _t3_config_data->opts->include_callback.user.open(include->value.string,
+			_t3_config_data->opts->include_callback.user.data);
+
+	/* Delete the node holding the name of the include file, because we won't be needing
+	   it anymore. */
+	t3_config_delete(include);
+
+	/* Abort if the include file could not be found. */
+	if (new_file == NULL) {
+		if (_t3_config_data->opts->flags & T3_CONFIG_VERBOSE_ERROR)
+			_t3_config_data->error_extra = _t3_config_strdup(include->value.string);
+		LLabort(LLthis, T3_ERR_ERRNO);
+	}
+
+	/* Initialize a new lexer. */
+	if (_t3_config_lex_init_extra(_t3_config_data, &new_scanner) != 0)
+		LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+
+	/* Replace the current context's lexer related values, after saving the current settings. */
+	scanner = _t3_config_data->scanner;
+	scan_type = _t3_config_data->scan_type;
+	file = _t3_config_data->file;
+
+	_t3_config_data->scanner = new_scanner;
+	_t3_config_data->scan_type = SCAN_FILE;
+	_t3_config_data->file = new_file;
+
+	_t3_config_data->current_section = item;
+	/* Parse the included file. */
+	result = _t3_config_parse_include(_t3_config_data);
+
+	/* Destroy the new lexer, and reset all the lexer related values in the context. */
+	_t3_config_lex_destroy(new_scanner);
+
+	_t3_config_data->scanner = scanner;
+	_t3_config_data->scan_type = scan_type;
+	_t3_config_data->file = file;
+
+	/* Close the include file. */
+	fclose(new_file);
+
+	/* Abort if the parse of the include file was not successful. */
+	if (result != T3_ERR_SUCCESS)
+		LLabort(LLthis, result);
+}
+
 }
 
 //=========================== RULES ============================
@@ -173,6 +240,10 @@ config {
 	((t3_config_t *) _t3_config_data->result)->line_number = 0;
 } :
 	section_contents(_t3_config_data->result)
+;
+
+include_config :
+	section_contents(_t3_config_data->current_section)
 ;
 
 value(t3_config_t *item) {
@@ -267,19 +338,30 @@ section(t3_config_t *item)
 section_contents(t3_config_t *item) {
 	t3_config_t **next_ptr = &item->value.list;
 	item->type = T3_CONFIG_SECTION;
-	item->value.list = NULL;
+	while (*next_ptr != NULL)
+		next_ptr = &(*next_ptr)->next;
 } :
 	'\n'*
 	[
 		item(next_ptr)
 		{
-			if (t3_config_get(item, (*next_ptr)->name) != *next_ptr) {
-				if (_t3_config_data->opts != NULL && (_t3_config_data->opts->flags & T3_CONFIG_VERBOSE_ERROR))
-					_t3_config_data->error_extra = _t3_config_strdup((*next_ptr)->name);
-				LLabort(LLthis, T3_ERR_DUPLICATE_KEY);
+			if ((_t3_config_data->opts->flags & (T3_CONFIG_INCLUDE_DFLT | T3_CONFIG_INCLUDE_USER)) &&
+					strcmp((*next_ptr)->name, "%include") == 0)
+			{
+				t3_config_t *include = *next_ptr;
+				*next_ptr = NULL;
+				include_file(LLthis, item, include);
+				while (*next_ptr != NULL)
+					next_ptr = &(*next_ptr)->next;
+			} else {
+				if (t3_config_get(item, (*next_ptr)->name) != *next_ptr) {
+					if (_t3_config_data->opts != NULL && (_t3_config_data->opts->flags & T3_CONFIG_VERBOSE_ERROR))
+						_t3_config_data->error_extra = _t3_config_strdup((*next_ptr)->name);
+					LLabort(LLthis, T3_ERR_DUPLICATE_KEY);
 				}
-			if (!transform_percent_list(LLthis, item, next_ptr))
-				next_ptr = &(*next_ptr)->next;
+				if (!transform_percent_list(LLthis, item, next_ptr))
+					next_ptr = &(*next_ptr)->next;
+			}
 		}
 		[ [';' | '\n'] '\n'* ] ..?
 	]*
