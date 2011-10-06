@@ -378,14 +378,17 @@ ADD_AGGREGATE(section, T3_CONFIG_SECTION)
 
 int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *value) {
 	char *item_name = NULL;
-	if (!can_add(config, name) || !check_name(name))
+	if (!can_add(config, name) || !check_name(name) || value->next != NULL)
 		return T3_ERR_BAD_ARG;
+
 	if (name != NULL) {
 		if ((item_name = strdup(name)) == NULL)
 			return T3_ERR_OUT_OF_MEMORY;
 	}
+
 	free(value->name);
 	value->name = item_name;
+
 	if (config->value.list == NULL) {
 		config->value.list = value;
 	} else {
@@ -393,6 +396,7 @@ int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *v
 		while (ptr->next != NULL) ptr = ptr->next;
 		ptr->next = value;
 	}
+
 	return T3_ERR_SUCCESS;
 }
 
