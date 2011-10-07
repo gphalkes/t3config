@@ -345,7 +345,7 @@ section_contents(t3_config_t *item) {
 	[
 		item(next_ptr)
 		{
-			if ((_t3_config_data->opts->flags & (T3_CONFIG_INCLUDE_DFLT | T3_CONFIG_INCLUDE_USER)) &&
+			if (_t3_config_data->opts != NULL && (_t3_config_data->opts->flags & (T3_CONFIG_INCLUDE_DFLT | T3_CONFIG_INCLUDE_USER)) &&
 					strcmp((*next_ptr)->name, "%include") == 0)
 			{
 				t3_config_t *include = *next_ptr;
