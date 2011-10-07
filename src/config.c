@@ -395,7 +395,7 @@ t3_config_t *t3_config_get_next(const t3_config_t *config) {
 }
 
 t3_config_t *t3_config_find(const t3_config_t *config,
-		t3_bool (*predicate)(t3_config_t *, void *), void *data, t3_config_t *start_from)
+		t3_bool (*predicate)(const t3_config_t *, void *), void *data, t3_config_t *start_from)
 {
 	t3_config_t *item;
 	if (config == NULL || (config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_PLIST))
