@@ -22,7 +22,7 @@
 typedef struct {
 	const t3_config_t *root, *types;
 	t3_config_error_t *error;
-	const t3_config_opts_t *opts;
+	int flags;
 } validation_context_t;
 
 static char meta_schema_buffer[] = {
@@ -65,7 +65,7 @@ static t3_bool validate_constraints(const t3_config_t *config_part, const t3_con
 			if (context->error != NULL) {
 				context->error->error = T3_ERR_CONSTRAINT_VIOLATION;
 				context->error->line_number = config_part->line_number;
-				if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
+				if (context->flags & T3_CONFIG_VERBOSE_ERROR)
 					context->error->extra = _t3_config_strdup(constraint->value.expr->value.operand[1]->value.string);
 			}
 			return t3_false;
@@ -81,7 +81,7 @@ static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t typ
 		if (context->error != NULL) {
 			context->error->error = T3_ERR_INVALID_KEY_TYPE;
 			context->error->line_number = config_part->line_number;
-			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
+			if (context->flags & T3_CONFIG_VERBOSE_ERROR)
 				context->error->extra = config_part->name == NULL ? NULL : _t3_config_strdup(config_part->name);
 		}
 		return t3_false;
@@ -118,7 +118,7 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 				if (context->error != NULL) {
 					context->error->error = T3_ERR_INVALID_KEY;
 					context->error->line_number = sub_part->line_number;
-					if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
+					if (context->flags & T3_CONFIG_VERBOSE_ERROR)
 						context->error->extra = _t3_config_strdup(sub_part->name);
 				}
 				return t3_false;
@@ -130,7 +130,7 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 }
 
 t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema,
-		t3_config_error_t *error, const t3_config_opts_t *opts)
+		t3_config_error_t *error, int flags)
 {
 	validation_context_t context;
 
@@ -138,7 +138,7 @@ t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema
 		if (error != NULL) {
 			error->error = T3_ERR_BAD_ARG;
 			error->line_number = 0;
-			if (opts != NULL && (opts->flags & T3_CONFIG_VERBOSE_ERROR))
+			if (flags & T3_CONFIG_VERBOSE_ERROR)
 				error->extra = NULL;
 		}
 		return t3_false;
@@ -147,7 +147,7 @@ t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema
 	context.root = config;
 	context.types = t3_config_get((const t3_config_t *) schema, "types");
 	context.error = error;
-	context.opts = opts;
+	context.flags = flags;
 
 	return validate_aggregate_keys(config, (const t3_config_t *) schema, &context);
 }
@@ -286,7 +286,7 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 	}
 	meta_schema->type = T3_CONFIG_SCHEMA;
 
-	if (!t3_config_validate(config, (t3_config_schema_t *) meta_schema, error, opts) ||
+	if (!t3_config_validate(config, (t3_config_schema_t *) meta_schema, error, opts == NULL ? 0 : opts->flags) ||
 			has_loops(config, error, opts) ||
 			!parse_constraints(config, config, error, opts))
 		goto error_end;

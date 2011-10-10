@@ -52,7 +52,7 @@ typedef enum {
 	T3_CONFIG_NUMBER, /**< Floating point value (double). */
 	T3_CONFIG_LIST, /**< A list of un-named items. */
 	T3_CONFIG_SECTION, /**< A list of named items. */
-	T3_CONFIG_PLIST /**< A list of un-named items, written using %<name> notation. */
+	T3_CONFIG_PLIST /**< A list of un-named items, written using %&lt;name> notation. */
 } t3_config_type_t;
 
 /** @struct t3_config_t
@@ -65,24 +65,35 @@ typedef struct t3_config_t t3_config_t;
 */
 typedef struct t3_config_schema_t t3_config_schema_t;
 
-/* FIXME: documentation! */
+/** Options struct used when reading a file. */
 typedef struct {
-	int flags;
+	int flags; /**< Set of flags, or @c 0 for defaults. */
+	/** Information for facilitating file inclusion. */
 	union {
 		struct {
-			const char **path;
-			int flags;
+			const char **path; /**< The @c NULL-terminated array of search paths, passed to ::t3_config_open_from_path. */
+			int flags; /**< The flags, passed to ::t3_config_open_from_path. */
 		} dflt;
 		struct {
-			FILE *(*open)(const char *name, void *data);
-			void *data;
+			FILE *(*open)(const char *name, void *data); /**< The function to call to open an include file. */
+			void *data; /**< Data passed to the callback function. */
 		} user;
 	} include_callback;
 } t3_config_opts_t;
 
+/** @name Flags for ::t3_config_opts_t. */
+/*@{*/
+/** Return extra information about the error in the ::t3_config_error_t struct. */
 #define T3_CONFIG_VERBOSE_ERROR (1<<0)
+/** Activate the default include file mechanism.
+    When using this flags, the @c dflt member of the ::t3_config_opts_t
+    @c include_callback union must be filled in. */
 #define T3_CONFIG_INCLUDE_DFLT (1<<1)
+/** Activate the user-defined include file mechanism.
+    When using this flags, the @c user member of the ::t3_config_opts_t
+    @c include_callback union must be filled in. */
 #define T3_CONFIG_INCLUDE_USER (1<<2)
+/*@}*/
 
 /** A structure representing an error, with line number.
     Used by ::t3_config_read_file and ::t3_config_read_buffer. If @p error
@@ -90,9 +101,9 @@ typedef struct {
     on which the error was encountered.
 */
 typedef struct {
-	int error;
-	int line_number;
-	char *extra;
+	int error; /**< An integer indicating what went wrong. */
+	int line_number; /**< The line number where the error occured. */
+	char *extra; /**< Further information about the error or @c NULL, but only if ::T3_CONFIG_VERBOSE_ERROR was set. */
 } t3_config_error_t;
 
 /** @name Error codes (libt3config specific) */
@@ -132,7 +143,7 @@ T3_CONFIG_API t3_config_t *t3_config_new(void);
 /** Read a config from a @c FILE.
     @param file The @c FILE to read from.
     @param error A pointer to the location to store an error value (or @c NULL).
-	@param opts Unused, should be @c NULL.
+	@param opts A pointer to a struct containing options, or @c NULL to use the defaults.
     @return A pointer to the new config or @c NULL on error.
 */
 T3_CONFIG_API t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, const t3_config_opts_t *opts);
@@ -140,7 +151,7 @@ T3_CONFIG_API t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *er
     @param buffer The buffer to parse.
     @param size The size of the buffer.
     @param error A pointer to the location to store an error value (or @c NULL).
-	@param opts Unused, should be @c NULL.
+	@param opts A pointer to a struct containing options, or @c NULL to use the defaults.
     @return A pointer to the new config or @c NULL on error.
 */
 T3_CONFIG_API t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, const t3_config_opts_t *opts);
@@ -150,7 +161,7 @@ T3_CONFIG_API t3_config_t *t3_config_read_buffer(const char *buffer, size_t size
     @return Either ::T3_ERR_ERRNO or ::T3_ERR_SUCCESS
 */
 T3_CONFIG_API int t3_config_write_file(t3_config_t *config, FILE *file);
-/** Free all memory used by @p (sub-)config.
+/** Free all memory used by a (sub-)config.
     If you wish to remove a sub-config, either use ::t3_config_erase or
     ::t3_config_erase_from_list, or call ::t3_config_unlink or
     ::t3_config_unlink_from_list on the sub-config first.
@@ -313,16 +324,49 @@ T3_CONFIG_API long t3_config_get_version(void);
 */
 T3_CONFIG_API const char *t3_config_strerror(int error);
 
-/* FIXME: document these functions! */
+/** Read a schema from a @c FILE.
+    @param file The @c FILE to read from.
+    @param error A pointer to the location to store an error value (or @c NULL).
+	@param opts A pointer to a struct containing options, or @c NULL to use the defaults.
+    @return A pointer to the new schema or @c NULL on error.
+*/
 T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, const t3_config_opts_t *opts);
+/** Read a schema from memory.
+    @param buffer The buffer to parse.
+    @param size The size of the buffer.
+    @param error A pointer to the location to store an error value (or @c NULL).
+	@param opts A pointer to a struct containing options, or @c NULL to use the defaults.
+    @return A pointer to the new schema or @c NULL on error.
+*/
 T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size,
 	t3_config_error_t *error, const t3_config_opts_t *opts);
+/** Validate that a config adheres to a schema.
+    @param config The config to validate.
+    @param schema The schema to validate against.
+    @param error A pointer to the location to store an error value (or @c NULL).
+	@param flags A set of flags influencing the behaviour, or @c 0 for defaults.
+	@return ::t3_true if the config is adheres to the schema, ::t3_false otherwise.
+*/
 T3_CONFIG_API t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema,
-	t3_config_error_t *error, const t3_config_opts_t *opts);
+	t3_config_error_t *error, int flags);
+/** Free all memory used by @p schema. */
 T3_CONFIG_API void t3_config_delete_schema(t3_config_schema_t *schema);
 
+/** @name Flags for ::t3_config_open_from_path. */
+/*@{*/
+/** Flag for ::t3_config_open_from_path, indicating that search paths should first be split on colons. */
 #define T3_CONFIG_SPLIT_PATH (1<<0)
-T3_CONFIG_API FILE *t3_config_open_from_path(const char **path, const char *name, int opts);
+/*@}*/
+
+/** Open a file for reading using a search path.
+    @param path A @c NULL terminated array of search paths.
+    @param name The name of the file to open.
+    @param flags A set of flags influencing the behaviour, or @c 0 for defaults.
+	@return A file opened for reading, or @c NULL on error.
+
+    On error, @c errno is set. Possible flags for @p opts are: ::T3_CONFIG_SPLIT_PATH.
+*/
+T3_CONFIG_API FILE *t3_config_open_from_path(const char **path, const char *name, int flags);
 
 #ifdef __cplusplus
 } /* extern "C" */
