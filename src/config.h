@@ -275,6 +275,12 @@ T3_CONFIG_API double t3_config_get_number(const t3_config_t *config);
     @return The string value of @p config, or @c NULL if @p config is @c NULL or not of type ::T3_CONFIG_STRING.
 */
 T3_CONFIG_API const char *t3_config_get_string(const t3_config_t *config);
+/** Take ownership of the string value from a config with ::T3_CONFIG_STRING type.
+    @return The string value of @p config, or @c NULL if @p config is @c NULL or not of type ::T3_CONFIG_STRING.
+
+    After calling this function, the type of the config will be set to ::T3_CONFIG_NONE.
+*/
+T3_CONFIG_API char *t3_config_take_string(t3_config_t *config);
 /** Get the next sub-config from a section or list.
     @return A pointer to the next sub-config or @c NULL if there is no next sub-config.
 

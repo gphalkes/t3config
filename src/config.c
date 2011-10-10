@@ -390,6 +390,18 @@ GET(int, t3_config_int_t, T3_CONFIG_INT, integer, 0)
 GET(number, double, T3_CONFIG_NUMBER, number, 0.0)
 GET(string, const char *, T3_CONFIG_STRING, string, NULL)
 
+char *t3_config_take_string(t3_config_t *config) {
+	char *retval;
+
+	if (config == NULL || config->type != T3_CONFIG_STRING)
+		return NULL;
+
+	retval = config->value.string;
+	config->value.string = NULL;
+	config->type = T3_CONFIG_NONE;
+	return retval;
+}
+
 t3_config_t *t3_config_get_next(const t3_config_t *config) {
 	return config != NULL ? config->next : NULL;
 }
