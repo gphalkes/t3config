@@ -1,8 +1,13 @@
 ====== CORRECT TESTCASES ======
 ==== Testcase ../correct/meta_schema.schema ====
+==== Testcase ../correct/simple_include ====
 ==== Testcase ../correct/test.cfg ====
 ====== INCORRECT TESTCASES ======
 ==== Testcase ../incorrect/duplicate_key ====
 Error loading input: duplicate key key @ 3
+==== Testcase ../incorrect/include_with_duplicate ====
+Error loading input: duplicate key wrap @ 67
 ==== Testcase ../incorrect/missing_parenthesis ====
 Error loading input: parse error  @ 1
+==== Testcase ../incorrect/recursive_include ====
+Error loading input: recursive include incorrect/recursive_include @ 1

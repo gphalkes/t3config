@@ -115,12 +115,18 @@ typedef struct {
 /** Error code: Key already exists. */
 #define T3_ERR_DUPLICATE_KEY (-78)
 
-/* FIXME: documentation! */
+/** Error code: Constraint is invalid. */
 #define T3_ERR_INVALID_CONSTRAINT (-77)
+/** Error code: The key has a different type than allowed by the schema. */
 #define T3_ERR_INVALID_KEY_TYPE (-76)
+/** Error code: The key is not allowed here by the schema. */
 #define T3_ERR_INVALID_KEY (-75)
+/** Error code: The configuration violates a constraint in the schema. */
 #define T3_ERR_CONSTRAINT_VIOLATION (-74)
+/** Error code: The type definition refers to itself, either directly or indirectly. */
 #define T3_ERR_RECURSIVE_TYPE (-73)
+/** Error code: An included file includes itself, either directly or indirectly. */
+#define T3_ERR_RECURSIVE_INCLUDE (-72)
 /*@}*/
 
 #if INT_MAX < 2147483647
@@ -360,8 +366,14 @@ T3_CONFIG_API void t3_config_delete_schema(t3_config_schema_t *schema);
 
 /** @name Flags for ::t3_config_open_from_path. */
 /*@{*/
-/** Flag for ::t3_config_open_from_path, indicating that search paths should first be split on colons. */
+/** Search paths should first be split on colons or semi-colons (depending on the platform standard). */
 #define T3_CONFIG_SPLIT_PATH (1<<0)
+/** Only allow file names which are in the path.
+
+    This flag disallows use of .. to read files in directories above the
+    directories in the path, and also disallows absolute file names.
+*/
+#define T3_CONFIG_CLEAN_NAME (1<<1)
 /*@}*/
 
 /** Open a file for reading using a search path.

@@ -46,20 +46,38 @@ static FILE *try_open(const char *dir, size_t dir_len, const char *name) {
 //FIXME: expand ^~
 
 
-FILE *t3_config_open_from_path(const char **path, const char *name, int opts) {
+FILE *t3_config_open_from_path(const char **path, const char *name, int flags) {
 	FILE *result;
 
-	if (name[0] == '/')
+#ifdef _WIN32
+	/* For Windows machines, anything starting with a drive letter, or a directory
+	   separator is considered an absolute path. */
+	if ((strchr("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", name[0]) != NULL && name[1] == ':') ||
+			strchr("/\\", name[0]) != NULL) {
+#else
+	if (name[0] == '/') {
+#endif
+		if (flags & T3_CONFIG_CLEAN_NAME) {
+			errno = EINVAL;
+			return NULL;
+		}
 		return try_open("", 0, name);
+	}
+
+	//FIXME: cleanse name if T3_CONFIG_CLEAN_NAME was set.
 
 	errno = EINVAL;
 	for (; *path != NULL; path++) {
-		if (opts & T3_CONFIG_SPLIT_PATH) {
+		if (flags & T3_CONFIG_SPLIT_PATH) {
 			const char *search_from, *colon;
 
 			search_from = *path;
 			while (1) {
+#ifdef _WIN32
+				colon = strchr(search_from, ';');
+#else
 				colon = strchr(search_from, ':');
+#endif
 				if (colon != NULL) {
 					if ((result = try_open(search_from, search_from - colon, name)) != NULL || errno != ENOENT)
 						return result;

@@ -48,6 +48,7 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 	context->result = NULL;
 	context->constraint_parser = t3_false;
 	context->error_extra = NULL;
+	context->included = NULL;
 
 	/* Initialize lexer. */
 	if (_t3_config_lex_init_extra(context, &context->scanner) != 0) {
@@ -73,6 +74,8 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 		/* ... and set context->config to NULL so we return NULL at the end. */
 		context->result = NULL;
 	}
+	/* Delete the chain of included files (if there still is one after an error). */
+	t3_config_delete(context->included);
 	/* Free memory allocated by lexer. */
 	_t3_config_lex_destroy(context->scanner);
 	return context->result;
@@ -451,5 +454,7 @@ const char *t3_config_strerror(int error) {
 			return _("schema constraint violated");
 		case T3_ERR_RECURSIVE_TYPE:
 			return _("recursive type definition");
+		case T3_ERR_RECURSIVE_INCLUDE:
+			return _("recursive include");
 	}
 }

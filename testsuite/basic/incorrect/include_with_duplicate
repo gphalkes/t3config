@@ -1,0 +1,3 @@
+%include = "correct/simple_include"
+
+wrap = no

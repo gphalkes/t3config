@@ -171,12 +171,27 @@ static void include_file(struct _t3_config_this *LLthis, t3_config_t *item, t3_c
 	yyscan_t scanner;
 	int scan_type;
 	FILE *file;
+	t3_config_t *included;
 
 	yyscan_t new_scanner;
 	FILE *new_file;
 	int result;
 
-	/* FIXME: check for recursive includes! */
+	for (included = _t3_config_data->included; included != NULL; included = included->next) {
+		if (strcmp(included->value.string, include->value.string) == 0) {
+			/* It is an error to use recursive includes. */
+			if (_t3_config_data->opts->flags & T3_CONFIG_VERBOSE_ERROR)
+				_t3_config_data->error_extra = t3_config_take_string(include);
+
+			/* Delete "include" because we no longer need it. */
+			t3_config_delete(include);
+
+			LLabort(LLthis, T3_ERR_RECURSIVE_INCLUDE);
+		}
+	}
+
+	include->next = _t3_config_data->included;
+	_t3_config_data->included = include;
 
 	/* Use either the default or the user supplied include-callback function to open
 	   the include file. */
@@ -186,10 +201,6 @@ static void include_file(struct _t3_config_this *LLthis, t3_config_t *item, t3_c
 	else
 		new_file = _t3_config_data->opts->include_callback.user.open(include->value.string,
 			_t3_config_data->opts->include_callback.user.data);
-
-	/* Delete the node holding the name of the include file, because we won't be needing
-	   it anymore. */
-	t3_config_delete(include);
 
 	/* Abort if the include file could not be found. */
 	if (new_file == NULL) {
@@ -228,6 +239,12 @@ static void include_file(struct _t3_config_this *LLthis, t3_config_t *item, t3_c
 	/* Abort if the parse of the include file was not successful. */
 	if (result != T3_ERR_SUCCESS)
 		LLabort(LLthis, result);
+
+	/* Remove the current include from the list (stack) of included files. */
+	_t3_config_data->included = _t3_config_data->included->next;
+	/* Prevent deletion of the entire chain. */
+	include->next = NULL;
+	t3_config_delete(include);
 }
 
 }

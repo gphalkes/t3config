@@ -18,9 +18,11 @@
 #include <locale.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <libgen.h>
 #include "config.h"
 
-static const t3_config_opts_t opts = { T3_CONFIG_VERBOSE_ERROR, {{ NULL, 0 }} };
+static const char *path[2];
+static const t3_config_opts_t opts = { T3_CONFIG_VERBOSE_ERROR | T3_CONFIG_INCLUDE_DFLT, {{ path, 0 }} };
 
 /** Alert the user of a fatal error and quit.
     @param fmt The format string for the message. See fprintf(3) for details.
@@ -102,6 +104,10 @@ int main(int argc, char *argv[]) {
 	} else if (argc > 2) {
 		fatal("Usage: test [<test file>]\n");
 	}
+
+	path[0] = dirname(dirname(strdup(argv[optind])));
+	path[1] = NULL;
+
 	/* Read file. */
 	if ((config = t3_config_read_file(file, &error, &opts)) == NULL)
 		fatal("Error loading input: %s %s @ %d\n", t3_config_strerror(error.error),

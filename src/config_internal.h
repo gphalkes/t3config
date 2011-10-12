@@ -64,6 +64,7 @@ typedef struct {
 	char *error_extra;
 
 	t3_config_t *current_section; /* Used only for including files, to hold the current section. */
+	t3_config_t *included; /* Holds a list of included files (strings). */
 } parse_context_t;
 
 T3_CONFIG_LOCAL char *_t3_config_get_text(yyscan_t scanner);
