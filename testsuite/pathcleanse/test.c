@@ -93,6 +93,6 @@ int main(int argc, char *argv[]) {
 	if (failed != 0)
 		fprintf(stderr, "%zd out of %zd failed\n", failed, i);
 	else
-		fprintf(stderr, "Testsuite passed successfully\n");
+		fprintf(stderr, "Testsuite passed correctly\n");
 	return EXIT_SUCCESS;
 }

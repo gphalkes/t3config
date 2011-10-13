@@ -7,6 +7,10 @@
   Error for incorrect test 2: schema constraint violated @ 37 (% >= 0 | /negative = true)
   Error for incorrect test 3: schema constraint violated @ 39 (values)
   Error for incorrect test 4: key has invalid type @ 43 ((null))
+==== Testcase tests/deref_sub ====
+  Error for incorrect test 1: schema constraint violated @ 44 (/[ref])
+  Error for incorrect test 2: schema constraint violated @ 49 (/[ref]/test)
+  Error for incorrect test 3: schema constraint violated @ 56 (/[ref]/test = 7)
 ==== Testcase tests/list-length ====
   Error for incorrect test 1: schema constraint violated @ 32 (# > 3)
   Error for incorrect test 2: schema constraint violated @ 34 (!test2 | #test2 < 3)
