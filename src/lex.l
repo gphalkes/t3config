@@ -72,7 +72,7 @@ NUMBER_PAT     [-+]?([0-9]*\.[0-9]+([eE][-+][0-9]+)?)|(?i:nan|inf(inity)?)
 
 <INITIAL>{
 %?{IDENT_PAT}                          return IDENTIFIER;
-\n                                     return '\n';
+\r?\n                                  return '\n';
 #.*                                    /* Ignore comments */
 }
 <CONSTRAINT>{

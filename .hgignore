@@ -17,4 +17,6 @@ testsuite/*/test/.deps
 testsuite/*/test/test
 testsuite/*/testlog*
 testsuite/*/work
-
+testsuite/pathcleanse/test
+testsuite/pathcleanse/.objects
+testsuite/pathcleanse/.deps

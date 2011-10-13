@@ -1,9 +1,3 @@
-- function to open file using a path
-- handle windows newline, and perhaps old MAC newline
 - how should we handle out-of-range values? Reporting an error may not always
   be the best idea (make it an option!)
-- include mechanism. One way would be to use a callback function which should
-  return a FILE * when passed a file name. However, that should also be passed
-  some user data for the file path etc.
-- make testsuite
 - document schema specification, including the constraints
