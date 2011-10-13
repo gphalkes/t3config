@@ -21,7 +21,7 @@
 #include "config.h"
 
 static const t3_config_opts_t opts = { T3_CONFIG_VERBOSE_ERROR, {{ NULL, 0}} };
-t3_config_schema_t *_t3_config_config2schema(t3_config_t *config, t3_config_error_t *error);
+t3_config_schema_t *_t3_config_config2schema(t3_config_t *config, t3_config_error_t *error, const t3_config_opts_t *opts);
 
 static const char meta_schema_buffer[] = {
 #include "meta_schema.bytes"
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 		fatal("test does not conform to schema: %s @ %d (%s)\n", t3_config_strerror(error.error), error.line_number, error.extra);
 	t3_config_delete_schema(meta_schema);
 
-	if ((schema = _t3_config_config2schema(t3_config_get(test, "schema"), &error)) == NULL)
+	if ((schema = _t3_config_config2schema(t3_config_get(test, "schema"), &error, &opts)) == NULL)
 		fatal("test schema can not be converted: %s @ %d (%s)\n", t3_config_strerror(error.error), error.line_number, error.extra);
 
 	for (testcase = t3_config_get(t3_config_get(test, "correct"), NULL), testnr = 1;

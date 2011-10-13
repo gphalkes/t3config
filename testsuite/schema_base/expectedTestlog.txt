@@ -1,4 +1,5 @@
 ====== CORRECT TESTCASES ======
+==== Testcase correct/deref_sub ====
 ==== Testcase correct/meta_schema.schema ====
 ==== Testcase correct/n-of-m ====
 ==== Testcase correct/style.schema ====
@@ -25,7 +26,7 @@ Error loading input: invalid constraint (null) @ 4
 ==== Testcase incorrect/list-length3 ====
 Error loading input: invalid constraint (null) @ 7
 ==== Testcase incorrect/missing_allowed_or_item_type.schema ====
-Error loading input: schema constraint violated types definition requires allowed-keys or item-type @ 0
+Error loading input: schema constraint violated 'types' requires 'allowed-keys' or 'item-type' @ 0
 ==== Testcase incorrect/n-of-m01 ====
 Error loading input: invalid constraint (null) @ 10
 ==== Testcase incorrect/n-of-m02 ====
@@ -35,11 +36,11 @@ Error loading input: recursive type definition recursive @ 2
 ==== Testcase incorrect/test.cfg ====
 Error loading input: key is not allowed here adsf @ 4
 ==== Testcase incorrect/unknown_type1.schema ====
-Error loading input: schema constraint violated item-type must be a basic type or defined in types @ 1
+Error loading input: schema constraint violated 'item-type' must be a basic type or defined in 'types' @ 1
 ==== Testcase incorrect/unknown_type2.schema ====
-Error loading input: schema constraint violated type must be a basic type or defined in types @ 3
+Error loading input: schema constraint violated 'type' must be a basic type or defined in 'types' @ 3
 ==== Testcase incorrect/unknown_type3.schema ====
-Error loading input: schema constraint violated item-type must be a basic type or defined in types @ 4
+Error loading input: schema constraint violated 'item-type' must be a basic type or defined in 'types' @ 4
 ==== Testcase incorrect/wrong_constraint01 ====
 Error loading input: invalid constraint (null) @ 4
 ==== Testcase incorrect/wrong_constraint02 ====

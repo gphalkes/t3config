@@ -322,7 +322,7 @@ void t3_config_delete_schema(t3_config_schema_t *schema) {
 }
 
 #ifdef DEBUG
-t3_config_schema_t *_t3_config_config2schema(t3_config_t *config, t3_config_error_t *error, void *opts) {
+t3_config_schema_t *_t3_config_config2schema(t3_config_t *config, t3_config_error_t *error, const t3_config_opts_t *opts) {
 	return handle_schema_validation(config, error, opts);
 }
 #endif

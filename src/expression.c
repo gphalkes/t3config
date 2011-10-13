@@ -222,10 +222,12 @@ static const t3_config_t *lookup_node_meta(const expr_node_t *expr, const t3_con
 			*success = t3_false;
 			return NULL;
 		}
-		case EXPR_PATH:
-			return lookup_node_meta(expr->value.operand[1],
-				lookup_node_meta(expr->value.operand[0], config, root, base, success),
-				root, base, success);
+		case EXPR_PATH: {
+			/* Take into account that when NULL is returned, this may mean that we simply
+			   can't resolve the reference at this time. */
+			const t3_config_t *sub_config = lookup_node_meta(expr->value.operand[0], config, root, base, success);
+			return sub_config == NULL ? NULL : lookup_node_meta(expr->value.operand[1], sub_config, root, base, success);
+		}
 		case EXPR_DEREF:
 			return NULL;
 		default:
@@ -261,6 +263,8 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expr, const t3_conf
 			const t3_config_t *context = lookup_node_meta(expr->value.operand[0], config, root, config, &success);
 			if (!success)
 				return T3_CONFIG_NONE;
+			else if (context == NULL)
+				return T3_CONFIG_ANY;
 			return operand_type_meta(expr->value.operand[1], context, root);
 		}
 		case EXPR_DEREF:
