@@ -8,6 +8,10 @@ structured configuration files.
 libt3config is part of the <a href="http://os.ghalkes.nl/t3/">Tilde Terminal
 Toolkit (T3)</a>.
 
+Information is available about the @ref syntax "syntax of the configuration files",
+and @ref schema "schema syntax". Finally there is the <a class="el"
+href="modules.html">API documentation</a>.
+
 */
 
 //==========================================================
@@ -45,7 +49,9 @@ accepted as floating point numbers.
 Strings are text enclosed in either @" or '. Strings may not include newline
 characters. To include the delimiting character in the string, repeat the
 character twice (i.e. <tt>'foo''bar'</tt> encodes the string <tt>foo'bar</tt>).
-Multiple strings may be concatenated by using a +.
+Multiple strings may be concatenated by using a plus sign (+). To split a
+string accross multiple lines, use string concatenation using the plus sign,
+where a plus sign must appear before the newline after each substring.
 
 @subsection booleans Booleans
 
@@ -72,26 +78,26 @@ once.
 
 @subsection example Example
 
-<pre>
-@# integer:
+@verbatim
+# integer:
 i = 9
-@# floating point number:
+# floating point number:
 f = 1.0
-@# strings:
+# strings:
 s1 = "A simple string"
 s2 = 'Another string, with embedded double quotes: "'
 s3 = "Embedded double qoutes "" in a double quoted string"
 s4 = "Multi-part string" +
     ' split over multiple lines'
-@# boolean:
+# boolean:
 b = true
-@# lists:
+# lists:
 l1 = ( 1, yes, "text", ( 7, 8, 9 ), { key = "value" } )
-@# The following is equivalent to: l2 = ( 1, yes, "text" )
-@%l2 = 1
-@%l2 = yes
-@%l2 = "text"
-@# sections:
+# The following is equivalent to: l2 = ( 1, yes, "text" )
+%l2 = 1
+%l2 = yes
+%l2 = "text"
+# sections:
 sect {
 	foo = yes
 	bar = 9
@@ -99,7 +105,7 @@ sect {
 		l1 = ( true, false, yes, no )
 	}
 }
-</pre>
+@endverbatim
 
 */
 
@@ -133,7 +139,7 @@ least the @c type key set to a string describing the type. For example, to
 define a configuration which may have two keys, @c version and @c value, both
 of integer type, one might write the following:
 
-<pre>
+@verbatim
 allowed-keys {
 	version {
 		type = "int"
@@ -142,20 +148,20 @@ allowed-keys {
 		type = "int"
 	}
 }
-</pre>
+@endverbatim
 
 Each key description section, such as @c version in the example above, has a
 set of permissible keys, depending on the value of its @c type key. The @c
-constraint list is always allowed. If @c type is set to @c "list" or @c
-"section", the @c item-type key is allowed, with type string. If @c type is set
-to @c "section", an @c allowed-keys section, exactly like the @c allowed-keys
+constraint list is always allowed. If @c type is set to @c list or @c
+section, the @c item-type key is allowed, with type string. If @c type is set
+to @c section, an @c allowed-keys section, exactly like the @c allowed-keys
 section at the top level, is allowed.
 
 The example below declares that the only allowed key is named @c car, which
 may contain any of the keys @c make, @c model and @c registration, all with
 string type.
 
-<pre>
+@verbatim
 allowed-keys {
 	car {
 		type = "section"
@@ -172,7 +178,7 @@ allowed-keys {
 		}
 	}
 }
-</pre>
+@endverbatim
 
 @section types User-defined types
 
@@ -184,7 +190,7 @@ described by a section with the @c make, @c model and @c registration keys.
 This can be easily achieved by defining a @c car type in the @c types top-level
 section:
 
-<pre>
+@verbatim
 types {
 	car {
 		type = "section"
@@ -208,7 +214,7 @@ allowed-keys {
 		item-type = "car"
 	}
 }
-</pre>
+@endverbatim
 
 If a type is listed in the @c types section, it may be used in the @c type key
 of any definition, be it a @c types definition, a definition in @c allowed-keys
@@ -229,14 +235,14 @@ When constraints are placed on simple types (integer, floating point number,
 string or boolean), the value of the key may be accessed by using a percent
 sign (@%). For example:
 
-<pre>
+@verbatim
 allowed-keys {
 	version {
 		type = "int"
-		@%constraint = "% > 0"
+		%constraint = "% > 0"
 	}
 }
-</pre>
+@endverbatim
 
 indicates that the value of the key @c version must be greater than 0.
 
@@ -262,27 +268,27 @@ For lists it is also possible to put a constraint on their size. To do this,
 use the hash sign (@#) instead of the percent sign, and treat its value as an
 integer:
 
-<pre>
+@verbatim
 allowed-keys {
 	cars {
 		type = "list"
-		@%constraint = "# >= 2"
+		%constraint = "# >= 2"
 	}
 }
-</pre>
+@endverbatim
 
 Constraints on section types can use the names of the constituent keys. When
 used in a comparison, the key is replaced with its value. When used alone, it
 evaluates to true if the key is present, and to false if it is absent:
 
-<pre>
+@verbatim
 allowed-keys {
 	version { type = "int" }
 	number { type = "int"
 }
-@%constraint = "version"     @# Assert that the version key is present
-@%constraint = "number = 1"  @# Assert that the number key must have value 1
-</pre>
+%constraint = "version"     # Assert that the version key is present
+%constraint = "number = 1"  # Assert that the number key must have value 1
+@endverbatim
 
 Note that if @c number is absent, the evaluation of <tt>number = 1</tt> would
 result in @c false, thereby deeming the configuration invalid. If the key may
@@ -300,14 +306,14 @@ one to compare sizes of different lists in a section, or by using references
 (see next sub-section), even with values from a completely different part of
 the configuration file.
 
-<pre>
+@verbatim
 allowed-keys {
 	cars {
 		type = "list"
 	}
 }
-@%constraint = "#cars >= 2"
-</pre>
+%constraint = "#cars >= 2"
+@endverbatim
 
 
 @subsection references References
@@ -315,25 +321,25 @@ allowed-keys {
 One can refer to other keys in the configuration file, using a syntax
 similar to the Un*x file-name syntax:
 
-<pre>
+@verbatim
 allowed-keys {
 	foo {
 		type = "int"
-		@%constraint = "/bar"
+		%constraint = "/bar"
 	}
 	bar {
 		type = "int"
 	}
 }
-</pre>
+@endverbatim
 
 This indicates that if @c foo is present, then so must @c bar. In this specific
 example the constraints can of course also be expressed by the top-level
 constraint <tt>!foo | bar</tt>, but remember that these types of expressions
 may also be used on types. Furthermore, the values of string keys may be used
-in the path by enclosing them in square brackets ([ ]):
+in the path by enclosing them in square brackets ([]):
 
-<pre>
+@verbatim
 allowed-keys {
 	car {
 		type = "section"
@@ -342,14 +348,14 @@ allowed-keys {
 			make { type = "string" }
 			mode { type = "string" }
 		}
-		@%constraint = "/owner/[owner]/name"
+		%constraint = "/owner/[owner]/name"
 	}
 	owner {
 		type = "section"
 		item-type ="section"
 	}
 }
-</pre>
+@endverbatim
 
 The constraint in the example indicates that if the @c car section is present,
 there must be a section in the top-level owner section with the name indicated
@@ -365,19 +371,19 @@ detection of a constraint validation. However, in most cases these constraints
 will not make much sense to users. Therefore it is possible to include a
 descriptive string in a constraint, which will be returned instead:
 
-<pre>
+@verbatim
 allowed-keys {
 	foo {
 		type = "int"
-		@%constraint = "{'foo' may only be used simultaneously with 'bar'} /bar"
+		%constraint = "{'foo' may only be used simultaneously with 'bar'} /bar"
 	}
 	bar {
 		type = "int"
 	}
 }
-</pre>
+@endverbatim
 
-The descriptive string must be enclosed in curly braces ({ }), and must be
+The descriptive string must be enclosed in curly braces ({}), and must be
 the first item in the constraint.
 
 */
