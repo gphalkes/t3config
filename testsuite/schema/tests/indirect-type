@@ -1,0 +1,40 @@
+schema {
+	types {
+		indirect {
+			type = "direct"
+		}
+		direct {
+			type = "int"
+			%constraint = "% > 0"
+		}
+	}
+
+	allowed-keys {
+		foo {
+			type = "indirect"
+		}
+		bar {
+			type = "direct"
+		}
+	}
+}
+
+%correct {
+}
+%correct {
+	foo = 3
+}
+%correct {
+	bar = 11
+}
+%correct {
+	foo = 10
+}
+
+%incorrect {
+	bar = 0
+}
+%incorrect {
+	foo = 0
+}
+

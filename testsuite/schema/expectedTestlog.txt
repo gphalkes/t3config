@@ -11,6 +11,9 @@
   Error for incorrect test 1: schema constraint violated @ 44 (/[ref])
   Error for incorrect test 2: schema constraint violated @ 49 (/[ref]/test)
   Error for incorrect test 3: schema constraint violated @ 56 (/[ref]/test = 7)
+==== Testcase tests/indirect-type ====
+  Error for incorrect test 1: schema constraint violated @ 35 (% > 0)
+  Error for incorrect test 2: schema constraint violated @ 38 (% > 0)
 ==== Testcase tests/list-length ====
   Error for incorrect test 1: schema constraint violated @ 32 (# > 3)
   Error for incorrect test 2: schema constraint violated @ 34 (!test2 | #test2 < 3)
@@ -44,6 +47,12 @@
   Error for incorrect test 2: schema constraint violated @ 29 (/[%] = 'blah')
   Error for incorrect test 3: schema constraint violated @ 32 (/[%] = 'blah')
   Error for incorrect test 4: schema constraint violated @ 36 (/[%] = 'blah')
+==== Testcase tests/reference05 ====
+  Error for incorrect test 1: schema constraint violated @ 16 ([test])
+  Error for incorrect test 2: schema constraint violated @ 18 ([test])
+  Error for incorrect test 3: schema constraint violated @ 21 ([test])
+  Error for incorrect test 4: schema constraint violated @ 24 ([test])
+  Error for incorrect test 5: key has invalid type @ 30 (foo)
 ==== Testcase tests/simple ====
   Error for incorrect test 1: key is not allowed here @ 40 (bla)
   Error for incorrect test 2: key has invalid type @ 44 (bar)

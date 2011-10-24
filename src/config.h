@@ -320,7 +320,6 @@ T3_CONFIG_API t3_config_t *t3_config_find(const t3_config_t *config,
 	t3_bool (*predicate)(const t3_config_t *, void *), void *data, t3_config_t *start_from);
 
 /** Get the value of ::T3_CONFIG_VERSION corresponding to the actual used library.
-    @ingroup t3window_other
     @return The value of ::T3_CONFIG_VERSION.
 
     This function can be useful to determine at runtime what version of the library

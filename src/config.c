@@ -288,9 +288,25 @@ int t3_config_add_##name_type(t3_config_t *config, const char *name, arg_type va
 ADD_SIMPLE(bool, t3_bool, T3_CONFIG_BOOL, boolean)
 ADD_SIMPLE(int, t3_config_int_t, T3_CONFIG_INT, integer)
 ADD_SIMPLE(number, double, T3_CONFIG_NUMBER, number)
-ADD(string, const char *, T3_CONFIG_STRING,
-	if ((item->value.string = strdup(value)) == NULL) { t3_config_erase(config, name); return T3_ERR_OUT_OF_MEMORY; }
-)
+
+int t3_config_add_string(t3_config_t *config, const char *name, const char *value) { \
+	t3_config_t *item;
+	char *value_copy;
+
+	if (!can_add(config, name) || !check_name(name))
+		return T3_ERR_BAD_ARG;
+	if (strchr(value, '\n') != NULL)
+		return T3_ERR_BAD_ARG;
+	if ((value_copy = strdup(value)) == NULL)
+		return T3_ERR_OUT_OF_MEMORY;
+
+	if ((item = add_or_replace(config, name, T3_CONFIG_STRING)) == NULL) {
+		free(value_copy);
+		return T3_ERR_OUT_OF_MEMORY;
+	}
+	item->value.string = value_copy;
+	return T3_ERR_SUCCESS;
+}
 
 /** Add a list or section. */
 static t3_config_t *t3_config_add_aggregate(t3_config_t *config, const char *name, int *error, t3_config_type_t type) {

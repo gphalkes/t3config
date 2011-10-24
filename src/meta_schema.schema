@@ -51,7 +51,7 @@ allowed-keys {
 	types {
 		type = "section"
 		item-type = "type"
-		%constraint = "{basic types can not be redefined} !int & !number & !bool & !string & !section & !list"
+		%constraint = "{basic types can not be redefined} !int & !number & !bool & !string & !section & !list & !any"
 	}
 	allowed-keys {
 		type = "allowed-keys"
