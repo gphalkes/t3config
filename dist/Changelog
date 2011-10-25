@@ -1,2 +1,21 @@
+Version 0.2:
+	New features:
+	- Schema validation.
+	- New list syntax using repeated
+		%name = value
+	  instead of
+		name = ( value, ... )
+	- String concatenation to allow strings to be spread over multiple lines,
+	  using 'part1' + 'part2' syntax.
+	- Main type for configuations renamed from t3_config_item_t to t3_config_t.
+	- It is now possible to receive a string with extra information about
+	  errors, for example the name of the duplicate key.
+	- An inclusion mechanism to read other files, if requested.
+
+	Bug Fixes:
+	- More checking for validity of values, both when reading as well as when
+	  creating a configuration programatically.
+	- Allow numeric values to have a leading plus sign.
+
 Version 0.1.1:
 	Initial release
