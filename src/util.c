@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+#include <errno.h>
 #ifdef USE_XLOCALE_H
 #include <xlocale.h>
 #endif
