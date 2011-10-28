@@ -48,7 +48,7 @@ INSTALL=install
 
 # Miscelaneous install paths
 libdir=$(prefix)/lib
-docdir=$(prefix)/share/doc/libt3config-<VERSION>
+docdir=$(prefix)/share/doc/libt3config
 includedir=$(prefix)/include
 pkgconfigdir=$(libdir)/pkgconfig
 
@@ -76,6 +76,13 @@ dist-clean: clean
 src/libt3config.la: $(OBJECTS)
 	$(SILENTLDLT) $(LIBTOOL) $(SILENCELT) --mode=link --tag=CC $(CC) -shared -version-info <VERSIONINFO> $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LDLIBS) $(GETTEXTLIBS) -rpath $(libdir)
 
+# Macros to make DESTDIR support more readable
+_libdir=$(DESTDIR)$(libdir)
+_docdir=$(DESTDIR)$(docdir)
+_includedir=$(DESTDIR)$(includedir)
+_pkgconfigdir=$(DESTDIR)$(pkgconfigdir)
+_LOCALEDIR=$(DESTDIR)$(LOCALEDIR)
+
 libt3config.pc: libt3config.pc.in
 	@{ echo '/^prefix=/c\' ; echo 'prefix=$(prefix)' ; } > .sedscript
 	@LIBDIR=$(libdir); if [ "$${LIBDIR#$(prefix)}" != "$${LIBDIR}" ] ; then LIBDIR="\$${prefix}$${LIBDIR#$(prefix)}" ; fi ; \
@@ -85,19 +92,21 @@ libt3config.pc: libt3config.pc.in
 	sed -f .sedscript $< > $@
 
 install: all
-	$(INSTALL) -d $(libdir)
-	$(LIBTOOL) --mode=install $(INSTALL) -s -m0644 src/libt3config.la $(libdir)
-	chmod 0644 $(libdir)/libt3config.la
-	$(INSTALL) -d $(includedir)/t3/config/t3config
-	$(INSTALL) -m0644 src/config.h src/config_api.h src/config_errors.h $(includedir)/t3/config/t3config
-	$(INSTALL) -d $(docdir)/API/search
-	( cd doc ; find API -type f ) | while read X ; do $(INSTALL) -m0644 doc/$${X} $(docdir)/$${X} ; done
-	$(INSTALL) -m0644 COPYING README Changelog $(docdir)
-	$(INSTALL) -d $(pkgconfigdir)
-	$(INSTALL) -m0644 libt3config.pc $(pkgconfigdir)
+	$(INSTALL) -d $(_libdir)
+	$(LIBTOOL) --mode=install $(INSTALL) -s -m0644 src/libt3config.la $(_libdir)
+	chmod 0644 $(_libdir)/libt3config.la
+	$(INSTALL) -d $(_includedir)/t3/config/t3config
+	$(INSTALL) -m0644 src/config.h src/config_api.h src/config_errors.h $(_includedir)/t3/config/t3config
+	$(INSTALL) -d $(_docdir)/API/search
+	( cd doc ; find API -type f ) | while read X ; do $(INSTALL) -m0644 doc/$${X} $(_docdir)/$${X} ; done
+	$(INSTALL) -m0644 COPYING README Changelog $(_docdir)
+	$(INSTALL) -d $(_pkgconfigdir)
+	$(INSTALL) -m0644 libt3config.pc $(_pkgconfigdir)
 
 uninstall:
-	$(LIBTOOL) --mode=uninstall rm $(libdir)/libt3config.la
-	rm -rf $(includedir)/t3/config
-	rm -rf $(docdir)
-	rm -f $(pkgconfigdir)/libt3config.pc
+	$(LIBTOOL) --mode=uninstall rm $(_libdir)/libt3config.la
+	rm -rf $(_includedir)/t3/config
+	rm -rf $(_docdir)
+	rm -f $(_pkgconfigdir)/libt3config.pc
+
+# LIBVERSION=<LIBVERSION>
