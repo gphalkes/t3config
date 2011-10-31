@@ -134,7 +134,7 @@ t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema
 {
 	validation_context_t context;
 
-	if (((t3_config_t *) schema)->type != T3_CONFIG_SCHEMA) {
+	if (((const t3_config_t *) schema)->type != T3_CONFIG_SCHEMA) {
 		if (error != NULL) {
 			error->error = T3_ERR_BAD_ARG;
 			error->line_number = 0;

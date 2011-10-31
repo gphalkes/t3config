@@ -317,7 +317,7 @@ T3_CONFIG_API t3_config_t *t3_config_get_next(const t3_config_t *config);
     the function returns @c NULL.
 */
 T3_CONFIG_API t3_config_t *t3_config_find(const t3_config_t *config,
-	t3_bool (*predicate)(const t3_config_t *, void *), void *data, t3_config_t *start_from);
+	t3_bool (*predicate)(const t3_config_t *, const void *), const void *data, t3_config_t *start_from);
 
 /** Get the value of ::T3_CONFIG_VERSION corresponding to the actual used library.
     @return The value of ::T3_CONFIG_VERSION.
