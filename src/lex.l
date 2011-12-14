@@ -50,6 +50,10 @@ T3_CONFIG_LOCAL void _t3_config_set_column(int column_no, yyscan_t yyscanner);
 	} \
 } while (0)
 
+#define YY_FATAL_ERROR(x) do { \
+	struct yyguts_t * yyg = (struct yyguts_t*) yyscanner; \
+	_t3_config_abort(yyextra->LLthis, T3_ERR_INTERNAL);\
+} while (0)
 %}
 
 %x CONSTRAINT

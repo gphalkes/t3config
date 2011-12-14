@@ -17,8 +17,8 @@
 
 #include <stdio.h>
 #include <limits.h>
-#include "config_api.h"
-#include "config_errors.h"
+#include <t3config/config_api.h>
+#include <t3config/config_errors.h>
 
 /** @defgroup t3config_other Functions, constants and enums. */
 /** @addtogroup t3config_other */

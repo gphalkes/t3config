@@ -25,6 +25,8 @@ fi
 sed -i "s/<VERSION>/${VERSION}/g" `find ${TOPDIR} -type f`
 sed -i "/#define T3_CONFIG_VERSION/c #define T3_CONFIG_VERSION ${VERSION_BIN}" ${TOPDIR}/src/config.h
 
+( cd ${TOPDIR}/src ; ln -s . t3config )
+
 OBJECTS="`echo \"${SOURCES} ${GENSOURCES} ${AUXSOURCES}\" | tr ' ' '\n' | sed -r 's%\.objects/%%' | egrep '^src/.*\.c$' | sed -r 's/\.c\>/.lo/g' | tr '\n' ' '`"
 
 #FIXME: somehow verify binary compatibility, and print an error if not compatible

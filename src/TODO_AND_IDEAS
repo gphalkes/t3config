@@ -1,3 +1,5 @@
+- define YY_FATAL_ERROR such that exit is never called from the lib
+
 - how should we handle out-of-range values? Reporting an error may not always
   be the best idea (make it an option!)
 - document schema specification, including the constraints
