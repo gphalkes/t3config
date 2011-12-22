@@ -2,7 +2,7 @@ prefix=<PREFIX>
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
-Name: libt3unicode
+Name: libt3config
 Description: T3 Configuration file library
 Version: <VERSION>
 URL: http://os.ghalkes.nl/t3/libt3config.html
