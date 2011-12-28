@@ -129,6 +129,7 @@ EOF
 	PKGCONFIG_DESC="Configuration file library"
 	PKGCONFIG_VERSION="<VERSION>"
 	PKGCONFIG_URL="http://os.ghalkes.nl/t3/libt3config.html"
+	PKGCONFIG_CFLAGS="-I\${includedir}/t3/config"
 	PKGCONFIG_LIBS="-lt3config"
 	gen_pkgconfig libt3config
 
