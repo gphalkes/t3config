@@ -58,7 +58,7 @@ SILENTLDLT=@echo '[LDLT]' $@ ;
 
 OBJECTS=<OBJECTS>
 
-all: src/libt3config.la libt3config.pc
+all: src/libt3config.la
 
 .PHONY: all clean dist-clean install uninstall
 .SUFFIXES: .c .o .lo .la .mo .po
@@ -82,14 +82,6 @@ _docdir=$(DESTDIR)$(docdir)
 _includedir=$(DESTDIR)$(includedir)
 _pkgconfigdir=$(DESTDIR)$(pkgconfigdir)
 _LOCALEDIR=$(DESTDIR)$(LOCALEDIR)
-
-libt3config.pc: libt3config.pc.in
-	@{ echo '/^prefix=/c\' ; echo 'prefix=$(prefix)' ; } > .sedscript
-	@LIBDIR=$(libdir); if [ "$${LIBDIR#$(prefix)}" != "$${LIBDIR}" ] ; then LIBDIR="\$${prefix}$${LIBDIR#$(prefix)}" ; fi ; \
-		{ echo '/^libdir=/c\' ; echo "libdir=$${LIBDIR}" ; } >> .sedscript
-	@INCLUDEDIR=$(includedir); if [ "$${INCLUDEDIR#$(prefix)}" != "$${INCLUDEDIR}" ] ; then INCLUDEDIR="\$${prefix}$${INCLUDEDIR#$(prefix)}" ; fi ; \
-		{ echo '/^includedir=/c\' ; echo "includedir=$${INCLUDEDIR}" ; } >> .sedscript
-	sed -f .sedscript $< > $@
 
 install: all
 	$(INSTALL) -d $(_libdir)

@@ -1,3 +1,8 @@
+Version 0.2.1:
+	Bug Fixes:
+	- Fix pkg-config name,
+	- Prevent flex lexer from calling exit.
+
 Version 0.2.0:
 	New features:
 	- Schema validation.

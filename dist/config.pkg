@@ -58,5 +58,79 @@ EOF
 		test_link "newlocale/uselocale/freelocale in xlocale.h" && CONFIGFLAGS="${CONFIGFLAGS} -DHAS_USELOCALE -DUSE_XLOCALE_H"
 	fi
 
+	PKGCONFIG_DESC="T3 Configuration file library"
+	PKGCONFIG_VERSION="<VERSION>"
+	PKGCONFIG_URL="http://os.ghalkes.nl/t3/libt3config.html"
+	PKGCONFIG_LIBS: -L${libdir} -lt3config
+	gen_pkgconfig libt3config
+
+	create_makefile "CONFIGFLAGS=${CONFIGFLAGS}"
+}
+# Copyright (C) 2011 G.P. Halkes
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3, as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+EXTENSIONS="c libtool pkgconfig verbose_compile gettext"
+
+LTSHARED=1
+INSTALLDIRS="libdir docdir includedir"
+DEFAULT_LINGUAS=nl
+
+config() {
+	clean_c
+	cat > .config.c <<EOF
+#include <string.h>
+
+int main(int argc, char *argv[]) {
+	strdup(argv[0]);
+	return 0;
+}
+EOF
+	test_link "strdup" && CONFIGFLAGS="${CONFIGFLAGS} -DHAS_STRDUP"
+
+	clean_c
+	cat > .config.c <<EOF
+#include <locale.h>
+
+int main(int argc, char *argv[]) {
+	locale_t c_locale = newlocale(LC_ALL, "C", (locale_t) 0);
+	uselocale(c_locale);
+	freelocale(c_locale);
+	return 0;
+}
+EOF
+	if test_link "newlocale/uselocale/freelocale in locale.h" ; then
+		CONFIGFLAGS="${CONFIGFLAGS} -DHAS_USELOCALE"
+	else
+		clean_c
+		cat > .config.c <<EOF
+#include <locale.h>
+#include <xlocale.h>
+
+int main(int argc, char *argv[]) {
+	locale_t c_locale = newlocale(LC_ALL, "C", (locale_t) 0);
+	uselocale(c_locale);
+	freelocale(c_locale);
+	return 0;
+}
+EOF
+		test_link "newlocale/uselocale/freelocale in xlocale.h" && CONFIGFLAGS="${CONFIGFLAGS} -DHAS_USELOCALE -DUSE_XLOCALE_H"
+	fi
+
+	PKGCONFIG_DESC="Configuration file library"
+	PKGCONFIG_VERSION="<VERSION>"
+	PKGCONFIG_URL="http://os.ghalkes.nl/t3/libt3config.html"
+	PKGCONFIG_LIBS="-lt3config"
+	gen_pkgconfig libt3config
+
 	create_makefile "CONFIGFLAGS=${CONFIGFLAGS}"
 }
