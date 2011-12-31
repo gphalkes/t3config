@@ -61,7 +61,7 @@ static t3_bool validate_constraints(const t3_config_t *config_part, const t3_con
 	for (constraint = t3_config_get(t3_config_get(schema_part, "constraint"), NULL);
 			constraint != NULL; constraint = t3_config_get_next(constraint))
 	{
-		if (constraint->type == T3_CONFIG_EXPRESSION && !_t3_config_evaluate_expr(constraint->value.expr, config_part, context->root)) {
+		if (constraint->type == (int) T3_CONFIG_EXPRESSION && !_t3_config_evaluate_expr(constraint->value.expr, config_part, context->root)) {
 			if (context->error != NULL) {
 				context->error->error = T3_ERR_CONSTRAINT_VIOLATION;
 				context->error->line_number = config_part->line_number;
@@ -77,7 +77,7 @@ static t3_bool validate_constraints(const t3_config_t *config_part, const t3_con
 static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t type, const t3_config_t *schema_part,
 		validation_context_t *context)
 {
-	if (type != config_part->type && !(type == T3_CONFIG_LIST && config_part->type == T3_CONFIG_PLIST) && type != T3_CONFIG_ANY) {
+	if (type != config_part->type && !(type == T3_CONFIG_LIST && config_part->type == T3_CONFIG_PLIST) && type != (int) T3_CONFIG_ANY) {
 		if (context->error != NULL) {
 			context->error->error = T3_ERR_INVALID_KEY_TYPE;
 			context->error->line_number = config_part->line_number;
@@ -134,7 +134,7 @@ t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema
 {
 	validation_context_t context;
 
-	if (((const t3_config_t *) schema)->type != T3_CONFIG_SCHEMA) {
+	if ((int) ((const t3_config_t *) schema)->type != T3_CONFIG_SCHEMA) {
 		if (error != NULL) {
 			error->error = T3_ERR_BAD_ARG;
 			error->line_number = 0;

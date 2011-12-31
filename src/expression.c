@@ -280,7 +280,7 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expr, const t3_conf
 			else
 				type_int = operand_type_meta(expr->value.operand[0], config, root);
 
-			if (type_int != T3_CONFIG_LIST && type_int != T3_CONFIG_ANY)
+			if (type_int != T3_CONFIG_LIST && (int) type_int != T3_CONFIG_ANY)
 				return T3_CONFIG_NONE;
 
 			return T3_CONFIG_INT;
@@ -336,7 +336,7 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expr, const t3_config_t *con
 			if (type[0] == T3_CONFIG_NONE || type[1] == T3_CONFIG_NONE)
 				return t3_false;
 
-			if (type[0] == T3_CONFIG_ANY || type[1] == T3_CONFIG_ANY)
+			if ((int) type[0] == T3_CONFIG_ANY || (int) type[1] == T3_CONFIG_ANY)
 				return t3_true;
 
 			if (type[0] != type[1])

@@ -1,5 +1,9 @@
+Version 0.2.2:
+	Bug fixes:
+	- Use LLnextgen version 0.5.5 which fixes a bug in array dimensioning.
+
 Version 0.2.1:
-	Bug Fixes:
+	Bug fixes:
 	- Fix pkg-config name,
 	- Prevent flex lexer from calling exit.
 
@@ -17,7 +21,7 @@ Version 0.2.0:
 	  errors, for example the name of the duplicate key.
 	- An inclusion mechanism to read other files, if requested.
 
-	Bug Fixes:
+	Bug fixes:
 	- More checking for validity of values, both when reading as well as when
 	  creating a configuration programatically.
 	- Allow numeric values to have a leading plus sign.

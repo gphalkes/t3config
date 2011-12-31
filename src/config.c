@@ -111,7 +111,7 @@ void t3_config_delete(t3_config_t *config) {
 
 	while (config != NULL) {
 		config = ptr->next;
-		switch (ptr->type) {
+		switch ((int) ptr->type) {
 			case T3_CONFIG_STRING:
 				free(ptr->value.string);
 				break;
@@ -370,7 +370,7 @@ int t3_config_set_list_type(t3_config_t *config, t3_config_type_t type) {
 t3_config_t *t3_config_get(const t3_config_t *config, const char *name) {
 	t3_config_t *result;
 	if (config == NULL || (config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_LIST &&
-			config->type != T3_CONFIG_PLIST && config->type != T3_CONFIG_SCHEMA))
+			config->type != T3_CONFIG_PLIST && (int) config->type != T3_CONFIG_SCHEMA))
 		return NULL;
 	if (name != NULL && (config->type == T3_CONFIG_LIST || config->type == T3_CONFIG_PLIST))
 		return NULL;
