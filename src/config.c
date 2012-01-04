@@ -474,3 +474,7 @@ const char *t3_config_strerror(int error) {
 			return _("recursive include");
 	}
 }
+
+int t3_config_get_line_number(const t3_config_t *config) {
+	return config == NULL ? -1 : config->line_number;
+}

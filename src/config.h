@@ -357,6 +357,8 @@ T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_buffer(const char *buffe
     @param error A pointer to the location to store an error value (or @c NULL).
 	@param flags A set of flags influencing the behaviour, or @c 0 for defaults.
 	@return ::t3_true if the config is adheres to the schema, ::t3_false otherwise.
+
+    Currently, only the flag T3_CONFIG_VERBOSE_ERROR can be used.
 */
 T3_CONFIG_API t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema,
 	t3_config_error_t *error, int flags);
@@ -384,6 +386,9 @@ T3_CONFIG_API void t3_config_delete_schema(t3_config_schema_t *schema);
     On error, @c errno is set. Possible flags for @p opts are: ::T3_CONFIG_SPLIT_PATH.
 */
 T3_CONFIG_API FILE *t3_config_open_from_path(const char **path, const char *name, int flags);
+
+/** Get the line number at which the (sub-)configuration item was defined. */
+T3_CONFIG_API int t3_config_get_line_number(const t3_config_t *config);
 
 #ifdef __cplusplus
 } /* extern "C" */
