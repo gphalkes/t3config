@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2011 G.P. Halkes
+# Copyright (C) 2012 G.P. Halkes
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3, as
 # published by the Free Software Foundation.
@@ -27,7 +27,7 @@ do
 			;;
 		-h|--help)
 			echo "Usage: data2byes [<options>] [<input files>]"
-			echo "  -s,--strip-comments        Remove lines which start with #"
+			echo "  -s,--strip-comments   Remove lines which start with # and leading whitespace"
 			exit 1
 			;;
 		*)
@@ -37,7 +37,7 @@ do
 done
 
 strip_comments() {
-	sed 's/^[[:space:]][[:space:]]*//;/^#/d;/^$$/d;/^$/d' -- "$@"
+	sed 's/^[[:space:]][[:space:]]*//;/^#/d;/^$/d' -- "$@"
 }
 
 $CAT "$@" | od -An -v -tx1 | sed 's/\([0-9a-fA-F][0-9a-fA-F]\)/0x\1,/g;$s/, *$//'

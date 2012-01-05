@@ -20,7 +20,15 @@
 #include <t3config/config_api.h>
 #include <t3config/config_errors.h>
 
-/** @defgroup t3config_other Functions, constants and enums. */
+/** @defgroup t3config_other Functions, constants and enums.
+    These are the functions and associated constants and enums for manipulating
+    configuration data. All functions for retrieving data from a config structure
+    in the libt3config library allow a @c NULL value to be passed as their first
+    parameter. This allows one to simply pass the result from for example
+    ::t3_config_get to ::t3_config_get_string, without checking the result of
+    the former. If the string is not present, the result of the combined call
+    will simply yield the default value (@c NULL).
+*/
 /** @addtogroup t3config_other */
 /** @{ */
 
