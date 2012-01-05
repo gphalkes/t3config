@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 G.P. Halkes
+/* Copyright (C) 2011-2012 G.P. Halkes
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 3, as
    published by the Free Software Foundation.
@@ -93,6 +93,8 @@ typedef struct {
     When using this flags, the @c user member of the ::t3_config_opts_t
     @c include_callback union must be filled in. */
 #define T3_CONFIG_INCLUDE_USER (1<<2)
+/** Return the file name where the error occured in the ::t3_config_error_t struct. */
+#define T3_CONFIG_ERROR_FILE_NAME (1<<3)
 /*@}*/
 
 /** A structure representing an error, with line number.
@@ -103,7 +105,8 @@ typedef struct {
 typedef struct {
 	int error; /**< An integer indicating what went wrong. */
 	int line_number; /**< The line number where the error occured. */
-	char *extra; /**< Further information about the error or @c NULL, but only if ::T3_CONFIG_VERBOSE_ERROR was set. */
+	char *extra; /**< Further information about the error or @c NULL, but only if ::T3_CONFIG_VERBOSE_ERROR was set. Must be free'd. */
+	char *file_name; /**< File in which the error occured. Must be free'd. */
 } t3_config_error_t;
 
 /** @name Error codes (libt3config specific) */
@@ -389,6 +392,12 @@ T3_CONFIG_API FILE *t3_config_open_from_path(const char **path, const char *name
 
 /** Get the line number at which the (sub-)configuration item was defined. */
 T3_CONFIG_API int t3_config_get_line_number(const t3_config_t *config);
+/** Get the file name in which the (sub-)configuration item was defined.
+    This function will return @c NULL if it was not created in a file, or it
+    was defined in the file/buffer passed to ::t3_config_read_file or
+    ::t3_config_read_buffer.
+*/
+T3_CONFIG_API const char *t3_config_get_file_name(const t3_config_t *config);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -196,3 +196,19 @@ t3_config_type_t _t3_config_str2type(const char *name) {
 			return map[i].type;
 	return T3_CONFIG_NONE;
 }
+
+file_name_t *_t3_config_ref_file_name(const t3_config_t *config) {
+	if (config == NULL || config->file_name == NULL)
+		return NULL;
+	config->file_name->count++;
+	return config->file_name;
+}
+
+void _t3_config_unref_file_name(const t3_config_t *config) {
+	if (config == NULL || config->file_name == NULL)
+		return;
+	if (--config->file_name->count == 0) {
+		free(config->file_name->file_name);
+		free(config->file_name);
+	}
+}

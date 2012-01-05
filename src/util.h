@@ -26,4 +26,6 @@ T3_CONFIG_LOCAL char *_t3_config_strdup(const char *str);
 T3_CONFIG_LOCAL void _t3_unescape(char *dest, const char *src);
 T3_CONFIG_LOCAL double _t3_config_strtod(char *text);
 T3_CONFIG_LOCAL t3_config_type_t _t3_config_str2type(const char *name);
+T3_CONFIG_LOCAL file_name_t *_t3_config_ref_file_name(const t3_config_t *config);
+T3_CONFIG_LOCAL void _t3_config_unref_file_name(const t3_config_t *config);
 #endif

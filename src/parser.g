@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 G.P. Halkes
+/* Copyright (C) 2011-2012 G.P. Halkes
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 3, as
    published by the Free Software Foundation.
@@ -49,6 +49,7 @@ static t3_config_t *allocate_item(struct _t3_config_this *LLthis, t3_bool alloca
 	result->type = T3_CONFIG_NONE;
 	result->line_number = _t3_config_data->line_number;
 	result->value.ptr = NULL;
+	result->file_name = _t3_config_ref_file_name(_t3_config_data->included);
 
 	if (allocate_name) {
 		if ((result->name = _t3_config_strdup(_t3_config_get_text(_t3_config_data->scanner))) == NULL)
@@ -166,10 +167,24 @@ void LLmessage(struct _t3_config_this *LLthis, int LLtoken) {
 	LLabort(LLthis, T3_ERR_PARSE_ERROR);
 }
 
+static file_name_t *new_file_name(const t3_config_t *config) {
+	file_name_t *result;
+	if ((result = malloc(sizeof(file_name_t))) == NULL)
+		return NULL;
+
+	if ((result->file_name = _t3_config_strdup(t3_config_get_string(config))) == NULL) {
+		free(result);
+		return NULL;
+	}
+	result->count = 1;
+	return result;
+}
+
 static void include_file(struct _t3_config_this *LLthis, t3_config_t *item, t3_config_t *include) {
 	/* Location to save data from current lexer. */
 	yyscan_t scanner;
 	int scan_type;
+	int line_number;
 	FILE *file;
 	t3_config_t *included;
 
@@ -192,6 +207,10 @@ static void include_file(struct _t3_config_this *LLthis, t3_config_t *item, t3_c
 
 	include->next = _t3_config_data->included;
 	_t3_config_data->included = include;
+	_t3_config_unref_file_name(include);
+	if ((include->file_name = new_file_name(include)) == NULL)
+		LLabort(LLthis, T3_ERR_OUT_OF_MEMORY);
+
 
 	/* Use either the default or the user supplied include-callback function to open
 	   the include file. */
@@ -217,12 +236,14 @@ static void include_file(struct _t3_config_this *LLthis, t3_config_t *item, t3_c
 	scanner = _t3_config_data->scanner;
 	scan_type = _t3_config_data->scan_type;
 	file = _t3_config_data->file;
+	line_number = _t3_config_data->line_number;
 
 	_t3_config_data->scanner = new_scanner;
 	_t3_config_data->scan_type = SCAN_FILE;
 	_t3_config_data->file = new_file;
 
 	_t3_config_data->current_section = item;
+	_t3_config_data->line_number = 1;
 	/* Parse the included file. */
 	result = _t3_config_parse_include(_t3_config_data);
 
@@ -239,6 +260,10 @@ static void include_file(struct _t3_config_this *LLthis, t3_config_t *item, t3_c
 	/* Abort if the parse of the include file was not successful. */
 	if (result != T3_ERR_SUCCESS)
 		LLabort(LLthis, result);
+
+	/* The line number may get used if LLabort is called above. Thus we only reset it
+	   after we pass all possible LLabort calls. */
+	_t3_config_data->line_number = line_number;
 
 	/* Remove the current include from the list (stack) of included files. */
 	_t3_config_data->included = _t3_config_data->included->next;

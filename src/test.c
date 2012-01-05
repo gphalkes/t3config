@@ -19,18 +19,25 @@ static void fatal(const char *fmt, ...) {
 	exit(EXIT_FAILURE);
 }
 
+static t3_config_t *config = NULL;
+static t3_config_schema_t *schema = NULL;
+
+static void cleanup(void) {
+	t3_config_delete(config);
+	t3_config_delete_schema(schema);
+}
+
 int main(int argc, char *argv[]) {
 	t3_config_error_t error;
 	FILE *file = stdin;
-	t3_config_t *config;
-	t3_config_schema_t *schema = NULL;
 	t3_config_opts_t opts;
 	const char *path[2] = { NULL, NULL };
 	int c;
 
 	setlocale(LC_ALL, "");
-	opts.flags = T3_CONFIG_VERBOSE_ERROR;
+	opts.flags = T3_CONFIG_VERBOSE_ERROR | T3_CONFIG_ERROR_FILE_NAME;
 
+	atexit(cleanup);
 	while ((c = getopt(argc, argv, "s:hi::")) >= 0) {
 		switch (c) {
 			case 's': {
@@ -40,7 +47,8 @@ int main(int argc, char *argv[]) {
 				if ((schema_file = fopen(optarg, "r")) == NULL)
 					fatal("Error opening schema '%s': %m\n", optarg);
 				if ((schema = t3_config_read_schema_file(schema_file, &error, &opts)) == NULL)
-					fatal("Error loading schema '%s': %s %s @ %d\n", optarg, t3_config_strerror(error.error), error.extra, error.line_number);
+					fatal("%s:%d: error loading schema '%s': %s: %s\n", error.file_name, error.line_number,
+						optarg, t3_config_strerror(error.error), error.extra);
 				fclose(schema_file);
 				break;
 			}
@@ -49,7 +57,7 @@ int main(int argc, char *argv[]) {
 				exit(EXIT_SUCCESS);
 			case 'i':
 				opts.flags |= T3_CONFIG_INCLUDE_DFLT;
-				path[0] = optarg == 0 ? path[0] = "." : optarg;
+				path[0] = optarg == 0 ? "." : optarg;
 				opts.include_callback.dflt.path = path;
 				opts.include_callback.dflt.flags = 0;
 				break;
@@ -66,15 +74,14 @@ int main(int argc, char *argv[]) {
 	}
 
 	if ((config = t3_config_read_file(file, &error, &opts)) == NULL)
-		fatal("Error loading input: %s %s @ %d\n", t3_config_strerror(error.error), error.extra, error.line_number);
+		fatal("%s:%d: error loading input: %s: %s\n", error.file_name, error.line_number,
+			t3_config_strerror(error.error), error.extra);
 	fclose(file);
-	if (schema != NULL && !t3_config_validate(config, schema, &error, T3_CONFIG_VERBOSE_ERROR))
-		fatal("Error validating input: %s %s @ %d\n", t3_config_strerror(error.error),
-			error.extra == NULL ? "" : error.extra, error.line_number);
+	if (schema != NULL && !t3_config_validate(config, schema, &error, T3_CONFIG_VERBOSE_ERROR | T3_CONFIG_ERROR_FILE_NAME))
+		fatal("%s:%d: error validating input: %s: %s\n", error.file_name, error.line_number,
+			t3_config_strerror(error.error), error.extra == NULL ? "" : error.extra);
 
 	t3_config_write_file(config, stdout);
-	t3_config_delete(config);
-	t3_config_delete_schema(schema);
 	return EXIT_SUCCESS;
 }
 

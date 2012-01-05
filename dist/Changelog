@@ -1,3 +1,10 @@
+Version 0.2.3:
+	New features:
+	- Allow retrieval of line number information associated with a t3_config_t
+	  structure.
+	- Track the file name of t3_config_t structs, and return it on error if the
+	  new flag T3_CONFIG_ERROR_FILE_NAME is set.
+
 Version 0.2.2:
 	Bug fixes:
 	- Use LLnextgen version 0.5.5 which fixes a bug in array dimensioning.

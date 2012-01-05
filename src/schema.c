@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 G.P. Halkes
+/* Copyright (C) 2011-2012 G.P. Halkes
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 3, as
    published by the Free Software Foundation.
@@ -18,7 +18,6 @@
 #include "util.h"
 #include "parser.h"
 
-
 typedef struct {
 	const t3_config_t *root, *types;
 	t3_config_error_t *error;
@@ -28,6 +27,12 @@ typedef struct {
 static char meta_schema_buffer[] = {
 #include "meta_schema.bytes"
 };
+
+static char *dup_file_name(const t3_config_t *config) {
+	if (config == NULL || config->file_name == NULL)
+		return NULL;
+	return _t3_config_strdup(config->file_name->file_name);
+}
 
 static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_config_t *schema_part,
 	validation_context_t *context);
@@ -67,6 +72,8 @@ static t3_bool validate_constraints(const t3_config_t *config_part, const t3_con
 				context->error->line_number = config_part->line_number;
 				if (context->flags & T3_CONFIG_VERBOSE_ERROR)
 					context->error->extra = _t3_config_strdup(constraint->value.expr->value.operand[1]->value.string);
+				if (context->flags & T3_CONFIG_ERROR_FILE_NAME)
+					context->error->file_name = dup_file_name(config_part);
 			}
 			return t3_false;
 		}
@@ -83,6 +90,8 @@ static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t typ
 			context->error->line_number = config_part->line_number;
 			if (context->flags & T3_CONFIG_VERBOSE_ERROR)
 				context->error->extra = config_part->name == NULL ? NULL : _t3_config_strdup(config_part->name);
+			if (context->flags & T3_CONFIG_ERROR_FILE_NAME)
+				context->error->file_name = dup_file_name(config_part);
 		}
 		return t3_false;
 	}
@@ -120,6 +129,8 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part, const t3_
 					context->error->line_number = sub_part->line_number;
 					if (context->flags & T3_CONFIG_VERBOSE_ERROR)
 						context->error->extra = _t3_config_strdup(sub_part->name);
+					if (context->flags & T3_CONFIG_ERROR_FILE_NAME)
+						context->error->file_name = dup_file_name(sub_part);
 				}
 				return t3_false;
 			}
@@ -140,6 +151,8 @@ t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema
 			error->line_number = 0;
 			if (flags & T3_CONFIG_VERBOSE_ERROR)
 				error->extra = NULL;
+			if (flags & T3_CONFIG_ERROR_FILE_NAME)
+				error->file_name = NULL;
 		}
 		return t3_false;
 	}
@@ -193,8 +206,12 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t
 		if (expr == NULL) {
 			if (error != NULL) {
 				error->line_number = constraint->line_number;
-				if (opts != NULL && (opts->flags & T3_CONFIG_VERBOSE_ERROR))
-					error->extra = NULL;
+				if (opts != NULL) {
+					if (opts->flags & T3_CONFIG_VERBOSE_ERROR)
+						error->extra = NULL;
+					if (opts->flags & T3_CONFIG_ERROR_FILE_NAME)
+						error->file_name = dup_file_name(constraint);
+				}
 			}
 			return t3_false;
 		}
@@ -203,8 +220,12 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root, t
 			if (error != NULL) {
 				error->error = T3_ERR_INVALID_CONSTRAINT;
 				error->line_number = constraint->line_number;
-				if (opts != NULL && (opts->flags & T3_CONFIG_VERBOSE_ERROR))
-					error->extra = NULL;
+				if (opts != NULL) {
+					if (opts->flags & T3_CONFIG_VERBOSE_ERROR)
+						error->extra = NULL;
+					if (opts->flags & T3_CONFIG_ERROR_FILE_NAME)
+						error->file_name = dup_file_name(constraint);
+				}
 			}
 			return t3_false;
 		}
@@ -260,8 +281,12 @@ static t3_bool has_loops(const t3_config_t *schema, t3_config_error_t *error, co
 			if (error != NULL) {
 				error->error = T3_ERR_RECURSIVE_TYPE;
 				error->line_number = type->line_number;
-				if (opts != NULL && opts->flags & T3_CONFIG_VERBOSE_ERROR)
-					error->extra = _t3_config_strdup(t3_config_get(type, "type")->value.string);
+				if (opts != NULL) {
+					if (opts->flags & T3_CONFIG_VERBOSE_ERROR)
+						error->extra = _t3_config_strdup(t3_config_get(type, "type")->value.string);
+					if (opts->flags & T3_CONFIG_ERROR_FILE_NAME)
+						error->file_name = dup_file_name(type);
+				}
 			}
 			return t3_true;
 		}
@@ -279,8 +304,12 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 		if (error != NULL) {
 			error->error = local_error.error == T3_ERR_OUT_OF_MEMORY ? T3_ERR_OUT_OF_MEMORY : T3_ERR_INTERNAL;
 			error->line_number = 0;
-			if (opts != NULL && (opts->flags & T3_CONFIG_VERBOSE_ERROR))
-				error->extra = NULL;
+			if (opts != NULL) {
+				if (opts->flags & T3_CONFIG_VERBOSE_ERROR)
+					error->extra = NULL;
+				if (opts->flags & T3_CONFIG_ERROR_FILE_NAME)
+					error->file_name = NULL;
+			}
 		}
 		goto error_end;
 	}

@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 G.P. Halkes
+/* Copyright (C) 2011-2012 G.P. Halkes
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 3, as
    published by the Free Software Foundation.
@@ -17,11 +17,17 @@
 
 #include "expression.h"
 
+typedef struct {
+	char *file_name;
+	int count;
+} file_name_t;
+
 struct t3_config_t {
 	t3_config_type_t type;
+	int line_number;
 	struct t3_config_t *next;
 	char *name;
-	int line_number;
+	file_name_t *file_name;
 	union {
 		const void *ptr; /* First member can be assigned. */
 		char *string;

@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 G.P. Halkes
+/* Copyright (C) 2011-2012 G.P. Halkes
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 3, as
    published by the Free Software Foundation.
@@ -37,6 +37,7 @@ t3_config_t *t3_config_new(void) {
 	result->type = T3_CONFIG_SECTION;
 	result->value.list = NULL;
 	result->next = NULL;
+	result->file_name = NULL;
 	return result;
 }
 
@@ -55,8 +56,12 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 		if (error != NULL) {
 			error->error = T3_ERR_OUT_OF_MEMORY;
 			error->line_number = 0;
-			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
-				error->extra = NULL;
+			if (context->opts != NULL) {
+				if (context->opts->flags & T3_CONFIG_VERBOSE_ERROR)
+					error->extra = NULL;
+				if (context->opts->flags & T3_CONFIG_ERROR_FILE_NAME)
+					error->file_name = NULL;
+			}
 		}
 		return NULL;
 	}
@@ -66,8 +71,12 @@ static t3_config_t *config_read(parse_context_t *context, t3_config_error_t *err
 		if (error != NULL) {
 			error->error = retval;
 			error->line_number = _t3_config_get_extra(context->scanner)->line_number;
-			if (context->opts != NULL && (context->opts->flags & T3_CONFIG_VERBOSE_ERROR))
-				error->extra = context->error_extra;
+			if (context->opts != NULL) {
+				if (context->opts->flags & T3_CONFIG_VERBOSE_ERROR)
+					error->extra = context->error_extra;
+				if (context->opts->flags & T3_CONFIG_ERROR_FILE_NAME)
+					error->file_name = t3_config_take_string(context->included);
+			}
 		}
 		/* On failure, we free all memory allocated by the partial parse ... */
 		t3_config_delete(context->result);
@@ -127,6 +136,7 @@ void t3_config_delete(t3_config_t *config) {
 			default:
 				break;
 		}
+		_t3_config_unref_file_name(ptr);
 		free(ptr->name);
 		free(ptr);
 		ptr = config;
@@ -477,4 +487,8 @@ const char *t3_config_strerror(int error) {
 
 int t3_config_get_line_number(const t3_config_t *config) {
 	return config == NULL ? -1 : config->line_number;
+}
+
+const char *t3_config_get_file_name(const t3_config_t *config) {
+	return config != NULL && config->file_name != NULL ? config->file_name->file_name : NULL;
 }
