@@ -12,6 +12,14 @@ Information is available about the @ref syntax "syntax of the configuration file
 and @ref schema "schema syntax". Finally there is the <a class="el"
 href="modules.html">API documentation</a>.
 
+@section Example
+
+The example below shows a small program which loads a configuration file and
+prints it to screen. It can be passed a schema which will be used for validating
+the configuration, and can optionally enable the include mechanism.
+
+@include example.c
+
 */
 
 //==========================================================
