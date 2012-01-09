@@ -78,10 +78,12 @@ typedef struct {
 	int flags; /**< Set of flags, or @c 0 for defaults. */
 	/** Information for facilitating file inclusion. */
 	union {
+		/** Information for the default include mechanism. */
 		struct {
 			const char **path; /**< The @c NULL-terminated array of search paths, passed to ::t3_config_open_from_path. */
 			int flags; /**< The flags, passed to ::t3_config_open_from_path. */
 		} dflt;
+		/** Information for the user include mechanism. */
 		struct {
 			FILE *(*open)(const char *name, void *data); /**< The function to call to open an include file. */
 			void *data; /**< Data passed to the callback function. */

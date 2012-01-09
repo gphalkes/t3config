@@ -222,6 +222,7 @@ static t3_config_t *config_add(t3_config_t *config, const char *name, t3_config_
 	result->type = type;
 	result->next = NULL;
 	result->line_number = 0;
+	result->file_name = NULL;
 
 	if (config->value.list == NULL) {
 		config->value.list = result;

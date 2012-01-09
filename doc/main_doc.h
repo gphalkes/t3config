@@ -115,6 +115,39 @@ sect {
 }
 @endverbatim
 
+@section include File Inclusion
+
+Libt3config provides a mechanism to include other files from a configuration
+file. An included file must be a valid configuration file in itself. By default
+the include mechanism not used. To enable it, set either the
+::T3_CONFIG_INCLUDE_DFLT or the ::T3_CONFIG_INCLUDE_USER flag in the
+::t3_config_opts_t struct passed to ::t3_config_read_file or
+::t3_config_read_buffer (or the equivalent schema loading functions). Depending
+on the flag passed, different members of the ::t3_config_opts_t struct must be
+filled in.
+
+Once the include mechanism has been enabled, files can be included using the
+percent-style list specification syntax:
+
+@verbatim
+%include = "file1.inc"
+%include = "file2.inc"
+@endverbatim
+
+The include mechanism prevents recursive inclusion, by keeping track of the
+included file names. If the same name is included again from a deeper nested
+file, it will trigger an error and abort the parsing process. This does not
+preclude multiple inclusion of the same file at different points in the inclusion
+hierarchy. For example, the following is perfectly valid (as long as
+<tt>file1.inc</tt> does not recursively include itself):
+
+@verbatim
+%include = "file1.inc"
+
+nested {
+	%include = "file1.inc"
+}
+@endverbatim
 */
 
 //==========================================================
