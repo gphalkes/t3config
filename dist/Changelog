@@ -1,3 +1,6 @@
+Version 0.2.4:
+	- Added a function to retrieve the number of items in a list or section.
+
 Version 0.2.3:
 	New features:
 	- Allow retrieval of line number information associated with a t3_config_t

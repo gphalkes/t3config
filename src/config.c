@@ -436,6 +436,14 @@ t3_config_t *t3_config_get_next(const t3_config_t *config) {
 	return config != NULL ? config->next : NULL;
 }
 
+int t3_config_get_length(const t3_config_t *config) {
+	int count = 0;
+	if (config == NULL || (config->type != T3_CONFIG_LIST && config->type != T3_CONFIG_SECTION && config->type != T3_CONFIG_PLIST))
+		return 0;
+	for (config = config->value.list; config != NULL; config = config->next, count++) {}
+	return count;
+}
+
 t3_config_t *t3_config_find(const t3_config_t *config,
 		t3_bool (*predicate)(const t3_config_t *, const void *), const void *data, t3_config_t *start_from)
 {

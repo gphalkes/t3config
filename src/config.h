@@ -316,6 +316,8 @@ T3_CONFIG_API char *t3_config_take_string(t3_config_t *config);
     @endcode
 */
 T3_CONFIG_API t3_config_t *t3_config_get_next(const t3_config_t *config);
+/** Get the number of elements in a section or list. */
+T3_CONFIG_API int t3_config_get_length(const t3_config_t *config);
 
 /** Find a specific value in a section or list.
     @param config The section or list to search.
