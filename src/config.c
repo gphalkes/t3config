@@ -410,15 +410,25 @@ int t3_config_get_line(const t3_config_t *config) {
 	return config == NULL ? 0 : config->line_number;
 }
 
-#define GET(name_type, arg_type, TYPE, value_name, deflt) \
+#define GET(name_type, arg_type, TYPE, value_name, dflt) \
 arg_type t3_config_get_##name_type(const t3_config_t *config) { \
-	return config != NULL && config->type == TYPE ? config->value.value_name : deflt; \
+	return config != NULL && config->type == TYPE ? config->value.value_name : dflt; \
 }
 
 GET(bool, t3_bool, T3_CONFIG_BOOL, boolean, t3_false)
 GET(int, t3_config_int_t, T3_CONFIG_INT, integer, 0)
 GET(number, double, T3_CONFIG_NUMBER, number, 0.0)
 GET(string, const char *, T3_CONFIG_STRING, string, NULL)
+
+#define GET_DFLT(name_type, arg_type, TYPE, value_name) \
+arg_type t3_config_get_##name_type##_dflt(const t3_config_t *config, arg_type dflt) { \
+	return config != NULL && config->type == TYPE ? config->value.value_name : dflt; \
+}
+
+GET_DFLT(bool, t3_bool, T3_CONFIG_BOOL, boolean)
+GET_DFLT(int, t3_config_int_t, T3_CONFIG_INT, integer)
+GET_DFLT(number, double, T3_CONFIG_NUMBER, number)
+GET_DFLT(string, const char *, T3_CONFIG_STRING, string)
 
 char *t3_config_take_string(t3_config_t *config) {
 	char *retval;

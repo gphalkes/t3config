@@ -294,6 +294,24 @@ T3_CONFIG_API double t3_config_get_number(const t3_config_t *config);
     @return The string value of @p config, or @c NULL if @p config is @c NULL or not of type ::T3_CONFIG_STRING.
 */
 T3_CONFIG_API const char *t3_config_get_string(const t3_config_t *config);
+
+/** Get the boolean value from a config with ::T3_CONFIG_BOOL type.
+    @return The boolean value of @p config, or @p dflt @p config is @c NULL or not of type ::T3_CONFIG_BOOL.
+*/
+T3_CONFIG_API t3_bool t3_config_get_bool_dflt(const t3_config_t *config, t3_bool dflt);
+/** Get the integer value from a config with ::T3_CONFIG_INT type.
+    @return The integer value of @p config, or @p dflt if @p config is @c NULL or not of type ::T3_CONFIG_INT.
+*/
+T3_CONFIG_API t3_config_int_t t3_config_get_int_dflt(const t3_config_t *config, t3_config_int_t dflt);
+/** Get the floating point value from a config with ::T3_CONFIG_NUMBER type.
+    @return The floating point value of @p config, or @p dflt if @p config is @c NULL or not of type ::T3_CONFIG_NUMBER.
+*/
+T3_CONFIG_API double t3_config_get_number_dflt(const t3_config_t *config, double dflt);
+/** Get the string value from a config with ::T3_CONFIG_STRING type.
+    @return The string value of @p config, or @p dflt if @p config is @c NULL or not of type ::T3_CONFIG_STRING.
+*/
+T3_CONFIG_API const char *t3_config_get_string_dflt(const t3_config_t *config, const char *dflt);
+
 /** Take ownership of the string value from a config with ::T3_CONFIG_STRING type.
     @return The string value of @p config, or @c NULL if @p config is @c NULL or not of type ::T3_CONFIG_STRING.
 
@@ -316,7 +334,9 @@ T3_CONFIG_API char *t3_config_take_string(t3_config_t *config);
     @endcode
 */
 T3_CONFIG_API t3_config_t *t3_config_get_next(const t3_config_t *config);
-/** Get the number of elements in a section or list. */
+/** Get the number of elements in a section or list.
+    If @p config is @c NULL or not a section or list, this function will return 0.
+*/
 T3_CONFIG_API int t3_config_get_length(const t3_config_t *config);
 
 /** Find a specific value in a section or list.
