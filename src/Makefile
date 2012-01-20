@@ -33,6 +33,7 @@ include ../../shared/rules.mk
 CFLAGS += -I.objects
 CFLAGS += -DHAS_STRDUP
 CFLAGS += -DHAS_USELOCALE
+CFLAGS += -DUSE_GETTEXT
 
 .objects/lex_hide.h: .objects/lex.c
 	$(GENOBJDIR)

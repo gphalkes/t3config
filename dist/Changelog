@@ -1,5 +1,11 @@
 Version 0.2.4:
+	New features:
 	- Added a function to retrieve the number of items in a list or section.
+	- Added functions to retrieve a value with user defined default.
+
+	Bug fixes:
+	- Initialize the file name member to NULL in all places (one was
+	  accidentally omitted in the previous release).
 
 Version 0.2.3:
 	New features:
