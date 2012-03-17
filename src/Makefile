@@ -12,7 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 SOURCES.libt3config.la = lex.l parser.g config.c config_shared.c util.c write.c \
-	expression.c schema.c pathsearch.c
+	expression.c schema.c pathsearch.c xdg.c
 LDLIBS.libt3config.la = -lm
 CFLAGS.lex = -Wno-unused -Wno-unused-parameter -Wno-switch-default
 

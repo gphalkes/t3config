@@ -431,6 +431,27 @@ T3_CONFIG_API int t3_config_get_line_number(const t3_config_t *config);
 */
 T3_CONFIG_API const char *t3_config_get_file_name(const t3_config_t *config);
 
+/** Constants for ::t3_config_xdg_open. */
+typedef enum {
+	T3_CONFIG_XDG_CONFIG_HOME,
+	T3_CONFIG_XDG_DATA_HOME,
+	T3_CONFIG_XDG_CACHE_HOME,
+	T3_CONFIG_XDG_RUNTIME_DIR
+} t3_config_xdg_dirs_t;
+
+/** Open a configuration file in one of the XDG Base Directory Specification directories.
+    @param xdg_dir A constant indicating which XDG dir to use.
+    @param program_dir An optional (but recommended) directory within the XDG dir to use.
+    @param file_name The name of the configuration file to open.
+    @param mode A mode for fopen.
+
+    This function opens a file in one of the XDG Base Directory Specification
+    directories. It uses the XDG_* environment variables to find the files, and
+    uses the fallbacks as specified in the standard if the environment variables
+    are not set.
+*/
+T3_CONFIG_API FILE *t3_config_xdg_open(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name, const char *mode);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
