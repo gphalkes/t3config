@@ -439,18 +439,22 @@ typedef enum {
 	T3_CONFIG_XDG_RUNTIME_DIR
 } t3_config_xdg_dirs_t;
 
-/** Open a configuration file in one of the XDG Base Directory Specification directories.
+typedef struct t3_config_write_file_t t3_config_write_file_t;
+/** Open a configuration file for reading in one of the XDG Base Directory Specification directories.
     @param xdg_dir A constant indicating which XDG dir to use.
     @param program_dir An optional (but recommended) directory within the XDG dir to use.
     @param file_name The name of the configuration file to open.
-    @param mode A mode for fopen.
 
     This function opens a file in one of the XDG Base Directory Specification
     directories. It uses the XDG_* environment variables to find the files, and
     uses the fallbacks as specified in the standard if the environment variables
     are not set.
 */
-T3_CONFIG_API FILE *t3_config_xdg_open(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name, const char *mode);
+T3_CONFIG_API FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name);
+T3_CONFIG_API t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir, const char *program_dir,
+	const char *file_name);
+T3_CONFIG_API FILE *t3_config_xdg_get_file(t3_config_write_file_t *file);
+T3_CONFIG_API t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force);
 
 #ifdef __cplusplus
 } /* extern "C" */

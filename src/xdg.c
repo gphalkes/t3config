@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <unistd.h>
+
 #include "config.h"
 #include "util.h"
 
@@ -26,6 +28,12 @@ typedef struct {
 	const char *env_name;
 	const char *homedir_relative;
 } xdg_info_t;
+
+struct t3_config_write_file_t {
+	FILE *file;
+	char *pathname;
+	t3_bool closed;
+};
 
 static xdg_info_t xdg_dirs[] = {
 	{ "XDG_CONFIG_HOME", ".config" },
@@ -49,14 +57,12 @@ static t3_bool make_dirs(char *dir) {
 	return t3_true;
 }
 
-
-FILE *t3_config_xdg_open(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name, const char *mode) {
+static char *get_pathname(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, size_t file_name_len) {
 	const char *env = getenv(xdg_dirs[xdg_dir].env_name);
 	char *pathname, *tmp;
 	size_t extra_size;
-	FILE *result;
 
-	if (file_name == NULL || mode == NULL || xdg_dir > sizeof(xdg_dirs) / sizeof(xdg_dirs[0])) {
+	if (file_name_len == 0 || xdg_dir > sizeof(xdg_dirs) / sizeof(xdg_dirs[0])) {
 		errno = EINVAL;
 		return NULL;
 	}
@@ -78,28 +84,140 @@ FILE *t3_config_xdg_open(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, 
 		}
 	}
 
-	extra_size = strlen(file_name) + 1;
+	extra_size = file_name_len + 1;
 	if (program_dir != NULL)
 		extra_size += 1 + strlen(program_dir);
 
-	if ((tmp = realloc(pathname, strlen(pathname) + extra_size + 1)) == NULL)
-		goto return_error;
+	if ((tmp = realloc(pathname, strlen(pathname) + extra_size + 1)) == NULL) {
+		free(pathname);
+		return NULL;
+	}
+	pathname = tmp;
 
 	if (program_dir != NULL) {
 		strcat(pathname, "/");
 		strcat(pathname, program_dir);
 	}
-	if (!make_dirs(pathname))
-		goto return_error;
+
+	return pathname;
+}
+
+
+FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name) {
+	char *pathname;
+	FILE *result;
+
+	if (strchr(file_name, '/') != NULL) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	if ((pathname = get_pathname(xdg_dir, program_dir, strlen(file_name))) == NULL)
+		return NULL;
 
 	strcat(pathname, "/");
 	strcat(pathname, file_name);
 
-	result = fopen(pathname, mode);
+	result = fopen(pathname, "r");
 	free(pathname);
 	return result;
+}
 
-return_error:
-	free(pathname);
-	return NULL;
+t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name)
+{
+	t3_config_write_file_t *result;
+	char *pathname;
+	int fd;
+
+	if (strchr(file_name, '/') != NULL) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	if ((pathname = get_pathname(xdg_dir, program_dir, strlen(file_name) + 7)) == NULL)
+		return NULL;
+
+	if (!make_dirs(pathname)) {
+		free(pathname);
+		return NULL;
+	}
+
+	strcat(pathname, "/.");
+	strcat(pathname, file_name);
+	strcat(pathname, "XXXXXX");
+	if ((fd = mkstemp(pathname)) < 0) {
+		free(pathname);
+		return NULL;
+	}
+
+	if ((result = malloc(sizeof(t3_config_write_file_t))) == NULL || (result->file = fdopen(fd, "w")) == NULL) {
+		close(fd);
+		unlink(pathname);
+		free(pathname);
+		return NULL;
+	}
+	result->pathname = pathname;
+	result->closed = t3_false;
+
+	return result;
+}
+
+FILE *t3_config_xdg_get_file(t3_config_write_file_t *file) {
+	return file->file;
+}
+
+t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force) {
+	char *last_slash, *target_path;
+	size_t file_name_len;
+	int rename_result;
+
+	if (cancel_rename) {
+		if (!file->closed)
+			fclose(file->file);
+		unlink(file->pathname);
+		free(file->pathname);
+		free(file);
+		return t3_true;
+	}
+
+	if (!file->closed) {
+		/* Make sure the data has hit the disk. */
+		fflush(file->file);
+		fsync(fileno(file->file));
+		fclose(file->file);
+		file->closed = t3_true;
+	}
+
+	if ((target_path = _t3_config_strdup(file->pathname)) == NULL) {
+		if (!force)
+			return t3_false;
+		unlink(file->pathname);
+		free(file->pathname);
+		free(file);
+		return t3_false;
+	}
+
+	/* Create the target path by removing the leading . and trailing characters
+	   from the file name.
+	*/
+	last_slash = strrchr(target_path, '/');
+	file_name_len = strlen(target_path) - (last_slash - target_path) - 8;
+	memmove(last_slash + 1, last_slash + 2, file_name_len);
+	last_slash[file_name_len + 1] = 0;
+
+	rename_result = rename(file->pathname, target_path);
+	free(target_path);
+
+	if (rename_result == 0) {
+		free(file->pathname);
+		free(file);
+		return t3_true;
+	}
+
+	if (!force)
+		return t3_false;
+	unlink(file->pathname);
+	free(file->pathname);
+	free(file);
+	return t3_false;
 }
