@@ -440,6 +440,19 @@ typedef enum {
 } t3_config_xdg_dirs_t;
 
 typedef struct t3_config_write_file_t t3_config_write_file_t;
+
+/** Get a variable containing a specific XDG directory path.
+    @param xdg_dir A constant indicating which XDG dir to use.
+    @param program_dir An optional (but recommended) directory within the XDG dir to use.
+    @param file_name_len The length of the file name that will be appended to this path.
+    @retval A string containing the path, or @c NULL on error.
+
+    The returned string must be free'd. The @p file_name_len parameter allows
+    extra memory to be allocated in the string to allow appending a slash and
+    a string of length @p file_name_len.
+*/
+T3_CONFIG_API char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, size_t file_name_len);
+
 /** Open a configuration file for reading in one of the XDG Base Directory Specification directories.
     @param xdg_dir A constant indicating which XDG dir to use.
     @param program_dir An optional (but recommended) directory within the XDG dir to use.

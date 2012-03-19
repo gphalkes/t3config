@@ -149,6 +149,13 @@ static t3_bool transform_percent_list(struct _t3_config_this *LLthis, t3_config_
 T3_CONFIG_LOCAL int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis);
 int _t3_config_yylex_wrapper(struct _t3_config_this *LLthis) {
 	if (LLreissue == LL_NEW_TOKEN) {
+		/* Unfortunately, we have to initialize the LLthis member here, because
+		   it may be used in the _t3_config_lex routine and this is the first
+		   oportunity we have to initialize it. This does mean it will get set
+		   over and over again, once for each token read. Unless we modify LLnextgen
+		   to allow us to execute some code before the first LLread, we're stuck
+		   with this. */
+		_t3_config_data->LLthis = LLthis;
 		/* Increase line number when the last token was a newline, instead of
 		   when we find a newline, to improve error location reporting. */
 		if (LLsymb == '\n')
@@ -277,7 +284,6 @@ static void include_file(struct _t3_config_this *LLthis, t3_config_t *item, t3_c
 //=========================== RULES ============================
 
 config {
-	_t3_config_data->LLthis = LLthis;
 	_t3_config_data->result = allocate_item(LLthis, t3_false);
 	((t3_config_t *) _t3_config_data->result)->line_number = 0;
 } :

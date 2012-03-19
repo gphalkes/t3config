@@ -57,12 +57,12 @@ static t3_bool make_dirs(char *dir) {
 	return t3_true;
 }
 
-static char *get_pathname(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, size_t file_name_len) {
+char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, size_t file_name_len) {
 	const char *env = getenv(xdg_dirs[xdg_dir].env_name);
 	char *pathname, *tmp;
 	size_t extra_size;
 
-	if (file_name_len == 0 || xdg_dir > sizeof(xdg_dirs) / sizeof(xdg_dirs[0])) {
+	if (xdg_dir > sizeof(xdg_dirs) / sizeof(xdg_dirs[0])) {
 		errno = EINVAL;
 		return NULL;
 	}
@@ -102,7 +102,6 @@ static char *get_pathname(t3_config_xdg_dirs_t xdg_dir, const char *program_dir,
 	return pathname;
 }
 
-
 FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name) {
 	char *pathname;
 	FILE *result;
@@ -112,7 +111,7 @@ FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const char *program_
 		return NULL;
 	}
 
-	if ((pathname = get_pathname(xdg_dir, program_dir, strlen(file_name))) == NULL)
+	if ((pathname = t3_config_xdg_get_path(xdg_dir, program_dir, strlen(file_name))) == NULL)
 		return NULL;
 
 	strcat(pathname, "/");
@@ -123,8 +122,7 @@ FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const char *program_
 	return result;
 }
 
-t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name)
-{
+t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name) {
 	t3_config_write_file_t *result;
 	char *pathname;
 	int fd;
@@ -134,7 +132,7 @@ t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir, c
 		return NULL;
 	}
 
-	if ((pathname = get_pathname(xdg_dir, program_dir, strlen(file_name) + 7)) == NULL)
+	if ((pathname = t3_config_xdg_get_path(xdg_dir, program_dir, strlen(file_name) + 7)) == NULL)
 		return NULL;
 
 	if (!make_dirs(pathname)) {
