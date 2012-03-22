@@ -126,6 +126,40 @@ EOF
 		test_link "newlocale/uselocale/freelocale in xlocale.h" && CONFIGFLAGS="${CONFIGFLAGS} -DHAS_USELOCALE -DUSE_XLOCALE_H"
 	fi
 
+	cat > .config.c <<EOF
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+int main(int argc, char *argv[]) {
+	char name[] = "testXXXXXX";
+	int fd;
+	FILE *file;
+
+	fd = mkstemp(name);
+	file = fdopen(fd, "w");
+
+	fd = fileno(file);
+	fsync(fd);
+	close(fd);
+	unlink(name);
+	mkdir(name, 755);
+
+	fd = EEXIST;
+	fd = ENOENT;
+	return 0;
+}
+EOF
+
+	if not test_link "POSIX file handling functions for XDG support" ; then
+		check_message_result "!! POSIX file handling functions are not available (see config.log for details)."
+		check_message_result "!! This build will NOT provide the XDG Base Directory functions."
+		CONFIGFLAGS="${CONFIGFLAGS} -DNO_XDG"
+	fi
+
 	PKGCONFIG_DESC="Configuration file library"
 	PKGCONFIG_VERSION="<VERSION>"
 	PKGCONFIG_URL="http://os.ghalkes.nl/t3/libt3config.html"

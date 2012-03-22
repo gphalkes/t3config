@@ -1,3 +1,12 @@
+Version 0.2.5:
+	New features:
+	- Added functions to easily open files in the directories specified by the
+	  XDG Base Directory specification.
+
+	Bug fixes:
+	- Initialize the LLthis member of the parser context earlier such that it
+	  is initialized when a read error occurs on the very first token read.
+
 Version 0.2.4:
 	New features:
 	- Added a function to retrieve the number of items in a list or section.

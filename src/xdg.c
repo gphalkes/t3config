@@ -11,18 +11,59 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
+#ifndef NO_XDG
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include <unistd.h>
+#endif
 
 #include "config.h"
 #include "util.h"
 
+#ifdef NO_XDG
+t3_bool t3_config_xdg_supported(void) {
+	return t3_false;
+}
+
+char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, size_t file_name_len) {
+	(void) xdg_dir;
+	(void) program_dir;
+	(void) file_name_len;
+	errno = EINVAL;
+	return NULL;
+}
+FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name) {
+	(void) xdg_dir;
+	(void) program_dir;
+	(void) file_name;
+	errno = EINVAL;
+	return NULL;
+}
+t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir, const char *program_dir,	const char *file_name) {
+	(void) xdg_dir;
+	(void) program_dir;
+	(void) file_name;
+	errno = EINVAL;
+	return NULL;
+}
+FILE *t3_config_xdg_get_file(t3_config_write_file_t *file) {
+	(void) file;
+	errno = EINVAL;
+	return NULL;
+}
+t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force) {
+	(void) file;
+	(void) cancel_rename;
+	(void) force;
+	errno = EINVAL;
+	return t3_false;
+}
+
+#else
 
 typedef struct {
 	const char *env_name;
@@ -41,6 +82,10 @@ static xdg_info_t xdg_dirs[] = {
 	{ "XDG_CACHE_HOME", ".cache" },
 	{ "XDG_RUNTIME_DIR", NULL }
 };
+
+t3_bool t3_config_xdg_supported(void) {
+	return t3_true;
+}
 
 static t3_bool make_dirs(char *dir) {
 	char *slash = strchr(dir + (dir[0] == '/'), '/');
@@ -219,3 +264,4 @@ t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_r
 	free(file);
 	return t3_false;
 }
+#endif

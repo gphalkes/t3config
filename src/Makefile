@@ -34,6 +34,7 @@ CFLAGS += -I.objects
 CFLAGS += -DHAS_STRDUP
 CFLAGS += -DHAS_USELOCALE
 CFLAGS += -DUSE_GETTEXT
+#~ CFLAGS += -DNO_XDG
 
 .objects/lex_hide.h: .objects/lex.c
 	$(GENOBJDIR)

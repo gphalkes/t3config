@@ -52,6 +52,12 @@ $ make all
 $ make install
 (assumes working install program)
 
+libt3config provides support functions for the XDG Base Directory Specification,
+using several non-ANSI C functions. These are: fdopen, fileno, mkdir, close,
+fsync, unlink and mkstemp. If these are not available, the XDG support
+functions will be replaced with stub functions and the t3_config_xdg_supported
+function will return t3_false.
+
 The Makefiles in the distribution should work on all POSIX compatible make's.
 They have been tested using both GNU make and BSD make.
 

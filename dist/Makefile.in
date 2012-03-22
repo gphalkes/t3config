@@ -21,6 +21,8 @@ CFLAGS=-O2
 # your system does provide the *locale set of functions, but requires the
 # xlocale.h header file instead of the locale.h header file, add
 # -DUSE_XLOCALE_H.
+# If your environment does not provide all the required functions for the XDG
+# support functions (see the README for a list), add -DNO_XDG
 CONFIGFLAGS=-DHAS_STRDUP -DHAS_USELOCALE
 
 # Gettext configuration
