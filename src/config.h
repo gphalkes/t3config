@@ -487,7 +487,10 @@ T3_CONFIG_API FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const 
 */
 T3_CONFIG_API t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir, const char *program_dir,
 	const char *file_name);
-/** Get the @c FILE member of a ::t3_config_write_file_t returned by ::t3_config_xdg_open_write. */
+/** Get the @c FILE member of a ::t3_config_write_file_t returned by ::t3_config_xdg_open_write.
+
+    @deprecated Use ::t3_config_get_write_file instead.
+*/
 T3_CONFIG_API FILE *t3_config_xdg_get_file(t3_config_write_file_t *file);
 /** Close a ::t3_config_write_file_t returned by ::t3_config_xdg_open_write.
     @param file The ::t3_config_write_file_t to close.
@@ -501,8 +504,38 @@ T3_CONFIG_API FILE *t3_config_xdg_get_file(t3_config_write_file_t *file);
     is @c t3_true, the file will be closed and discared on error, but the
     returned value will still be @c t3_false to allow detection of the failed
     close.
+
+	@deprecated Use ::t3_config_close_write instead.
 */
 T3_CONFIG_API t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force);
+
+
+/** Open a configuration file for writing.
+    @param file_name The name of the configuration file to open.
+    @return @c NULL is returned on error and @c errno is set.
+
+    This function opens a temporary file, associated with a named configuration
+    file. This temporary file is then renamed to the configuration file on
+    close. Using this method ensures that the configuration file is always
+    intact, even when the program is for some reason halted in mid-write.
+*/
+T3_CONFIG_API t3_config_write_file_t *t3_config_open_write(const char *file_name);
+/** Get the @c FILE member of a ::t3_config_write_file_t returned by ::t3_config_open_write or ::t3_config_xdg_open_write. */
+T3_CONFIG_API FILE *t3_config_get_write_file(t3_config_write_file_t *file);
+/** Close a ::t3_config_write_file_t returned by ::t3_config_write or ::t3_config_xdg_open_write.
+    @param file The ::t3_config_write_file_t to close.
+    @param cancel_rename Boolean indicating whether the temporary file should be renamed to the actual config file.
+    @param force Boolean indicating whether to force file close on error.
+    @return A boolean indicating whether the close was successful.
+
+    The @p force parameter indicates whether the file should be closed and
+    discared when an error is encountered. Errors may be an out of memory
+    condition or failure of the rename to the intended file name. If @p force
+    is @c t3_true, the file will be closed and discared on error, but the
+    returned value will still be @c t3_false to allow detection of the failed
+    close.
+*/
+T3_CONFIG_API t3_bool t3_config_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force);
 
 #ifdef __cplusplus
 } /* extern "C" */

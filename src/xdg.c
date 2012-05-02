@@ -56,6 +56,20 @@ FILE *t3_config_xdg_get_file(t3_config_write_file_t *file) {
 	return NULL;
 }
 t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force) {
+	return t3_config_close_write(file, cancel_rename, force);
+}
+
+t3_config_write_file_t *t3_config_open_write(const char *file_name) {
+	(void) file_name;
+	errno = EINVAL;
+	return NULL;
+}
+FILE *t3_config_get_write_file(t3_config_write_file_t *file) {
+	(void) file;
+	errno = EINVAL;
+	return NULL;
+}
+t3_bool t3_config_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force) {
 	(void) file;
 	(void) cancel_rename;
 	(void) force;
@@ -65,16 +79,16 @@ t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_r
 
 #else
 
-typedef struct {
-	const char *env_name;
-	const char *homedir_relative;
-} xdg_info_t;
-
 struct t3_config_write_file_t {
 	FILE *file;
 	char *pathname;
 	t3_bool closed;
 };
+
+typedef struct {
+	const char *env_name;
+	const char *homedir_relative;
+} xdg_info_t;
 
 static xdg_info_t xdg_dirs[] = {
 	{ "XDG_CONFIG_HOME", ".config" },
@@ -206,10 +220,65 @@ t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir, c
 }
 
 FILE *t3_config_xdg_get_file(t3_config_write_file_t *file) {
-	return file->file;
+	return t3_config_get_write_file(file);
 }
 
 t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force) {
+	return t3_config_close_write(file, cancel_rename, force);
+}
+
+
+
+t3_config_write_file_t *t3_config_open_write(const char *file_name) {
+	t3_config_write_file_t *result;
+	char *dirsep;
+	size_t length;
+	char *pathname;
+	int fd;
+
+	if ((dirsep = strrchr(file_name, '/')) == NULL) {
+		length = 0;
+	} else {
+		length = dirsep - file_name;
+		if (length > 0)
+			length--;
+	}
+
+	if ((pathname = malloc(strlen(file_name) + 1 + 7)) == NULL)
+		return NULL;
+	memcpy(pathname, file_name, length);
+	pathname[length] = 0;
+
+	if (!make_dirs(pathname)) {
+		free(pathname);
+		return NULL;
+	}
+
+	strcat(pathname, "/.");
+	strcat(pathname, dirsep == NULL ? file_name : dirsep + 1);
+	strcat(pathname, "XXXXXX");
+	if ((fd = mkstemp(pathname)) < 0) {
+		free(pathname);
+		return NULL;
+	}
+
+	if ((result = malloc(sizeof(t3_config_write_file_t))) == NULL || (result->file = fdopen(fd, "w")) == NULL) {
+		close(fd);
+		unlink(pathname);
+		free(pathname);
+		return NULL;
+	}
+	result->pathname = pathname;
+	result->closed = t3_false;
+
+	return result;
+}
+
+FILE *t3_config_get_write_file(t3_config_write_file_t *file) {
+	return file->file;
+}
+
+t3_bool t3_config_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force) {
 	char *last_slash, *target_path;
 	size_t file_name_len;
 	int rename_result;
@@ -264,4 +333,5 @@ t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_r
 	free(file);
 	return t3_false;
 }
+
 #endif
