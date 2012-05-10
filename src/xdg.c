@@ -249,12 +249,14 @@ t3_config_write_file_t *t3_config_open_write(const char *file_name) {
 	memcpy(pathname, file_name, length);
 	pathname[length] = 0;
 
-	if (!make_dirs(pathname)) {
+	if (length > 0 && !make_dirs(pathname)) {
 		free(pathname);
 		return NULL;
 	}
 
-	strcat(pathname, "/.");
+	if (dirsep != NULL)
+		strcat(pathname, "/");
+	strcat(pathname, ".");
 	strcat(pathname, dirsep == NULL ? file_name : dirsep + 1);
 	strcat(pathname, "XXXXXX");
 	if ((fd = mkstemp(pathname)) < 0) {
@@ -313,9 +315,15 @@ t3_bool t3_config_close_write(t3_config_write_file_t *file, t3_bool cancel_renam
 	   from the file name.
 	*/
 	last_slash = strrchr(target_path, '/');
-	file_name_len = strlen(target_path) - (last_slash - target_path) - 8;
-	memmove(last_slash + 1, last_slash + 2, file_name_len);
-	last_slash[file_name_len + 1] = 0;
+	if (last_slash != NULL) {
+		file_name_len = strlen(target_path) - (last_slash - target_path) - 8;
+		memmove(last_slash + 1, last_slash + 2, file_name_len);
+		last_slash[file_name_len + 1] = 0;
+	} else {
+		file_name_len = strlen(target_path) - 7;
+		memmove(target_path, target_path + 1, file_name_len);
+		target_path[file_name_len] = 0;
+	}
 
 	rename_result = rename(file->pathname, target_path);
 	free(target_path);
