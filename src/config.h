@@ -431,7 +431,7 @@ T3_CONFIG_API int t3_config_get_line_number(const t3_config_t *config);
 */
 T3_CONFIG_API const char *t3_config_get_file_name(const t3_config_t *config);
 
-/** Constants for ::t3_config_xdg_open. */
+/** Constants for ::t3_config_xdg_open_read and ::t3_config_xdg_open_write. */
 typedef enum {
 	T3_CONFIG_XDG_CONFIG_HOME,
 	T3_CONFIG_XDG_DATA_HOME,
@@ -439,6 +439,9 @@ typedef enum {
 	T3_CONFIG_XDG_RUNTIME_DIR
 } t3_config_xdg_dirs_t;
 
+/** A structure representing file to write to.
+    This structure is returned by ::t3_config_open_write and ::t3_config_xdg_open_write.
+*/
 typedef struct t3_config_write_file_t t3_config_write_file_t;
 
 /** Query whether this library instance supports the XDG Base Directory Specification support functions. */
@@ -522,7 +525,7 @@ T3_CONFIG_API t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3
 T3_CONFIG_API t3_config_write_file_t *t3_config_open_write(const char *file_name);
 /** Get the @c FILE member of a ::t3_config_write_file_t returned by ::t3_config_open_write or ::t3_config_xdg_open_write. */
 T3_CONFIG_API FILE *t3_config_get_write_file(t3_config_write_file_t *file);
-/** Close a ::t3_config_write_file_t returned by ::t3_config_write or ::t3_config_xdg_open_write.
+/** Close a ::t3_config_write_file_t returned by ::t3_config_open_write or ::t3_config_xdg_open_write.
     @param file The ::t3_config_write_file_t to close.
     @param cancel_rename Boolean indicating whether the temporary file should be renamed to the actual config file.
     @param force Boolean indicating whether to force file close on error.

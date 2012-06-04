@@ -1,3 +1,9 @@
+Version 0.2.6:
+	New features:
+	- Added functions to open config files for writing, using a temporary file
+	  which will be renamed on close. This also deprecates the use of the
+	  functions t3_config_xdg_get_file and t3_config_xdg_close_write.
+
 Version 0.2.5:
 	New features:
 	- Added functions to easily open files in the directories specified by the

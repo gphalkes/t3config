@@ -1,4 +1,4 @@
-# Copyright (C) 2011 G.P. Halkes
+# Copyright (C) 2011-2012 G.P. Halkes
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3, as
 # published by the Free Software Foundation.
@@ -154,9 +154,9 @@ int main(int argc, char *argv[]) {
 }
 EOF
 
-	if not test_link "POSIX file handling functions for XDG support" ; then
+	if not test_link "POSIX file handling functions" ; then
 		check_message_result "!! POSIX file handling functions are not available (see config.log for details)."
-		check_message_result "!! This build will NOT provide the XDG Base Directory functions."
+		check_message_result "!! This build will NOT provide the safe write or XDG Base Directory functions."
 		CONFIGFLAGS="${CONFIGFLAGS} -DNO_XDG"
 	fi
 
