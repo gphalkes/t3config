@@ -52,9 +52,6 @@ CFLAGS += -DUSE_GETTEXT
 	$(GENOBJDIR)
 	$(_VERBOSE_GEN) ./data2bytes -s -- $< > $@
 
-links:
-	@[ -L t3config ] || ln -s . t3config
-
 test: | libt3config.la
 
 .SECONDARY: .objects/parser.c .objects/parser.h .objects/lex.c .objects/lex_hide.h
