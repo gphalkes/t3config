@@ -1,3 +1,8 @@
+Version 0.2.7:
+	Bug fixes:
+	- Compile with Large File Support if such support is available on the
+	  platform.
+
 Version 0.2.6:
 	New features:
 	- Added functions to open config files for writing, using a temporary file
