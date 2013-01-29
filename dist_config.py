@@ -1,22 +1,14 @@
-import glob
-import subprocess
 import os
 
 package = 'libt3config'
 excludesrc = '/(Makefile|TODO.*|SciTE.*|run\.sh|test\.c)$'
 auxsources = [ 'src/.objects/*_hide.h', 'src/.objects/*.bytes', 'src/config_api.h', 'src/config_errors.h', 'src/config_shared.c' ]
 auxfiles = [ 'doc/API' ]
+extrabuilddirs = [ 'doc' ]
 
 versioninfo = '0:1:0'
 
-def build(mkdist):
-	subprocess.call(['make', '-C', 'doc', 'clean'])
-	subprocess.call(['make', '-C', 'doc'])
-
 def get_replacements(mkdist):
-	objects = mkdist.include_by_regex(mkdist.sources, '\.c$')
-	objects = mkdist.regex_replace(objects, '/\.objects/', '/')
-	objects = mkdist.regex_replace(objects, '\.c$', '.lo')
 	return [
 		{
 			'tag': '<VERSION>',
@@ -30,7 +22,7 @@ def get_replacements(mkdist):
 		},
 		{
 			'tag': '<OBJECTS>',
-			'replacement': " ".join(objects),
+			'replacement': " ".join(mkdist.sources_to_objects(mkdist.sources, '\.c$', '.lo')),
 			'files': [ 'Makefile.in' ]
 		},
 		{
