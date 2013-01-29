@@ -1,4 +1,3 @@
-syntax: glob
 src/t3config
 testsuite/basic/test/test
 libt3config-*.tar.bz2
