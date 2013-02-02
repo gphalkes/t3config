@@ -28,7 +28,7 @@ LTTARGETS := libt3config.la
 include ../../makesys/rules.mk
 #================================================#
 T3NAME := config
-include ../../shared/rules.mk
+include ../../t3shared/rules.mk
 
 CFLAGS += -I.objects
 CFLAGS += -DHAS_STRDUP
