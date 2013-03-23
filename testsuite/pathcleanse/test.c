@@ -32,23 +32,19 @@ static struct { const char *name; t3_bool expected_result; } tests[] = {
 	{ "foo/.", t3_false },
 	{ "foo/..", t3_false },
 
-	{ "foo/../bar", t3_true },
+	{ "foo/../bar", t3_false },
 
 	{ "foo/../../bar", t3_false },
+	{ "foo/././bar", t3_true },
 
-	{ "foo/../blah/../bar", t3_true },
+	{ "foo/../blah/../bar", t3_false },
 
 	{ "foo/../blah/../../bar", t3_false },
 	{ "foo/../../blah/../bar", t3_false },
 
-	{ "foo/./../bar", t3_true },
+	{ "foo/./../bar", t3_false },
 
 	{ "foo/./../../bar", t3_false },
-
-	{ "foo/./../blah/../bar", t3_true },
-
-	{ "foo/./../blah/../../bar", t3_false },
-	{ "foo/./../../blah/../bar", t3_false },
 };
 
 static const char *path[2] = { ".", NULL };

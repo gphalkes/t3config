@@ -51,6 +51,7 @@ static t3_bool is_dirsep(char c) {
 	;
 }
 
+#if 0
 static size_t locate_dirsep_reverse(const char *str, size_t pos) {
 	pos++;
 	do {
@@ -60,11 +61,10 @@ static size_t locate_dirsep_reverse(const char *str, size_t pos) {
 	} while (pos > 0);
 	return 0;
 }
+#endif
 
-static char *clean_name(const char *name) {
-	size_t len, i;
-	char *result = NULL;
-	t3_bool last_was_dirsep = t3_true;
+static t3_bool clean_name(const char *name) {
+	size_t len;
 
 	len = strlen(name);
 
@@ -73,70 +73,21 @@ static char *clean_name(const char *name) {
 	if (name[len - 1] == '.' &&
 			(len == 1 || is_dirsep(name[len - 2]) || (name[len - 2] == '.' &&
 			(len == 2 || is_dirsep(name[len - 3])))))
-		goto invalid_name;
+		return t3_false;
 
-	/* Check if the name starts with ../ or ./ */
-	while (name[0] == '.') {
-		if (is_dirsep(name[1])) {
-			/* If name starts with ./, remove it. */
-			name += 2;
-			len -= 2;
-		} else if (name[1] == '.' && is_dirsep(name[2])) {
-			/* If name starts with ../, that is invalid. */
-			goto invalid_name;
-		} else {
-			break;
-		}
-	}
+	/* Check for names starting with ../ */
+	if (strncmp("../", name, 3) == 0)
+		return t3_false;
 
-	if ((result = _t3_config_strdup(name)) == NULL)
-		return NULL;
+	/* Check for names containing /../ */
+	if (strstr(name, "/../") != NULL)
+		return t3_false;
 
-	for (i = 0; i < len; ) {
-		if (last_was_dirsep) {
-			if (is_dirsep(result[i])) {
-				/* Remove // from name. */
-				/* Use len - i as length, to also copy the trailing nul byte. */
-				memmove(result + i, result + i + 1, len - i);
-				len--;
-			} else if (result[i] == '.' && is_dirsep(result[i + 1])) {
-				/* Remove /./ from name. */
-				/* Use len - i - 1 as length, to also copy the trailing nul byte. */
-				memmove(result + i, result + i + 2, len - i - 1);
-				len -= 2;
-			} else if (result[i] == '.' && result[i + 1] == '.' && is_dirsep(result[i + 2])) {
-				/* Remove xxx/../ from name. */
-				size_t delete_from;
-
-				if (i == 0)
-					goto invalid_name;
-
-				delete_from = locate_dirsep_reverse(result, i - 2);
-				/* Use len - i - 2 as length, to also copy the trailing nul byte. */
-				memmove(result + delete_from, result + i + 3, len - i - 2);
-				len -= i + 3 - delete_from;
-				i = delete_from;
-			} else {
-				last_was_dirsep = t3_false;
-				i++;
-			}
-		} else {
-			last_was_dirsep = is_dirsep(result[i]);
-			i++;
-		}
-	}
-
-	return result;
-
-invalid_name:
-	free(result);
-	errno = EINVAL;
-	return NULL;
+	return t3_true;
 }
 
 FILE *t3_config_open_from_path(const char **path, const char *name, int flags) {
 	FILE *result = NULL;
-	char *free_name = NULL;
 	size_t len;
 
 	if ((len = strlen(name)) == 0 || is_dirsep(name[len - 1])) {
@@ -160,8 +111,10 @@ FILE *t3_config_open_from_path(const char **path, const char *name, int flags) {
 	}
 
 	if (flags & T3_CONFIG_CLEAN_NAME) {
-		if ((name = free_name = clean_name(name)) == NULL)
+		if (!clean_name(name)) {
+			errno = EINVAL;
 			return NULL;
+		}
 	}
 
 	errno = EINVAL;
@@ -178,21 +131,19 @@ FILE *t3_config_open_from_path(const char **path, const char *name, int flags) {
 #endif
 				if (colon != NULL) {
 					if ((result = try_open(search_from, search_from - colon, name)) != NULL || errno != ENOENT)
-						goto return_result;
+						return result;
 					search_from = colon + 1;
 				} else {
 					if ((result = try_open(search_from, strlen(search_from), name)) != NULL || errno != ENOENT)
-						goto return_result;
+						return result;
 					break;
 				}
 			}
 		} else {
 			if ((result = try_open(*path, strlen(*path), name)) != NULL || errno != ENOENT)
-				goto return_result;
+				return result;
 		}
 	}
 
-return_result:
-	free(free_name);
 	return result;
 }

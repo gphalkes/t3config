@@ -1,3 +1,8 @@
+Version 0.2.8:
+	Bug fixes:
+	- Properly disallow directory up references (..) in file names if
+	  T3_CONFIG_CLEAN_NAME is set.
+
 Version 0.2.7:
 	Bug fixes:
 	- Compile with Large File Support if such support is available on the
