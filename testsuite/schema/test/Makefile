@@ -12,9 +12,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 SOURCES.test := test.c
-CFLAGS.test := -I../../../src/ -I.objects
-LDFLAGS.test := -L../../../src/.libs
-LDLIBS.test := -lt3config
 
 TARGETS := test
 
@@ -23,6 +20,9 @@ TARGETS := test
 #================================================#
 include ../../../../makesys/rules.mk
 #================================================#
+CFLAGS.test := -I../../../include -I.objects
+LDFLAGS.test = $(call L, ../../../src/.libs)
+LDLIBS.test := -lt3config
 
 .objects/test.o: .objects/meta_schema.bytes
 

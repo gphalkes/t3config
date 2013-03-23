@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <libgen.h>
-#include "config.h"
+#include "t3config/config.h"
 
 static const char *path[2];
 static const t3_config_opts_t opts = { T3_CONFIG_VERBOSE_ERROR | T3_CONFIG_INCLUDE_DFLT, {{ path, 0 }} };

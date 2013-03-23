@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 #include <errno.h>
-#include "config.h"
+#include "t3config/config.h"
 
 static struct { const char *name; t3_bool expected_result; } tests[] = {
 	{ "bar", t3_true },

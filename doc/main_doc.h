@@ -8,15 +8,15 @@ structured configuration files.
 libt3config is part of the <a href="http://os.ghalkes.nl/t3/">Tilde Terminal
 Toolkit (T3)</a>.
 
-Information is available about the @ref syntax "syntax of the configuration files",
-and @ref schema "schema syntax". Finally there is the <a class="el"
+Information is available about the @ref syntax "syntax of the configuration
+files", and @ref schema "schema syntax". Finally there is the <a class="el"
 href="modules.html">API documentation</a>.
 
 @section Example
 
 The example below shows a small program which loads a configuration file and
-prints it to screen. It can be passed a schema which will be used for validating
-the configuration, and can optionally enable the include mechanism.
+prints it to screen. It can be passed a schema which will be used for
+validating the configuration, and can optionally enable the include mechanism.
 
 @include example.c
 
@@ -107,11 +107,11 @@ l1 = ( 1, yes, "text", ( 7, 8, 9 ), { key = "value" } )
 %l2 = "text"
 # sections:
 sect {
-	foo = yes
-	bar = 9
-	sect {
-		l1 = ( true, false, yes, no )
-	}
+  foo = yes
+  bar = 9
+  sect {
+    l1 = ( true, false, yes, no )
+  }
 }
 @endverbatim
 
@@ -137,15 +137,15 @@ percent-style list specification syntax:
 The include mechanism prevents recursive inclusion, by keeping track of the
 included file names. If the same name is included again from a deeper nested
 file, it will trigger an error and abort the parsing process. This does not
-preclude multiple inclusion of the same file at different points in the inclusion
-hierarchy. For example, the following is perfectly valid (as long as
+preclude multiple inclusion of the same file at different points in the
+inclusion hierarchy. For example, the following is perfectly valid (as long as
 <tt>file1.inc</tt> does not recursively include itself):
 
 @verbatim
 %include = "file1.inc"
 
 nested {
-	%include = "file1.inc"
+  %include = "file1.inc"
 }
 @endverbatim
 */
@@ -182,12 +182,12 @@ of integer type, one might write the following:
 
 @verbatim
 allowed-keys {
-	version {
-		type = "int"
-	}
-	number {
-		type = "int"
-	}
+  version {
+    type = "int"
+  }
+  number {
+    type = "int"
+  }
 }
 @endverbatim
 
@@ -204,20 +204,20 @@ string type.
 
 @verbatim
 allowed-keys {
-	car {
-		type = "section"
-		allowed-keys {
-			make {
-				type = "string"
-			}
-			model {
-				type = "string"
-			}
-			registration {
-				type = "string"
-			}
-		}
-	}
+  car {
+    type = "section"
+    allowed-keys {
+      make {
+        type = "string"
+      }
+      model {
+        type = "string"
+      }
+      registration {
+        type = "string"
+      }
+    }
+  }
 }
 @endverbatim
 
@@ -233,27 +233,27 @@ section:
 
 @verbatim
 types {
-	car {
-		type = "section"
-		allowed-keys {
-			make {
-				type = "string"
-			}
-			model {
-				type = "string"
-			}
-			registration {
-				type = "string"
-			}
-		}
-	}
+  car {
+    type = "section"
+    allowed-keys {
+      make {
+        type = "string"
+      }
+      model {
+        type = "string"
+      }
+      registration {
+        type = "string"
+      }
+    }
+  }
 }
 
 allowed-keys {
-	car {
-		type = "list"
-		item-type = "car"
-	}
+  car {
+    type = "list"
+    item-type = "car"
+  }
 }
 @endverbatim
 
@@ -278,10 +278,10 @@ sign (@%). For example:
 
 @verbatim
 allowed-keys {
-	version {
-		type = "int"
-		%constraint = "% > 0"
-	}
+  version {
+    type = "int"
+    %constraint = "% > 0"
+  }
 }
 @endverbatim
 
@@ -311,10 +311,10 @@ integer:
 
 @verbatim
 allowed-keys {
-	cars {
-		type = "list"
-		%constraint = "# >= 2"
-	}
+  cars {
+    type = "list"
+    %constraint = "# >= 2"
+  }
 }
 @endverbatim
 
@@ -324,8 +324,8 @@ evaluates to true if the key is present, and to false if it is absent:
 
 @verbatim
 allowed-keys {
-	version { type = "int" }
-	number { type = "int"
+  version { type = "int" }
+  number { type = "int"
 }
 %constraint = "version"     # Assert that the version key is present
 %constraint = "number = 1"  # Assert that the number key must have value 1
@@ -349,9 +349,9 @@ the configuration file.
 
 @verbatim
 allowed-keys {
-	cars {
-		type = "list"
-	}
+  cars {
+    type = "list"
+  }
 }
 %constraint = "#cars >= 2"
 @endverbatim
@@ -364,13 +364,13 @@ similar to the Un*x file-name syntax:
 
 @verbatim
 allowed-keys {
-	foo {
-		type = "int"
-		%constraint = "/bar"
-	}
-	bar {
-		type = "int"
-	}
+  foo {
+    type = "int"
+    %constraint = "/bar"
+  }
+  bar {
+    type = "int"
+  }
 }
 @endverbatim
 
@@ -382,19 +382,19 @@ in the path by enclosing them in square brackets ([]):
 
 @verbatim
 allowed-keys {
-	car {
-		type = "section"
-		allowed-keys {
-			owner { type = "string" }
-			make { type = "string" }
-			mode { type = "string" }
-		}
-		%constraint = "/owner/[owner]/name"
-	}
-	owner {
-		type = "section"
-		item-type ="section"
-	}
+  car {
+    type = "section"
+    allowed-keys {
+      owner { type = "string" }
+      make { type = "string" }
+      mode { type = "string" }
+    }
+    %constraint = "/owner/[owner]/name"
+  }
+  owner {
+    type = "section"
+    item-type ="section"
+  }
 }
 @endverbatim
 
@@ -414,13 +414,13 @@ descriptive string in a constraint, which will be returned instead:
 
 @verbatim
 allowed-keys {
-	foo {
-		type = "int"
-		%constraint = "{'foo' may only be used simultaneously with 'bar'} /bar"
-	}
-	bar {
-		type = "int"
-	}
+  foo {
+    type = "int"
+    %constraint = "{'foo' may only be used simultaneously with 'bar'} /bar"
+  }
+  bar {
+    type = "int"
+  }
 }
 @endverbatim
 

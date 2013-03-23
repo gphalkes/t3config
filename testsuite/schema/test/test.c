@@ -18,7 +18,7 @@
 #include <locale.h>
 #include <unistd.h>
 #include <stdarg.h>
-#include "config.h"
+#include "t3config/config.h"
 
 static const t3_config_opts_t opts = { T3_CONFIG_VERBOSE_ERROR, {{ NULL, 0}} };
 t3_config_schema_t *_t3_config_config2schema(t3_config_t *config, t3_config_error_t *error, const t3_config_opts_t *opts);

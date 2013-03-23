@@ -6,7 +6,7 @@
 ==== Testcase ../incorrect/duplicate_key ====
 Error loading input: duplicate key key @ 3
 ==== Testcase ../incorrect/include_with_duplicate ====
-Error loading input: duplicate key wrap @ 67
+Error loading input: duplicate key wrap @ 3
 ==== Testcase ../incorrect/missing_parenthesis ====
 Error loading input: parse error  @ 1
 ==== Testcase ../incorrect/recursive_include ====

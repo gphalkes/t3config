@@ -18,7 +18,7 @@
 #include <locale.h>
 #include <unistd.h>
 #include <stdarg.h>
-#include "config.h"
+#include "t3config/config.h"
 
 /** Alert the user of a fatal error and quit.
     @param fmt The format string for the message. See fprintf(3) for details.
