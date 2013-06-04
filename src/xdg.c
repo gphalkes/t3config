@@ -141,6 +141,9 @@ char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_d
 			errno = ENOENT;
 			return NULL;
 		}
+	} else {
+		errno = ENOENT;
+		return NULL;
 	}
 
 	extra_size = file_name_len + 1;
