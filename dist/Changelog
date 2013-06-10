@@ -1,3 +1,8 @@
+Version 0.2.9:
+	Bug fixes:
+	- Return NULL from when t3_config_xdg_get_path if the variable for the
+	  requested XDG location is not set and no relative location is known.
+
 Version 0.2.8:
 	Bug fixes:
 	- Properly disallow directory up references (..) in file names if
