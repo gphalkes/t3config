@@ -8,9 +8,9 @@ structured configuration files.
 libt3config is part of the <a href="http://os.ghalkes.nl/t3/">Tilde Terminal
 Toolkit (T3)</a>.
 
-Information is available about the @ref syntax "syntax of the configuration
-files", and @ref schema "schema syntax". Finally there is the <a class="el"
-href="modules.html">API documentation</a>.
+Information is available about the @ref syntax "syntax of the configuration files",
+and @ref schema "schema syntax". Finally there is the
+<a class="el" href="modules.html">API documentation</a>.
 
 @section Example
 

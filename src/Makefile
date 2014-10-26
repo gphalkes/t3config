@@ -25,6 +25,7 @@ LTTARGETS := libt3config.la
 #================================================#
 # NO RULES SHOULD BE DEFINED BEFORE THIS INCLUDE #
 #================================================#
+include ../../../makesys/extension_llnextgen.mk
 include ../../makesys/rules.mk
 #================================================#
 T3NAME := config
