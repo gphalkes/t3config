@@ -65,11 +65,14 @@ EOF
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <pwd.h>
 
 int main(int argc, char *argv[]) {
 	char name[] = "testXXXXXX";
 	int fd;
 	FILE *file;
+	struct passwd pw;
+	struct passwd *pw_addr;
 
 	fd = mkstemp(name);
 	file = fdopen(fd, "w");
@@ -82,6 +85,8 @@ int main(int argc, char *argv[]) {
 
 	fd = EEXIST;
 	fd = ENOENT;
+
+	getpwuid_r(getuid(), &pw, NULL, 0, &pw_addr);
 	return 0;
 }
 EOF

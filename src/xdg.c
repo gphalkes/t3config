@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
+#include <pwd.h>
 #endif
 
 #include "config.h"
@@ -121,7 +122,7 @@ char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_d
 	char *pathname, *tmp;
 	size_t extra_size;
 
-	if (xdg_dir > sizeof(xdg_dirs) / sizeof(xdg_dirs[0])) {
+	if (xdg_dir > sizeof(xdg_dirs) / sizeof(xdg_dirs[0]) || xdg_dir < 0) {
 		errno = EINVAL;
 		return NULL;
 	}
@@ -130,17 +131,29 @@ char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_d
 		if ((pathname = _t3_config_strdup(env)) == NULL)
 			return NULL;
 	} else if (xdg_dirs[xdg_dir].homedir_relative) {
-		env = getenv("HOME");
-		if (env != NULL && strlen(env) > 0) {
-			if ((pathname = malloc(strlen(env) + 1 + strlen(xdg_dirs[xdg_dir].homedir_relative) + 1)) == NULL)
+		struct passwd pw_entry;
+		struct passwd *result;
+		char buffer[4096];
+		int error;
+
+		const char *dir;
+
+		if ((error = getpwuid_r(getuid(), &pw_entry, buffer, sizeof(buffer), &result)) != 0 || result != &pw_entry) {
+			env = getenv("HOME");
+			if (env == NULL || strlen(env) == 0) {
+				errno = ENOENT;
 				return NULL;
-			strcpy(pathname, env);
-			strcat(pathname, "/");
-			strcat(pathname, xdg_dirs[xdg_dir].homedir_relative);
+			}
+			dir = env;
 		} else {
-			errno = ENOENT;
-			return NULL;
+			dir = pw_entry.pw_dir;
 		}
+
+		if ((pathname = malloc(strlen(dir) + 1 + strlen(xdg_dirs[xdg_dir].homedir_relative) + 1)) == NULL)
+			return NULL;
+		strcpy(pathname, dir);
+		strcat(pathname, "/");
+		strcat(pathname, xdg_dirs[xdg_dir].homedir_relative);
 	} else {
 		errno = ENOENT;
 		return NULL;
