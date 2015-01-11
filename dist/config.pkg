@@ -91,8 +91,8 @@ int main(int argc, char *argv[]) {
 }
 EOF
 
-	if not test_link "POSIX file handling functions" ; then
-		check_message_result "!! POSIX file handling functions are not available (see config.log for details)."
+	if not test_link "POSIX file handling and user database functions" ; then
+		check_message_result "!! POSIX file handling and/or user database functions are not available (see config.log for details)."
 		check_message_result "!! This build will NOT provide the safe write or XDG Base Directory functions."
 		CONFIGFLAGS="${CONFIGFLAGS} -DNO_XDG"
 	fi
