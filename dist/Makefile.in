@@ -93,8 +93,6 @@ install: all
 	chmod 0644 $(_libdir)/libt3config.la
 	$(INSTALL) -d $(_includedir)/t3/config/t3config
 	$(INSTALL) -m0644 src/config.h src/config_api.h src/config_errors.h $(_includedir)/t3/config/t3config
-	$(INSTALL) -d $(_docdir)/API/search
-	( cd doc ; find API -type f ) | while read X ; do $(INSTALL) -m0644 doc/$${X} $(_docdir)/$${X} ; done
 	$(INSTALL) -m0644 COPYING README Changelog $(_docdir)
 	$(INSTALL) -d $(_pkgconfigdir)
 	$(INSTALL) -m0644 libt3config.pc $(_pkgconfigdir)
