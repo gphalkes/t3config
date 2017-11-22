@@ -40,7 +40,7 @@ struct t3_config_t {
 };
 
 enum {
-	T3_CONFIG_SCHEMA = 128,
+	T3_CONFIG_SCHEMA = 64,
 	T3_CONFIG_EXPRESSION,
 	T3_CONFIG_ANY
 };

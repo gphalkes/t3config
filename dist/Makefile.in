@@ -62,7 +62,7 @@ OBJECTS=<OBJECTS>
 
 all: src/libt3config.la
 
-.PHONY: all clean dist-clean install uninstall
+.PHONY: all clean dist-clean distclean install uninstall
 .SUFFIXES: .c .o .lo .la .mo .po
 .IGNORE: uninstall
 
@@ -70,7 +70,9 @@ clean:
 	rm -rf src/*.lo src/generated/*.lo src/.libs src/generated/.libs src/libt3config.la
 
 dist-clean: clean
-	rm -rf Makefile config.log libt3config.pc
+	rm -rf Makefile config.log libt3config.pc .Makefile* .config*
+
+distclean: dist-clean
 
 .c.lo:
 	$(SILENTCCLT) $(LIBTOOL) $(SILENCELT) --mode=compile --tag=CC $(CC) -shared $(CFLAGS) $(CONFIGFLAGS) $(GETTEXTFLAGS) -Isrc -DT3_CONFIG_BUILD_DSO -c -o $@ $<

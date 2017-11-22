@@ -1,3 +1,7 @@
+Version 0.2.11:
+	- Removes pre-generated Doxygen documentation.
+	- Minor updates to Makefile.in for compatibility with Debian packaging.
+
 Version 0.2.10:
 	Bug fixes:
 	- Use the password file to retrieve the user's home directory (using the
