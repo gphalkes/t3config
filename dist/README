@@ -16,10 +16,18 @@ structured configuration files. libt3config provides the following features:
   data).
 
 libt3config is part of the Tilde Terminal Toolkit (T3)
-[http://os.ghalkes.nl/t3/]
+[https://os.ghalkes.nl/t3/]
 
 libt3config is licensed under the GNU General Public License version 3. See the
 file COPYING for details.
+
+
+Documentation
+=============
+
+The full documentation for libt3config can be generated using doxygen. The
+documentation for the current version can be found at
+https://os.ghalkes.nl/doc/libt3config.
 
 
 Prerequisites and installation
@@ -66,7 +74,7 @@ Reporting bugs
 ==============
 
 If you think you have found a bug, please check that you are using the latest
-version of libt3config [http://os.ghalkes.nl/t3/libt3config.html]. When
+version of libt3config [https://os.ghalkes.nl/t3/libt3config.html]. When
 reporting bugs, please include a minimal example that demonstrates the problem.
 
 

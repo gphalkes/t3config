@@ -11,8 +11,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-all: doxygen
+all: doxygen examples/example
 .PHONY: all
 
 T3NAME:=config
 include ../../t3shared/doc-rules.mk
+
+clean::
+	rm examples.example
+
+examples/example: examples/example.c
+	$(CC) -o $@ $< -I../include -L../src/.libs/ -lt3config

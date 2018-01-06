@@ -433,10 +433,10 @@ T3_CONFIG_API const char *t3_config_get_file_name(const t3_config_t *config);
 
 /** Constants for ::t3_config_xdg_open_read and ::t3_config_xdg_open_write. */
 typedef enum {
-	T3_CONFIG_XDG_CONFIG_HOME,
-	T3_CONFIG_XDG_DATA_HOME,
-	T3_CONFIG_XDG_CACHE_HOME,
-	T3_CONFIG_XDG_RUNTIME_DIR
+	T3_CONFIG_XDG_CONFIG_HOME, /**< Use the XDG configuration directory. Defaults to $HOME/.config. */
+	T3_CONFIG_XDG_DATA_HOME, /**< Use the XDG data directory. Defaults to $HOME/.local/share. */
+	T3_CONFIG_XDG_CACHE_HOME, /**< Use the XDG cache directory. Defaults to $HOME/.cache. */
+	T3_CONFIG_XDG_RUNTIME_DIR /**< Use the XDG runtime directory. Does not have a default. */
 } t3_config_xdg_dirs_t;
 
 /** A structure representing file to write to.

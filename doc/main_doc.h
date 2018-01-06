@@ -1,6 +1,6 @@
 /** @mainpage
 
-@section intro Introduction
+@section main-intro Introduction
 
 The libt3config library provides functions for reading and writing simple
 structured configuration files.
@@ -12,7 +12,7 @@ Information is available about the @ref syntax "syntax of the configuration file
 and @ref schema "schema syntax". Finally there is the
 <a class="el" href="modules.html">API documentation</a>.
 
-@section Example
+@section main-example Example
 
 The example below shows a small program which loads a configuration file and
 prints it to screen. It can be passed a schema which will be used for
@@ -26,7 +26,7 @@ validating the configuration, and can optionally enable the include mechanism.
 
 /** @page syntax Syntax of configuration files.
 
-@section intro Introduction
+@section syntax-intro Introduction
 
 Configuration files as used by libt3config are structured files. They consist
 of a set of key/value expressions, where each key is assigned a type based on
@@ -84,7 +84,7 @@ upper- and lowercase, the digits 0 through 9, hyphen and underscore. The first
 character of a key name may not be a digit or a hyphen. Each key may only occur
 once.
 
-@subsection example Example
+@subsection syntax-example Example
 
 @verbatim
 # integer:
@@ -154,7 +154,7 @@ nested {
 
 /** @page schema Schemas
 
-@section intro Introduction
+@section schema-intro Introduction
 
 When using libt3config to read configuration files, it is possible to define
 a schema to which the configuration data must conform. This schema can define
