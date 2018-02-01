@@ -18,59 +18,54 @@
 #include "expression.h"
 
 typedef struct {
-	char *file_name;
-	int count;
+  char *file_name;
+  int count;
 } file_name_t;
 
 struct t3_config_t {
-	t3_config_type_t type;
-	int line_number;
-	struct t3_config_t *next;
-	char *name;
-	file_name_t *file_name;
-	union {
-		const void *ptr; /* First member can be assigned. */
-		char *string;
-		int integer;
-		double number;
-		struct t3_config_t *list;
-		t3_bool boolean;
-		expr_node_t *expr;
-	} value;
+  t3_config_type_t type;
+  int line_number;
+  struct t3_config_t *next;
+  char *name;
+  file_name_t *file_name;
+  union {
+    const void *ptr; /* First member can be assigned. */
+    char *string;
+    int integer;
+    double number;
+    struct t3_config_t *list;
+    t3_bool boolean;
+    expr_node_t *expr;
+  } value;
 };
 
-enum {
-	T3_CONFIG_SCHEMA = 64,
-	T3_CONFIG_EXPRESSION,
-	T3_CONFIG_ANY
-};
+enum { T3_CONFIG_SCHEMA = 64, T3_CONFIG_EXPRESSION, T3_CONFIG_ANY };
 
 #ifndef YY_TYPEDEF_YY_SCANNER_T
 #define YY_TYPEDEF_YY_SCANNER_T
-typedef void* yyscan_t;
+typedef void *yyscan_t;
 #endif
 
 #define SCAN_FILE 0
 #define SCAN_BUFFER 1
 
 typedef struct {
-	yyscan_t scanner;
-	void *result;
+  yyscan_t scanner;
+  void *result;
 
-	int scan_type;
-	FILE *file;
-	const char *buffer;
-	size_t buffer_size,
-		buffer_idx;
+  int scan_type;
+  FILE *file;
+  const char *buffer;
+  size_t buffer_size, buffer_idx;
 
-	int line_number;
-	void *LLthis;
-	t3_bool constraint_parser;
-	const t3_config_opts_t *opts;
-	char *error_extra;
+  int line_number;
+  void *LLthis;
+  t3_bool constraint_parser;
+  const t3_config_opts_t *opts;
+  char *error_extra;
 
-	t3_config_t *current_section; /* Used only for including files, to hold the current section. */
-	t3_config_t *included; /* Holds a list of included files (strings). */
+  t3_config_t *current_section; /* Used only for including files, to hold the current section. */
+  t3_config_t *included;        /* Holds a list of included files (strings). */
 } parse_context_t;
 
 T3_CONFIG_LOCAL char *_t3_config_get_text(yyscan_t scanner);

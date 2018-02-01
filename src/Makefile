@@ -55,4 +55,9 @@ CFLAGS += -DUSE_GETTEXT
 
 test: | libt3config.la
 
+clang-format:
+	clang-format -i *.c *.h
+
 .SECONDARY: .objects/parser.c .objects/parser.h .objects/lex.c .objects/lex_hide.h
+
+.PHONY: clang-format

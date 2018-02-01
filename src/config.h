@@ -15,8 +15,8 @@
 #ifndef T3_CONFIG_H
 #define T3_CONFIG_H
 
-#include <stdio.h>
 #include <limits.h>
+#include <stdio.h>
 #include <t3config/config_api.h>
 #include <t3config/config_errors.h>
 
@@ -42,8 +42,7 @@ extern "C" {
     The second 8 bits represent the minor version.
     The third 8 bits represent the major version.
 
-	At runtime, the value of T3_CONFIG_VERSION can be retrieved by calling
-	::t3_config_get_version.
+    At runtime, the value of T3_CONFIG_VERSION can be retrieved by calling ::t3_config_get_version.
 
     @internal
     The value 0 is an invalid value which should be replaced by the script
@@ -53,14 +52,14 @@ extern "C" {
 
 /** Types of values that can be stored in a config. */
 typedef enum {
-	T3_CONFIG_NONE, /**< Only used for uninitialized values, or as error value. */
-	T3_CONFIG_BOOL, /**< Boolean value. */
-	T3_CONFIG_INT, /**< Integer value, at least 32 bits wide. */
-	T3_CONFIG_STRING, /**< String value. */
-	T3_CONFIG_NUMBER, /**< Floating point value (double). */
-	T3_CONFIG_LIST, /**< A list of un-named items. */
-	T3_CONFIG_SECTION, /**< A list of named items. */
-	T3_CONFIG_PLIST /**< A list of un-named items, written using %&lt;name> notation. */
+  T3_CONFIG_NONE,    /**< Only used for uninitialized values, or as error value. */
+  T3_CONFIG_BOOL,    /**< Boolean value. */
+  T3_CONFIG_INT,     /**< Integer value, at least 32 bits wide. */
+  T3_CONFIG_STRING,  /**< String value. */
+  T3_CONFIG_NUMBER,  /**< Floating point value (double). */
+  T3_CONFIG_LIST,    /**< A list of un-named items. */
+  T3_CONFIG_SECTION, /**< A list of named items. */
+  T3_CONFIG_PLIST    /**< A list of un-named items, written using %&lt;name> notation. */
 } t3_config_type_t;
 
 /** @struct t3_config_t
@@ -75,36 +74,38 @@ typedef struct t3_config_schema_t t3_config_schema_t;
 
 /** Options struct used when reading a file. */
 typedef struct {
-	int flags; /**< Set of flags, or @c 0 for defaults. */
-	/** Information for facilitating file inclusion. */
-	union {
-		/** Information for the default include mechanism. */
-		struct {
-			const char **path; /**< The @c NULL-terminated array of search paths, passed to ::t3_config_open_from_path. */
-			int flags; /**< The flags, passed to ::t3_config_open_from_path. */
-		} dflt;
-		/** Information for the user include mechanism. */
-		struct {
-			FILE *(*open)(const char *name, void *data); /**< The function to call to open an include file. */
-			void *data; /**< Data passed to the callback function. */
-		} user;
-	} include_callback;
+  int flags; /**< Set of flags, or @c 0 for defaults. */
+  /** Information for facilitating file inclusion. */
+  union {
+    /** Information for the default include mechanism. */
+    struct {
+      const char **path; /**< The @c NULL-terminated array of search paths, passed to
+                            ::t3_config_open_from_path. */
+      int flags;         /**< The flags, passed to ::t3_config_open_from_path. */
+    } dflt;
+    /** Information for the user include mechanism. */
+    struct {
+      FILE *(*open)(const char *name,
+                    void *data); /**< The function to call to open an include file. */
+      void *data;                /**< Data passed to the callback function. */
+    } user;
+  } include_callback;
 } t3_config_opts_t;
 
 /** @name Flags for ::t3_config_opts_t. */
 /*@{*/
 /** Return extra information about the error in the ::t3_config_error_t struct. */
-#define T3_CONFIG_VERBOSE_ERROR (1<<0)
+#define T3_CONFIG_VERBOSE_ERROR (1 << 0)
 /** Activate the default include file mechanism.
     When using this flags, the @c dflt member of the ::t3_config_opts_t
     @c include_callback union must be filled in. */
-#define T3_CONFIG_INCLUDE_DFLT (1<<1)
+#define T3_CONFIG_INCLUDE_DFLT (1 << 1)
 /** Activate the user-defined include file mechanism.
     When using this flags, the @c user member of the ::t3_config_opts_t
     @c include_callback union must be filled in. */
-#define T3_CONFIG_INCLUDE_USER (1<<2)
+#define T3_CONFIG_INCLUDE_USER (1 << 2)
 /** Return the file name where the error occured in the ::t3_config_error_t struct. */
-#define T3_CONFIG_ERROR_FILE_NAME (1<<3)
+#define T3_CONFIG_ERROR_FILE_NAME (1 << 3)
 /*@}*/
 
 /** A structure representing an error, with line number.
@@ -113,10 +114,11 @@ typedef struct {
     on which the error was encountered.
 */
 typedef struct {
-	int error; /**< An integer indicating what went wrong. */
-	int line_number; /**< The line number where the error occured. */
-	char *extra; /**< Further information about the error or @c NULL, but only if ::T3_CONFIG_VERBOSE_ERROR was set. Must be free'd. */
-	char *file_name; /**< File in which the error occured. Must be free'd. */
+  int error;       /**< An integer indicating what went wrong. */
+  int line_number; /**< The line number where the error occured. */
+  char *extra;     /**< Further information about the error or @c NULL, but only if
+                      ::T3_CONFIG_VERBOSE_ERROR was set. Must be free'd. */
+  char *file_name; /**< File in which the error occured. Must be free'd. */
 } t3_config_error_t;
 
 /** @name Error codes (libt3config specific) */
@@ -162,18 +164,21 @@ T3_CONFIG_API t3_config_t *t3_config_new(void);
 /** Read a config from a @c FILE.
     @param file The @c FILE to read from.
     @param error A pointer to the location to store an error value (or @c NULL).
-	@param opts A pointer to a struct containing options, or @c NULL to use the defaults.
+    @param opts A pointer to a struct containing options, or @c NULL to use the defaults.
     @return A pointer to the new config or @c NULL on error.
 */
-T3_CONFIG_API t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error, const t3_config_opts_t *opts);
+T3_CONFIG_API t3_config_t *t3_config_read_file(FILE *file, t3_config_error_t *error,
+                                               const t3_config_opts_t *opts);
 /** Read a config from memory.
     @param buffer The buffer to parse.
     @param size The size of the buffer.
     @param error A pointer to the location to store an error value (or @c NULL).
-	@param opts A pointer to a struct containing options, or @c NULL to use the defaults.
+    @param opts A pointer to a struct containing options, or @c NULL to use the defaults.
     @return A pointer to the new config or @c NULL on error.
 */
-T3_CONFIG_API t3_config_t *t3_config_read_buffer(const char *buffer, size_t size, t3_config_error_t *error, const t3_config_opts_t *opts);
+T3_CONFIG_API t3_config_t *t3_config_read_buffer(const char *buffer, size_t size,
+                                                 t3_config_error_t *error,
+                                                 const t3_config_opts_t *opts);
 /** Write a config to a @c FILE.
     @param config The config to write.
     @param file The @c FILE to write to.
@@ -279,41 +284,51 @@ T3_CONFIG_API const char *t3_config_get_name(const t3_config_t *config);
 T3_CONFIG_API int t3_config_get_line(const t3_config_t *config);
 
 /** Get the boolean value from a config with ::T3_CONFIG_BOOL type.
-    @return The boolean value of @p config, or ::t3_false if @p config is @c NULL or not of type ::T3_CONFIG_BOOL.
+    @return The boolean value of @p config, or ::t3_false if @p config is @c NULL or not of type
+    ::T3_CONFIG_BOOL.
 */
 T3_CONFIG_API t3_bool t3_config_get_bool(const t3_config_t *config);
 /** Get the integer value from a config with ::T3_CONFIG_INT type.
-    @return The integer value of @p config, or @c 0 if @p config is @c NULL or not of type ::T3_CONFIG_INT.
+    @return The integer value of @p config, or @c 0 if @p config is @c NULL or not of type
+    ::T3_CONFIG_INT.
 */
 T3_CONFIG_API t3_config_int_t t3_config_get_int(const t3_config_t *config);
 /** Get the floating point value from a config with ::T3_CONFIG_NUMBER type.
-    @return The floating point value of @p config, or @c 0.0 if @p config is @c NULL or not of type ::T3_CONFIG_NUMBER.
+    @return The floating point value of @p config, or @c 0.0 if @p config is @c NULL or not of type
+    ::T3_CONFIG_NUMBER.
 */
 T3_CONFIG_API double t3_config_get_number(const t3_config_t *config);
 /** Get the string value from a config with ::T3_CONFIG_STRING type.
-    @return The string value of @p config, or @c NULL if @p config is @c NULL or not of type ::T3_CONFIG_STRING.
+    @return The string value of @p config, or @c NULL if @p config is @c NULL or not of type
+    ::T3_CONFIG_STRING.
 */
 T3_CONFIG_API const char *t3_config_get_string(const t3_config_t *config);
 
 /** Get the boolean value from a config with ::T3_CONFIG_BOOL type.
-    @return The boolean value of @p config, or @p dflt @p config is @c NULL or not of type ::T3_CONFIG_BOOL.
+    @return The boolean value of @p config, or @p dflt @p config is @c NULL or not of type
+    ::T3_CONFIG_BOOL.
 */
 T3_CONFIG_API t3_bool t3_config_get_bool_dflt(const t3_config_t *config, t3_bool dflt);
 /** Get the integer value from a config with ::T3_CONFIG_INT type.
-    @return The integer value of @p config, or @p dflt if @p config is @c NULL or not of type ::T3_CONFIG_INT.
+    @return The integer value of @p config, or @p dflt if @p config is @c NULL or not of type
+    ::T3_CONFIG_INT.
 */
-T3_CONFIG_API t3_config_int_t t3_config_get_int_dflt(const t3_config_t *config, t3_config_int_t dflt);
+T3_CONFIG_API t3_config_int_t t3_config_get_int_dflt(const t3_config_t *config,
+                                                     t3_config_int_t dflt);
 /** Get the floating point value from a config with ::T3_CONFIG_NUMBER type.
-    @return The floating point value of @p config, or @p dflt if @p config is @c NULL or not of type ::T3_CONFIG_NUMBER.
+    @return The floating point value of @p config, or @p dflt if @p config is @c NULL or not of
+	type ::T3_CONFIG_NUMBER.
 */
 T3_CONFIG_API double t3_config_get_number_dflt(const t3_config_t *config, double dflt);
 /** Get the string value from a config with ::T3_CONFIG_STRING type.
-    @return The string value of @p config, or @p dflt if @p config is @c NULL or not of type ::T3_CONFIG_STRING.
+    @return The string value of @p config, or @p dflt if @p config is @c NULL or not of type
+    ::T3_CONFIG_STRING.
 */
 T3_CONFIG_API const char *t3_config_get_string_dflt(const t3_config_t *config, const char *dflt);
 
 /** Take ownership of the string value from a config with ::T3_CONFIG_STRING type.
-    @return The string value of @p config, or @c NULL if @p config is @c NULL or not of type ::T3_CONFIG_STRING.
+    @return The string value of @p config, or @c NULL if @p config is @c NULL or not of type
+    ::T3_CONFIG_STRING.
 
     After calling this function, the type of the config will be set to ::T3_CONFIG_NONE.
 */
@@ -341,10 +356,13 @@ T3_CONFIG_API int t3_config_get_length(const t3_config_t *config);
 
 /** Find a specific value in a section or list.
     @param config The section or list to search.
-    @param predicate A function to call which determines whether an item in the section or list matches.
+    @param predicate A function to call which determines whether an item in the section or list
+    matches.
     @param data A pointer to user data which will be passed as the second argument to @p predicate.
-    @param start_from A pointer to the last found item, or @c NULL to start from the beginning of the list.
-    @return A pointer to the first item for which @p predicate returned ::t3_true, or @c NULL of none was found.
+    @param start_from A pointer to the last found item, or @c NULL to start from the beginning of
+    the list.
+    @return A pointer to the first item for which @p predicate returned ::t3_true, or @c NULL of
+    none was found.
 
     This function allows one to easily find an item matching a predicate in a
     section or list. It can also be used to find all matching items, by simply
@@ -352,7 +370,8 @@ T3_CONFIG_API int t3_config_get_length(const t3_config_t *config);
     the function returns @c NULL.
 */
 T3_CONFIG_API t3_config_t *t3_config_find(const t3_config_t *config,
-	t3_bool (*predicate)(const t3_config_t *, const void *), const void *data, t3_config_t *start_from);
+                                          t3_bool (*predicate)(const t3_config_t *, const void *),
+                                          const void *data, t3_config_t *start_from);
 
 /** Get the value of ::T3_CONFIG_VERSION corresponding to the actual used library.
     @return The value of ::T3_CONFIG_VERSION.
@@ -373,50 +392,53 @@ T3_CONFIG_API const char *t3_config_strerror(int error);
 /** Read a schema from a @c FILE.
     @param file The @c FILE to read from.
     @param error A pointer to the location to store an error value (or @c NULL).
-	@param opts A pointer to a struct containing options, or @c NULL to use the defaults.
+    @param opts A pointer to a struct containing options, or @c NULL to use the defaults.
     @return A pointer to the new schema or @c NULL on error.
 */
-T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error, const t3_config_opts_t *opts);
+T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error,
+                                                             const t3_config_opts_t *opts);
 /** Read a schema from memory.
     @param buffer The buffer to parse.
     @param size The size of the buffer.
     @param error A pointer to the location to store an error value (or @c NULL).
-	@param opts A pointer to a struct containing options, or @c NULL to use the defaults.
+    @param opts A pointer to a struct containing options, or @c NULL to use the defaults.
     @return A pointer to the new schema or @c NULL on error.
 */
 T3_CONFIG_API t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size,
-	t3_config_error_t *error, const t3_config_opts_t *opts);
+                                                               t3_config_error_t *error,
+                                                               const t3_config_opts_t *opts);
 /** Validate that a config adheres to a schema.
     @param config The config to validate.
     @param schema The schema to validate against.
     @param error A pointer to the location to store an error value (or @c NULL).
-	@param flags A set of flags influencing the behaviour, or @c 0 for defaults.
-	@return ::t3_true if the config is adheres to the schema, ::t3_false otherwise.
+    @param flags A set of flags influencing the behaviour, or @c 0 for defaults.
+    @return ::t3_true if the config is adheres to the schema, ::t3_false otherwise.
 
     Currently, only the flag T3_CONFIG_VERBOSE_ERROR can be used.
 */
 T3_CONFIG_API t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema,
-	t3_config_error_t *error, int flags);
+                                         t3_config_error_t *error, int flags);
 /** Free all memory used by @p schema. */
 T3_CONFIG_API void t3_config_delete_schema(t3_config_schema_t *schema);
 
 /** @name Flags for ::t3_config_open_from_path. */
 /*@{*/
-/** Search paths should first be split on colons or semi-colons (depending on the platform standard). */
-#define T3_CONFIG_SPLIT_PATH (1<<0)
+/** Search paths should first be split on colons or semi-colons (depending on the platform
+    standard). */
+#define T3_CONFIG_SPLIT_PATH (1 << 0)
 /** Only allow file names which are in the path.
 
     This flag disallows use of .. to read files in directories above the
     directories in the path, and also disallows absolute file names.
 */
-#define T3_CONFIG_CLEAN_NAME (1<<1)
+#define T3_CONFIG_CLEAN_NAME (1 << 1)
 /*@}*/
 
 /** Open a file for reading using a search path.
     @param path A @c NULL terminated array of search paths.
     @param name The name of the file to open.
     @param flags A set of flags influencing the behaviour, or @c 0 for defaults.
-	@return A file opened for reading, or @c NULL on error.
+    @return A file opened for reading, or @c NULL on error.
 
     On error, @c errno is set. Possible flags for @p opts are: ::T3_CONFIG_SPLIT_PATH.
 */
@@ -433,10 +455,10 @@ T3_CONFIG_API const char *t3_config_get_file_name(const t3_config_t *config);
 
 /** Constants for ::t3_config_xdg_open_read and ::t3_config_xdg_open_write. */
 typedef enum {
-	T3_CONFIG_XDG_CONFIG_HOME, /**< Use the XDG configuration directory. Defaults to $HOME/.config. */
-	T3_CONFIG_XDG_DATA_HOME, /**< Use the XDG data directory. Defaults to $HOME/.local/share. */
-	T3_CONFIG_XDG_CACHE_HOME, /**< Use the XDG cache directory. Defaults to $HOME/.cache. */
-	T3_CONFIG_XDG_RUNTIME_DIR /**< Use the XDG runtime directory. Does not have a default. */
+  T3_CONFIG_XDG_CONFIG_HOME, /**< Use the XDG configuration directory. Defaults to $HOME/.config. */
+  T3_CONFIG_XDG_DATA_HOME,   /**< Use the XDG data directory. Defaults to $HOME/.local/share. */
+  T3_CONFIG_XDG_CACHE_HOME,  /**< Use the XDG cache directory. Defaults to $HOME/.cache. */
+  T3_CONFIG_XDG_RUNTIME_DIR  /**< Use the XDG runtime directory. Does not have a default. */
 } t3_config_xdg_dirs_t;
 
 /** A structure representing file to write to.
@@ -444,7 +466,8 @@ typedef enum {
 */
 typedef struct t3_config_write_file_t t3_config_write_file_t;
 
-/** Query whether this library instance supports the XDG Base Directory Specification support functions. */
+/** Query whether this library instance supports the XDG Base Directory Specification support
+    functions. */
 T3_CONFIG_API t3_bool t3_config_xdg_supported(void);
 
 /** Get a variable containing a specific XDG directory path.
@@ -457,9 +480,11 @@ T3_CONFIG_API t3_bool t3_config_xdg_supported(void);
     extra memory to be allocated in the string to allow appending a slash and
     a string of length @p file_name_len.
 */
-T3_CONFIG_API char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, size_t file_name_len);
+T3_CONFIG_API char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_dir,
+                                           size_t file_name_len);
 
-/** Open a configuration file for reading in one of the XDG Base Directory Specification directories.
+/** Open a configuration file for reading in one of the XDG Base Directory Specification
+    directories.
     @param xdg_dir A constant indicating which XDG dir to use.
     @param program_dir An optional (but recommended) directory within the XDG dir to use.
     @param file_name The name of the configuration file to open.
@@ -470,9 +495,11 @@ T3_CONFIG_API char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const c
     uses the fallbacks as specified in the standard if the environment variables
     are not set.
 */
-T3_CONFIG_API FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const char *program_dir, const char *file_name);
+T3_CONFIG_API FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const char *program_dir,
+                                            const char *file_name);
 
-/** Open a configuration file for writing in one of the XDG Base Directory Specification directories.
+/** Open a configuration file for writing in one of the XDG Base Directory Specification
+    directories.
     @param xdg_dir A constant indicating which XDG dir to use.
     @param program_dir An optional (but recommended) directory within the XDG dir to use.
     @param file_name The name of the configuration file to open.
@@ -488,8 +515,9 @@ T3_CONFIG_API FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const 
     uses the fallbacks as specified in the standard if the environment variables
     are not set.
 */
-T3_CONFIG_API t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir, const char *program_dir,
-	const char *file_name);
+T3_CONFIG_API t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir,
+                                                               const char *program_dir,
+                                                               const char *file_name);
 /** Get the @c FILE member of a ::t3_config_write_file_t returned by ::t3_config_xdg_open_write.
 
     @deprecated Use ::t3_config_get_write_file instead.
@@ -497,7 +525,8 @@ T3_CONFIG_API t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dir
 T3_CONFIG_API FILE *t3_config_xdg_get_file(t3_config_write_file_t *file);
 /** Close a ::t3_config_write_file_t returned by ::t3_config_xdg_open_write.
     @param file The ::t3_config_write_file_t to close.
-    @param cancel_rename Boolean indicating whether the temporary file should be renamed to the actual config file.
+    @param cancel_rename Boolean indicating whether the temporary file should be renamed to the
+    actual config file.
     @param force Boolean indicating whether to force file close on error.
     @return A boolean indicating whether the close was successful.
 
@@ -508,10 +537,10 @@ T3_CONFIG_API FILE *t3_config_xdg_get_file(t3_config_write_file_t *file);
     returned value will still be @c t3_false to allow detection of the failed
     close.
 
-	@deprecated Use ::t3_config_close_write instead.
+        @deprecated Use ::t3_config_close_write instead.
 */
-T3_CONFIG_API t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force);
-
+T3_CONFIG_API t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3_bool cancel_rename,
+                                                t3_bool force);
 
 /** Open a configuration file for writing.
     @param file_name The name of the configuration file to open.
@@ -523,11 +552,14 @@ T3_CONFIG_API t3_bool t3_config_xdg_close_write(t3_config_write_file_t *file, t3
     intact, even when the program is for some reason halted in mid-write.
 */
 T3_CONFIG_API t3_config_write_file_t *t3_config_open_write(const char *file_name);
-/** Get the @c FILE member of a ::t3_config_write_file_t returned by ::t3_config_open_write or ::t3_config_xdg_open_write. */
+/** Get the @c FILE member of a ::t3_config_write_file_t returned by ::t3_config_open_write or
+ * ::t3_config_xdg_open_write. */
 T3_CONFIG_API FILE *t3_config_get_write_file(t3_config_write_file_t *file);
-/** Close a ::t3_config_write_file_t returned by ::t3_config_open_write or ::t3_config_xdg_open_write.
+/** Close a ::t3_config_write_file_t returned by ::t3_config_open_write or
+   ::t3_config_xdg_open_write.
     @param file The ::t3_config_write_file_t to close.
-    @param cancel_rename Boolean indicating whether the temporary file should be renamed to the actual config file.
+    @param cancel_rename Boolean indicating whether the temporary file should be renamed to the
+    actual config file.
     @param force Boolean indicating whether to force file close on error.
     @return A boolean indicating whether the close was successful.
 
@@ -538,7 +570,8 @@ T3_CONFIG_API FILE *t3_config_get_write_file(t3_config_write_file_t *file);
     returned value will still be @c t3_false to allow detection of the failed
     close.
 */
-T3_CONFIG_API t3_bool t3_config_close_write(t3_config_write_file_t *file, t3_bool cancel_rename, t3_bool force);
+T3_CONFIG_API t3_bool t3_config_close_write(t3_config_write_file_t *file, t3_bool cancel_rename,
+                                            t3_bool force);
 
 #ifdef __cplusplus
 } /* extern "C" */
