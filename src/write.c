@@ -102,7 +102,9 @@ static void write_number(FILE *file, double value) {
   }
 
   /* If there is no decimal point, add .0 */
-  if (strchr(buffer, '.') == NULL) strcat(buffer, ".0");
+  if (strchr(buffer, '.') == NULL) {
+    strcat(buffer, ".0");
+  }
   fputs(buffer, file);
 }
 #endif
@@ -136,7 +138,9 @@ static void write_string(FILE *file, const char *value) {
   double_count = count_quotes(value, '"');
   if (double_count != 0) {
     single_count = count_quotes(value, '\'');
-    if (single_count < double_count) quote_char = '\'';
+    if (single_count < double_count) {
+      quote_char = '\'';
+    }
   }
 
   fputc(quote_char, file);
@@ -187,10 +191,11 @@ static void write_value(t3_config_t *config, FILE *file, int indent) {
 static void write_list(t3_config_t *config, FILE *file, int indent) {
   t3_bool first = t3_true;
   while (config != NULL) {
-    if (first)
+    if (first) {
       first = t3_false;
-    else
+    } else {
       fputs(", ", file);
+    }
 
     write_value(config, file, indent);
 
@@ -269,7 +274,9 @@ static void write_section(t3_config_t *config, FILE *file, int indent) {
 }
 
 int t3_config_write_file(t3_config_t *config, FILE *file) {
-  if (config->type != T3_CONFIG_SECTION) return T3_ERR_BAD_ARG;
+  if (config->type != T3_CONFIG_SECTION) {
+    return T3_ERR_BAD_ARG;
+  }
 
   write_section(config->value.list, file, 0);
   return ferror(file) ? T3_ERR_ERRNO : T3_ERR_SUCCESS;

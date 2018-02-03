@@ -317,7 +317,7 @@ T3_CONFIG_API t3_config_int_t t3_config_get_int_dflt(const t3_config_t *config,
                                                      t3_config_int_t dflt);
 /** Get the floating point value from a config with ::T3_CONFIG_NUMBER type.
     @return The floating point value of @p config, or @p dflt if @p config is @c NULL or not of
-	type ::T3_CONFIG_NUMBER.
+    type ::T3_CONFIG_NUMBER.
 */
 T3_CONFIG_API double t3_config_get_number_dflt(const t3_config_t *config, double dflt);
 /** Get the string value from a config with ::T3_CONFIG_STRING type.

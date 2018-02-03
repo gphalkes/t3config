@@ -27,7 +27,9 @@ char *_t3_config_strdup(const char *str) {
   char *result;
   size_t len = strlen(str) + 1;
 
-  if ((result = malloc(len)) == NULL) return NULL;
+  if ((result = malloc(len)) == NULL) {
+    return NULL;
+  }
   memcpy(result, str, len);
   return result;
 }
@@ -41,7 +43,9 @@ void _t3_unescape(char *dest, const char *src) {
     /* Because the only quotes that can occur in the string itself
        are doubled (checked by lexing), we don't have to check the
        next character. */
-    if (src[i] == src[0]) i++;
+    if (src[i] == src[0]) {
+      i++;
+    }
   }
   dest[j] = 0;
 }
@@ -96,10 +100,14 @@ double _t3_config_strtod(char *text) {
   */
 
   /* If decimal_point happens to be a period, just call strtod ... */
-  if (strcmp(ldata->decimal_point, ".") == 0) return strtod(text, NULL);
+  if (strcmp(ldata->decimal_point, ".") == 0) {
+    return strtod(text, NULL);
+  }
 
   /* ... and also call strtod if there is no decimal point to begin with ... */
-  if ((decimal_point = strchr(text, '.')) == NULL) return strtod(text, NULL);
+  if ((decimal_point = strchr(text, '.')) == NULL) {
+    return strtod(text, NULL);
+  }
 
   /* ... and if decimal_point is a single character, just replace it in the
      string we got from the lexer and call strtod. */
@@ -122,7 +130,9 @@ double _t3_config_strtod(char *text) {
   }
 
   /* ... then we skip all leading zeros. */
-  while (*text == '0') text++;
+  while (*text == '0') {
+    text++;
+  }
 
   /* We already know that there is a decimal point in the text, so that is
      the last character we can possibly stop at. Now if there are more than 50
@@ -148,16 +158,22 @@ double _t3_config_strtod(char *text) {
      than enough digits to leave the precision intact. */
   text = decimal_point + 1;
   while (idx < 130 && *text != 0) {
-    if (*text == 'e' || *text == 'E') break;
+    if (*text == 'e' || *text == 'E') {
+      break;
+    }
     buffer[idx++] = *text;
   }
   /* Skip all further digits, and stop at either an 'e' character, or the end
      of the string. */
-  while (*text != 'e' && *text != 'E' && *text != 0) text++;
+  while (*text != 'e' && *text != 'E' && *text != 0) {
+    text++;
+  }
   /* If we found an 'e' character, copy the exponent up until a buffer fill
      of 159 characters (thus leaving just enough space for the nul byte). */
   if (*text != 0) {
-    while (idx < 158 && *text != 0) buffer[idx++] = *text;
+    while (idx < 158 && *text != 0) {
+      buffer[idx++] = *text;
+    }
   }
   /* Terminate the string, and pass it to strtod, which should now be able
      to parse it correctly. */
@@ -177,21 +193,30 @@ t3_config_type_t _t3_config_str2type(const char *name) {
 
   size_t i;
 
-  if (name == NULL) return T3_CONFIG_NONE;
+  if (name == NULL) {
+    return T3_CONFIG_NONE;
+  }
 
-  for (i = 0; i < sizeof(map) / sizeof(map[0]); i++)
-    if (strcmp(name, map[i].name) == 0) return map[i].type;
+  for (i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
+    if (strcmp(name, map[i].name) == 0) {
+      return map[i].type;
+    }
+  }
   return T3_CONFIG_NONE;
 }
 
 file_name_t *_t3_config_ref_file_name(const t3_config_t *config) {
-  if (config == NULL || config->file_name == NULL) return NULL;
+  if (config == NULL || config->file_name == NULL) {
+    return NULL;
+  }
   config->file_name->count++;
   return config->file_name;
 }
 
 void _t3_config_unref_file_name(const t3_config_t *config) {
-  if (config == NULL || config->file_name == NULL) return;
+  if (config == NULL || config->file_name == NULL) {
+    return;
+  }
   if (--config->file_name->count == 0) {
     free(config->file_name->file_name);
     free(config->file_name);

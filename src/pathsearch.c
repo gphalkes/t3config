@@ -34,7 +34,9 @@ static FILE *try_open(const char *dir, size_t dir_len, const char *name) {
 
   strncpy(file_name, dir, dir_len);
   file_name[dir_len] = 0;
-  if (dir_len != 0) strcat(file_name, "/");
+  if (dir_len != 0) {
+    strcat(file_name, "/");
+  }
   strcat(file_name, name);
 
   result = fopen(file_name, "r");
@@ -70,14 +72,19 @@ static t3_bool clean_name(const char *name) {
   /* Check if name ends in /.., /. or equals .. or . Note that it can't end in
      /, because that is checked before calling this function. */
   if (name[len - 1] == '.' && (len == 1 || is_dirsep(name[len - 2]) ||
-                               (name[len - 2] == '.' && (len == 2 || is_dirsep(name[len - 3])))))
+                               (name[len - 2] == '.' && (len == 2 || is_dirsep(name[len - 3]))))) {
     return t3_false;
+  }
 
   /* Check for names starting with ../ */
-  if (strncmp("../", name, 3) == 0) return t3_false;
+  if (strncmp("../", name, 3) == 0) {
+    return t3_false;
+  }
 
   /* Check for names containing /../ */
-  if (strstr(name, "/../") != NULL) return t3_false;
+  if (strstr(name, "/../") != NULL) {
+    return t3_false;
+  }
 
   return t3_true;
 }
@@ -128,18 +135,22 @@ FILE *t3_config_open_from_path(const char **path, const char *name, int flags) {
 #endif
         if (colon != NULL) {
           if ((result = try_open(search_from, search_from - colon, name)) != NULL ||
-              errno != ENOENT)
+              errno != ENOENT) {
             return result;
+          }
           search_from = colon + 1;
         } else {
           if ((result = try_open(search_from, strlen(search_from), name)) != NULL ||
-              errno != ENOENT)
+              errno != ENOENT) {
             return result;
+          }
           break;
         }
       }
     } else {
-      if ((result = try_open(*path, strlen(*path), name)) != NULL || errno != ENOENT) return result;
+      if ((result = try_open(*path, strlen(*path), name)) != NULL || errno != ENOENT) {
+        return result;
+      }
     }
   }
 

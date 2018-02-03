@@ -105,11 +105,15 @@ static t3_bool make_dirs(char *dir) {
 
   while (slash != NULL) {
     *slash = 0;
-    if (mkdir(dir, 0777) == -1 && errno != EEXIST) return t3_false;
+    if (mkdir(dir, 0777) == -1 && errno != EEXIST) {
+      return t3_false;
+    }
     *slash = '/';
     slash = strchr(slash + 1, '/');
   }
-  if (mkdir(dir, 0777) == -1 && errno != EEXIST) return t3_false;
+  if (mkdir(dir, 0777) == -1 && errno != EEXIST) {
+    return t3_false;
+  }
   return t3_true;
 }
 
@@ -125,7 +129,9 @@ char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_d
   }
 
   if (env != NULL && strlen(env) > 0) {
-    if ((pathname = _t3_config_strdup(env)) == NULL) return NULL;
+    if ((pathname = _t3_config_strdup(env)) == NULL) {
+      return NULL;
+    }
   } else if (xdg_dirs[xdg_dir].homedir_relative) {
     struct passwd pw_entry;
     struct passwd *result;
@@ -147,8 +153,9 @@ char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_d
     }
 
     if ((pathname = malloc(strlen(dir) + 1 + strlen(xdg_dirs[xdg_dir].homedir_relative) + 1)) ==
-        NULL)
+        NULL) {
       return NULL;
+    }
     strcpy(pathname, dir);
     strcat(pathname, "/");
     strcat(pathname, xdg_dirs[xdg_dir].homedir_relative);
@@ -158,7 +165,9 @@ char *t3_config_xdg_get_path(t3_config_xdg_dirs_t xdg_dir, const char *program_d
   }
 
   extra_size = file_name_len + 1;
-  if (program_dir != NULL) extra_size += 1 + strlen(program_dir);
+  if (program_dir != NULL) {
+    extra_size += 1 + strlen(program_dir);
+  }
 
   if ((tmp = realloc(pathname, strlen(pathname) + extra_size + 1)) == NULL) {
     free(pathname);
@@ -184,8 +193,9 @@ FILE *t3_config_xdg_open_read(t3_config_xdg_dirs_t xdg_dir, const char *program_
     return NULL;
   }
 
-  if ((pathname = t3_config_xdg_get_path(xdg_dir, program_dir, strlen(file_name))) == NULL)
+  if ((pathname = t3_config_xdg_get_path(xdg_dir, program_dir, strlen(file_name))) == NULL) {
     return NULL;
+  }
 
   strcat(pathname, "/");
   strcat(pathname, file_name);
@@ -206,8 +216,9 @@ t3_config_write_file_t *t3_config_xdg_open_write(t3_config_xdg_dirs_t xdg_dir,
     return NULL;
   }
 
-  if ((pathname = t3_config_xdg_get_path(xdg_dir, program_dir, strlen(file_name) + 7)) == NULL)
+  if ((pathname = t3_config_xdg_get_path(xdg_dir, program_dir, strlen(file_name) + 7)) == NULL) {
     return NULL;
+  }
 
   if (!make_dirs(pathname)) {
     free(pathname);
@@ -255,10 +266,14 @@ t3_config_write_file_t *t3_config_open_write(const char *file_name) {
     length = 0;
   } else {
     length = dirsep - file_name;
-    if (length > 0) length--;
+    if (length > 0) {
+      length--;
+    }
   }
 
-  if ((pathname = malloc(strlen(file_name) + 1 + 7)) == NULL) return NULL;
+  if ((pathname = malloc(strlen(file_name) + 1 + 7)) == NULL) {
+    return NULL;
+  }
   memcpy(pathname, file_name, length);
   pathname[length] = 0;
 
@@ -267,7 +282,9 @@ t3_config_write_file_t *t3_config_open_write(const char *file_name) {
     return NULL;
   }
 
-  if (dirsep != NULL) strcat(pathname, "/");
+  if (dirsep != NULL) {
+    strcat(pathname, "/");
+  }
   strcat(pathname, ".");
   strcat(pathname, dirsep == NULL ? file_name : dirsep + 1);
   strcat(pathname, "XXXXXX");
@@ -297,7 +314,9 @@ t3_bool t3_config_close_write(t3_config_write_file_t *file, t3_bool cancel_renam
   int rename_result;
 
   if (cancel_rename) {
-    if (!file->closed) fclose(file->file);
+    if (!file->closed) {
+      fclose(file->file);
+    }
     unlink(file->pathname);
     free(file->pathname);
     free(file);
@@ -313,7 +332,9 @@ t3_bool t3_config_close_write(t3_config_write_file_t *file, t3_bool cancel_renam
   }
 
   if ((target_path = _t3_config_strdup(file->pathname)) == NULL) {
-    if (!force) return t3_false;
+    if (!force) {
+      return t3_false;
+    }
     unlink(file->pathname);
     free(file->pathname);
     free(file);
@@ -343,7 +364,9 @@ t3_bool t3_config_close_write(t3_config_write_file_t *file, t3_bool cancel_renam
     return t3_true;
   }
 
-  if (!force) return t3_false;
+  if (!force) {
+    return t3_false;
+  }
   unlink(file->pathname);
   free(file->pathname);
   free(file);

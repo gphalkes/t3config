@@ -48,13 +48,17 @@ int main(int argc, char *argv[]) {
       case 's': {
         /* Load a schema. */
         FILE *schema_file;
-        if (schema != NULL) fatal("more than one schema option\n");
-        if ((schema_file = fopen(optarg, "r")) == NULL)
+        if (schema != NULL) {
+          fatal("more than one schema option\n");
+        }
+        if ((schema_file = fopen(optarg, "r")) == NULL) {
           fatal("error opening schema '%s': %m\n", optarg);
-        if ((schema = t3_config_read_schema_file(schema_file, &error, &opts)) == NULL)
+        }
+        if ((schema = t3_config_read_schema_file(schema_file, &error, &opts)) == NULL) {
           fatal("%s:%d: error loading schema '%s': %s: %s\n", STRING_DFLT(error.file_name, optarg),
                 error.line_number, optarg, t3_config_strerror(error.error),
                 STRING_DFLT(error.extra, ""));
+        }
         fclose(schema_file);
         break;
       }
@@ -75,25 +79,29 @@ int main(int argc, char *argv[]) {
 
   /* Open the input file if necessary. */
   if (argc - optind == 1) {
-    if ((file = fopen(argv[optind], "r")) == NULL) fatal("could not open input '%s': %m\n");
+    if ((file = fopen(argv[optind], "r")) == NULL) {
+      fatal("could not open input '%s': %m\n");
+    }
     name = argv[optind];
   } else if (argc != optind) {
     fatal("more than one input specified\n");
   }
 
   /* Read the configuration. */
-  if ((config = t3_config_read_file(file, &error, &opts)) == NULL)
+  if ((config = t3_config_read_file(file, &error, &opts)) == NULL) {
     fatal("%s:%d: error loading input: %s: %s\n", STRING_DFLT(error.file_name, name),
           error.line_number, t3_config_strerror(error.error), STRING_DFLT(error.extra, ""));
+  }
   /* Close the file now that we are done with it. */
   fclose(file);
 
   /* Use the schema (if any) to validate the input. */
   if (schema != NULL &&
       !t3_config_validate(config, schema, &error,
-                          T3_CONFIG_VERBOSE_ERROR | T3_CONFIG_ERROR_FILE_NAME))
+                          T3_CONFIG_VERBOSE_ERROR | T3_CONFIG_ERROR_FILE_NAME)) {
     fatal("%s:%d: error validating input: %s: %s\n", STRING_DFLT(error.file_name, name),
           error.line_number, t3_config_strerror(error.error), STRING_DFLT(error.extra, ""));
+  }
 
   /* Write the input to screen for checking the result. */
   t3_config_write_file(config, stdout);

@@ -29,7 +29,9 @@ static char meta_schema_buffer[] = {
 };
 
 static char *dup_file_name(const t3_config_t *config) {
-  if (config == NULL || config->file_name == NULL) return NULL;
+  if (config == NULL || config->file_name == NULL) {
+    return NULL;
+  }
   return _t3_config_strdup(config->file_name->file_name);
 }
 
@@ -42,7 +44,9 @@ static t3_config_type_t resolve_type(const char *type_name, const t3_config_t *t
   t3_config_type_t config_type;
   t3_config_t *type_schema;
 
-  if ((config_type = _t3_config_str2type(type_name)) != T3_CONFIG_NONE) return config_type;
+  if ((config_type = _t3_config_str2type(type_name)) != T3_CONFIG_NONE) {
+    return config_type;
+  }
 
   /* This will generally result in a single lookup, because most type
      definitions are elaborations on the basic types. The only reason not
@@ -69,11 +73,13 @@ static t3_bool validate_constraints(const t3_config_t *config_part, const t3_con
       if (context->error != NULL) {
         context->error->error = T3_ERR_CONSTRAINT_VIOLATION;
         context->error->line_number = config_part->line_number;
-        if (context->flags & T3_CONFIG_VERBOSE_ERROR)
+        if (context->flags & T3_CONFIG_VERBOSE_ERROR) {
           context->error->extra =
               _t3_config_strdup(constraint->value.expr->value.operand[1]->value.string);
-        if (context->flags & T3_CONFIG_ERROR_FILE_NAME)
+        }
+        if (context->flags & T3_CONFIG_ERROR_FILE_NAME) {
           context->error->file_name = dup_file_name(config_part);
+        }
       }
       return t3_false;
     }
@@ -89,21 +95,24 @@ static t3_bool validate_key(const t3_config_t *config_part, t3_config_type_t typ
     if (context->error != NULL) {
       context->error->error = T3_ERR_INVALID_KEY_TYPE;
       context->error->line_number = config_part->line_number;
-      if (context->flags & T3_CONFIG_VERBOSE_ERROR)
+      if (context->flags & T3_CONFIG_VERBOSE_ERROR) {
         context->error->extra =
             config_part->name == NULL ? NULL : _t3_config_strdup(config_part->name);
-      if (context->flags & T3_CONFIG_ERROR_FILE_NAME)
+      }
+      if (context->flags & T3_CONFIG_ERROR_FILE_NAME) {
         context->error->file_name = dup_file_name(config_part);
+      }
     }
     return t3_false;
   }
 
-  if (type == T3_CONFIG_SECTION)
+  if (type == T3_CONFIG_SECTION) {
     return validate_aggregate_keys(config_part, schema_part, context);
-  else if (type == T3_CONFIG_LIST && t3_config_get(schema_part, "item-type") != NULL)
+  } else if (type == T3_CONFIG_LIST && t3_config_get(schema_part, "item-type") != NULL) {
     return validate_aggregate_keys(config_part, schema_part, context);
-  else
+  } else {
     return validate_constraints(config_part, schema_part, context);
+  }
 }
 
 static t3_bool validate_aggregate_keys(const t3_config_t *config_part,
@@ -120,19 +129,25 @@ static t3_bool validate_aggregate_keys(const t3_config_t *config_part,
           (sub_schema = t3_config_get(allowed_keys, sub_part->name)) != NULL) {
         resolved_type = resolve_type(t3_config_get_string(t3_config_get(sub_schema, "type")),
                                      context->types, &sub_schema);
-        if (!validate_key(sub_part, resolved_type, sub_schema, context)) return t3_false;
+        if (!validate_key(sub_part, resolved_type, sub_schema, context)) {
+          return t3_false;
+        }
       } else if (item_type != NULL) {
         sub_schema = NULL;
         resolved_type = resolve_type(t3_config_get_string(item_type), context->types, &sub_schema);
-        if (!validate_key(sub_part, resolved_type, sub_schema, context)) return t3_false;
+        if (!validate_key(sub_part, resolved_type, sub_schema, context)) {
+          return t3_false;
+        }
       } else {
         if (context->error != NULL) {
           context->error->error = T3_ERR_INVALID_KEY;
           context->error->line_number = sub_part->line_number;
-          if (context->flags & T3_CONFIG_VERBOSE_ERROR)
+          if (context->flags & T3_CONFIG_VERBOSE_ERROR) {
             context->error->extra = _t3_config_strdup(sub_part->name);
-          if (context->flags & T3_CONFIG_ERROR_FILE_NAME)
+          }
+          if (context->flags & T3_CONFIG_ERROR_FILE_NAME) {
             context->error->file_name = dup_file_name(sub_part);
+          }
         }
         return t3_false;
       }
@@ -150,8 +165,12 @@ t3_bool t3_config_validate(t3_config_t *config, const t3_config_schema_t *schema
     if (error != NULL) {
       error->error = T3_ERR_BAD_ARG;
       error->line_number = 0;
-      if (flags & T3_CONFIG_VERBOSE_ERROR) error->extra = NULL;
-      if (flags & T3_CONFIG_ERROR_FILE_NAME) error->file_name = NULL;
+      if (flags & T3_CONFIG_VERBOSE_ERROR) {
+        error->extra = NULL;
+      }
+      if (flags & T3_CONFIG_ERROR_FILE_NAME) {
+        error->file_name = NULL;
+      }
     }
     return t3_false;
   }
@@ -177,11 +196,15 @@ static expr_node_t *parse_constraint_string(const char *constraint, int *error) 
   context.constraint_parser = t3_true;
 
   /* Initialize lexer. */
-  if (_t3_config_lex_init_extra(&context, &context.scanner) != 0) return NULL;
+  if (_t3_config_lex_init_extra(&context, &context.scanner) != 0) {
+    return NULL;
+  }
 
   /* Perform parse. */
   if ((retval = _t3_config_parse_constraint(&context)) != 0) {
-    if (error != NULL) *error = retval;
+    if (error != NULL) {
+      *error = retval;
+    }
     /* On failure, we free all memory allocated by the partial parse ... */
     _t3_config_delete_expr(context.result);
     /* ... and set context->config to NULL so we return NULL at the end. */
@@ -205,8 +228,12 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root,
       if (error != NULL) {
         error->line_number = constraint->line_number;
         if (opts != NULL) {
-          if (opts->flags & T3_CONFIG_VERBOSE_ERROR) error->extra = NULL;
-          if (opts->flags & T3_CONFIG_ERROR_FILE_NAME) error->file_name = dup_file_name(constraint);
+          if (opts->flags & T3_CONFIG_VERBOSE_ERROR) {
+            error->extra = NULL;
+          }
+          if (opts->flags & T3_CONFIG_ERROR_FILE_NAME) {
+            error->file_name = dup_file_name(constraint);
+          }
         }
       }
       return t3_false;
@@ -217,26 +244,35 @@ static t3_bool parse_constraints(t3_config_t *schema, const t3_config_t *root,
         error->error = T3_ERR_INVALID_CONSTRAINT;
         error->line_number = constraint->line_number;
         if (opts != NULL) {
-          if (opts->flags & T3_CONFIG_VERBOSE_ERROR) error->extra = NULL;
-          if (opts->flags & T3_CONFIG_ERROR_FILE_NAME) error->file_name = dup_file_name(constraint);
+          if (opts->flags & T3_CONFIG_VERBOSE_ERROR) {
+            error->extra = NULL;
+          }
+          if (opts->flags & T3_CONFIG_ERROR_FILE_NAME) {
+            error->file_name = dup_file_name(constraint);
+          }
         }
       }
       return t3_false;
     }
 
     constraint->type = T3_CONFIG_EXPRESSION;
-    if (expr->value.operand[1]->value.string == NULL)
+    if (expr->value.operand[1]->value.string == NULL) {
       expr->value.operand[1]->value.string = constraint->value.string;
-    else
+    } else {
       free(constraint->value.string);
+    }
     constraint->value.expr = expr;
   }
 
   for (schema = t3_config_get(schema, NULL); schema != NULL; schema = t3_config_get_next(schema)) {
-    if (schema->type != T3_CONFIG_SECTION) continue;
+    if (schema->type != T3_CONFIG_SECTION) {
+      continue;
+    }
 
     for (part = t3_config_get(schema, NULL); part != NULL; part = t3_config_get_next(part)) {
-      if (!parse_constraints(part, root, error, opts)) return t3_false;
+      if (!parse_constraints(part, root, error, opts)) {
+        return t3_false;
+      }
     }
   }
   return t3_true;
@@ -247,10 +283,14 @@ static t3_bool check_type_for_loop(t3_config_t *type, const t3_config_t *types) 
   int saved_line_number = type->line_number;
   t3_bool result;
 
-  if (type->line_number < 0) return t3_true;
+  if (type->line_number < 0) {
+    return t3_true;
+  }
 
   referred_type = t3_config_get(type, "type")->value.string;
-  if (_t3_config_str2type(referred_type) != T3_CONFIG_NONE) return t3_false;
+  if (_t3_config_str2type(referred_type) != T3_CONFIG_NONE) {
+    return t3_false;
+  }
 
   type->line_number = -1;
   result = check_type_for_loop(t3_config_get(types, referred_type), types);
@@ -263,7 +303,9 @@ static t3_bool has_loops(const t3_config_t *schema, t3_config_error_t *error,
   const t3_config_t *types = t3_config_get(schema, "types");
   t3_config_t *type;
 
-  if (types == NULL) return t3_false;
+  if (types == NULL) {
+    return t3_false;
+  }
 
   for (type = t3_config_get(types, NULL); type != NULL; type = t3_config_get_next(type)) {
     if (check_type_for_loop(type, types)) {
@@ -271,9 +313,12 @@ static t3_bool has_loops(const t3_config_t *schema, t3_config_error_t *error,
         error->error = T3_ERR_RECURSIVE_TYPE;
         error->line_number = type->line_number;
         if (opts != NULL) {
-          if (opts->flags & T3_CONFIG_VERBOSE_ERROR)
+          if (opts->flags & T3_CONFIG_VERBOSE_ERROR) {
             error->extra = _t3_config_strdup(t3_config_get(type, "type")->value.string);
-          if (opts->flags & T3_CONFIG_ERROR_FILE_NAME) error->file_name = dup_file_name(type);
+          }
+          if (opts->flags & T3_CONFIG_ERROR_FILE_NAME) {
+            error->file_name = dup_file_name(type);
+          }
         }
       }
       return t3_true;
@@ -295,8 +340,12 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
           local_error.error == T3_ERR_OUT_OF_MEMORY ? T3_ERR_OUT_OF_MEMORY : T3_ERR_INTERNAL;
       error->line_number = 0;
       if (opts != NULL) {
-        if (opts->flags & T3_CONFIG_VERBOSE_ERROR) error->extra = NULL;
-        if (opts->flags & T3_CONFIG_ERROR_FILE_NAME) error->file_name = NULL;
+        if (opts->flags & T3_CONFIG_VERBOSE_ERROR) {
+          error->extra = NULL;
+        }
+        if (opts->flags & T3_CONFIG_ERROR_FILE_NAME) {
+          error->file_name = NULL;
+        }
       }
     }
     goto error_end;
@@ -305,8 +354,9 @@ static t3_config_schema_t *handle_schema_validation(t3_config_t *config, t3_conf
 
   if (!t3_config_validate(config, (t3_config_schema_t *)meta_schema, error,
                           opts == NULL ? 0 : opts->flags) ||
-      has_loops(config, error, opts) || !parse_constraints(config, config, error, opts))
+      has_loops(config, error, opts) || !parse_constraints(config, config, error, opts)) {
     goto error_end;
+  }
 
   t3_config_delete(meta_schema);
   config->type = T3_CONFIG_SCHEMA;
@@ -321,7 +371,9 @@ error_end:
 t3_config_schema_t *t3_config_read_schema_file(FILE *file, t3_config_error_t *error,
                                                const t3_config_opts_t *opts) {
   t3_config_t *config;
-  if ((config = t3_config_read_file(file, error, opts)) == NULL) return NULL;
+  if ((config = t3_config_read_file(file, error, opts)) == NULL) {
+    return NULL;
+  }
   return handle_schema_validation(config, error, opts);
 }
 
@@ -329,7 +381,9 @@ t3_config_schema_t *t3_config_read_schema_buffer(const char *buffer, size_t size
                                                  t3_config_error_t *error,
                                                  const t3_config_opts_t *opts) {
   t3_config_t *config;
-  if ((config = t3_config_read_buffer(buffer, size, error, opts)) == NULL) return NULL;
+  if ((config = t3_config_read_buffer(buffer, size, error, opts)) == NULL) {
+    return NULL;
+  }
   return handle_schema_validation(config, error, opts);
 }
 

@@ -29,7 +29,9 @@ static const t3_config_t *lookup_node(const expr_node_t *expr, const t3_config_t
                          lookup_node(expr->value.operand[0], config, root, base), root, base);
     case EXPR_DEREF: {
       const t3_config_t *value = lookup_node(expr->value.operand[0], base, root, base);
-      if (value == NULL || value->type != T3_CONFIG_STRING) return NULL;
+      if (value == NULL || value->type != T3_CONFIG_STRING) {
+        return NULL;
+      }
       return t3_config_get(config, value->value.string);
     }
     case EXPR_THIS:
@@ -65,15 +67,18 @@ static t3_bool resolve(const expr_node_t *expr, const t3_config_t *config, const
         result->value.integer = 0;
         for (list_item = expr->value.operand[0]; list_item != NULL;
              list_item = list_item->value.operand[1]) {
-          if (_t3_config_evaluate_expr(list_item->value.operand[0], config, root))
+          if (_t3_config_evaluate_expr(list_item->value.operand[0], config, root)) {
             result->value.integer++;
+          }
         }
         return t3_true;
       } else {
         list = lookup_node(expr->value.operand[0], config, root, config);
       }
 
-      if (list->type != T3_CONFIG_LIST && list->type != T3_CONFIG_PLIST) return t3_false;
+      if (list->type != T3_CONFIG_LIST && list->type != T3_CONFIG_PLIST) {
+        return t3_false;
+      }
 
       result->type = EXPR_INT_CONST;
       result->value.integer = 0;
@@ -168,10 +173,13 @@ t3_bool _t3_config_evaluate_expr(const expr_node_t *expr, const t3_config_t *con
     case EXPR_NE:
     case EXPR_EQ:
       if (!resolve(expr->value.operand[0], config, root, &resolved_nodes[0]) ||
-          !resolve(expr->value.operand[1], config, root, &resolved_nodes[1]))
+          !resolve(expr->value.operand[1], config, root, &resolved_nodes[1])) {
         return t3_false;
+      }
       type = operand_type(&resolved_nodes[0]);
-      if (type != operand_type(&resolved_nodes[1])) return t3_false;
+      if (type != operand_type(&resolved_nodes[1])) {
+        return t3_false;
+      }
 
       if (type == T3_CONFIG_STRING) {
         return (strcmp(get_string_operand(&resolved_nodes[0]),
@@ -211,8 +219,9 @@ static const t3_config_t *lookup_node_meta(const expr_node_t *expr, const t3_con
         }
 
         type = t3_config_get_string(t3_config_get(result, "type"));
-        if (_t3_config_str2type(type) == T3_CONFIG_NONE)
+        if (_t3_config_str2type(type) == T3_CONFIG_NONE) {
           result = t3_config_get(t3_config_get(root, "types"), type);
+        }
 
         return result;
       } else if ((type = t3_config_get_string(t3_config_get(config, "item-type"))) != NULL) {
@@ -253,7 +262,9 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expr, const t3_conf
       return T3_CONFIG_BOOL;
     case EXPR_IDENT:
       if ((allowed_keys = t3_config_get(config, "allowed-keys")) != NULL) {
-        if ((key = t3_config_get(allowed_keys, expr->value.string)) == NULL) return T3_CONFIG_NONE;
+        if ((key = t3_config_get(allowed_keys, expr->value.string)) == NULL) {
+          return T3_CONFIG_NONE;
+        }
         type = t3_config_get_string(t3_config_get(key, "type"));
       } else {
         type = t3_config_get_string(t3_config_get(config, "item-type"));
@@ -263,10 +274,11 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expr, const t3_conf
       t3_bool success = t3_true;
       const t3_config_t *context =
           lookup_node_meta(expr->value.operand[0], config, root, config, &success);
-      if (!success)
+      if (!success) {
         return T3_CONFIG_NONE;
-      else if (context == NULL)
+      } else if (context == NULL) {
         return T3_CONFIG_ANY;
+      }
       return operand_type_meta(expr->value.operand[1], context, root);
     }
     case EXPR_DEREF:
@@ -275,15 +287,18 @@ static t3_config_type_t operand_type_meta(const expr_node_t *expr, const t3_conf
       return _t3_config_str2type(t3_config_get_string(t3_config_get(config, "type")));
     case EXPR_LENGTH: {
       t3_config_type_t type_int;
-      if (expr->value.operand[0] == NULL)
+      if (expr->value.operand[0] == NULL) {
         type_int = _t3_config_str2type(t3_config_get_string(t3_config_get(config, "type")));
-      else if (expr->value.operand[0]->type == EXPR_LIST)
+      } else if (expr->value.operand[0]->type == EXPR_LIST) {
         return _t3_config_validate_expr(expr->value.operand[0], config, root) ? T3_CONFIG_INT
                                                                               : T3_CONFIG_NONE;
-      else
+      } else {
         type_int = operand_type_meta(expr->value.operand[0], config, root);
+      }
 
-      if (type_int != T3_CONFIG_LIST && (int)type_int != T3_CONFIG_ANY) return T3_CONFIG_NONE;
+      if (type_int != T3_CONFIG_LIST && (int)type_int != T3_CONFIG_ANY) {
+        return T3_CONFIG_NONE;
+      }
 
       return T3_CONFIG_INT;
     }
@@ -303,7 +318,9 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expr, const t3_config_t *con
     case EXPR_LIST: {
       const expr_node_t *list_item;
       for (list_item = expr; list_item != NULL; list_item = list_item->value.operand[1]) {
-        if (!_t3_config_validate_expr(list_item->value.operand[0], config, root)) return t3_false;
+        if (!_t3_config_validate_expr(list_item->value.operand[0], config, root)) {
+          return t3_false;
+        }
       }
       return t3_true;
     }
@@ -333,16 +350,25 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expr, const t3_config_t *con
       t3_config_type_t type[2] = {operand_type_meta(expr->value.operand[0], config, root),
                                   operand_type_meta(expr->value.operand[1], config, root)};
 
-      if (type[0] == T3_CONFIG_NONE || type[1] == T3_CONFIG_NONE) return t3_false;
+      if (type[0] == T3_CONFIG_NONE || type[1] == T3_CONFIG_NONE) {
+        return t3_false;
+      }
 
-      if ((int)type[0] == T3_CONFIG_ANY || (int)type[1] == T3_CONFIG_ANY) return t3_true;
+      if ((int)type[0] == T3_CONFIG_ANY || (int)type[1] == T3_CONFIG_ANY) {
+        return t3_true;
+      }
 
-      if (type[0] != type[1]) return t3_false;
+      if (type[0] != type[1]) {
+        return t3_false;
+      }
 
-      if (type[0] == T3_CONFIG_STRING || type[0] == T3_CONFIG_BOOL)
+      if (type[0] == T3_CONFIG_STRING || type[0] == T3_CONFIG_BOOL) {
         return expr->type == EXPR_EQ || expr->type == EXPR_NE;
+      }
 
-      if (type[0] == T3_CONFIG_INT || type[0] == T3_CONFIG_NUMBER) return t3_true;
+      if (type[0] == T3_CONFIG_INT || type[0] == T3_CONFIG_NUMBER) {
+        return t3_true;
+      }
       return t3_false;
     }
 
@@ -352,7 +378,9 @@ t3_bool _t3_config_validate_expr(const expr_node_t *expr, const t3_config_t *con
 }
 
 void _t3_config_delete_expr(expr_node_t *expr) {
-  if (expr == NULL) return;
+  if (expr == NULL) {
+    return;
+  }
 
   switch (expr->type) {
     case EXPR_TOP:
