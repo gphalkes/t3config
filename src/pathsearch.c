@@ -92,6 +92,7 @@ static t3_bool clean_name(const char *name) {
 FILE *t3_config_open_from_path(const char **path, const char *name, int flags) {
   FILE *result = NULL;
   size_t len;
+  int first_error = 0;
 
   if ((len = strlen(name)) == 0 || is_dirsep(name[len - 1])) {
     errno = EINVAL;
@@ -121,7 +122,7 @@ FILE *t3_config_open_from_path(const char **path, const char *name, int flags) {
     }
   }
 
-  errno = EINVAL;
+  errno = ENOENT;
   for (; *path != NULL; path++) {
     if (flags & T3_CONFIG_SPLIT_PATH) {
       const char *search_from, *colon;
@@ -134,24 +135,36 @@ FILE *t3_config_open_from_path(const char **path, const char *name, int flags) {
         colon = strchr(search_from, ':');
 #endif
         if (colon != NULL) {
-          if ((result = try_open(search_from, search_from - colon, name)) != NULL ||
-              errno != ENOENT) {
+          if ((result = try_open(search_from, colon - search_from, name)) != NULL ||
+              errno == ENOMEM) {
             return result;
+          }
+          if (first_error == 0) {
+            first_error = errno;
           }
           search_from = colon + 1;
         } else {
           if ((result = try_open(search_from, strlen(search_from), name)) != NULL ||
-              errno != ENOENT) {
+              errno == ENOMEM) {
             return result;
+          }
+          if (first_error == 0) {
+            first_error = errno;
           }
           break;
         }
       }
     } else {
-      if ((result = try_open(*path, strlen(*path), name)) != NULL || errno != ENOENT) {
+      if ((result = try_open(*path, strlen(*path), name)) != NULL || errno == ENOMEM) {
         return result;
       }
+      if (first_error == 0) {
+        first_error = errno;
+      }
     }
+  }
+  if (first_error != 0) {
+    errno = first_error;
   }
 
   return result;

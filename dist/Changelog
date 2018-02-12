@@ -1,3 +1,8 @@
+Version 0.2.12:
+	Bug fixes:
+	- Continue searching paths after the first error.
+	- Multiple-path search broke if the search path contained a colon.
+
 Version 0.2.11:
 	- Removes pre-generated Doxygen documentation.
 	- Minor updates to Makefile.in for compatibility with Debian packaging.
