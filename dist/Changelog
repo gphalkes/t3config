@@ -1,7 +1,8 @@
 Version 0.2.12:
 	Bug fixes:
 	- Continue searching paths after the first error.
-	- Multiple-path search broke if the search path contained a colon.
+	- Multiple-path (T3_CONFIG_SPLIT_PATH) search broke if the search path
+	  contains a colon.
 
 Version 0.2.11:
 	- Removes pre-generated Doxygen documentation.

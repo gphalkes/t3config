@@ -30,6 +30,7 @@ include ../../makesys/rules.mk
 #================================================#
 T3NAME := config
 include ../../t3shared/rules.mk
+include ../../t3shared/rules-base.mk
 
 CFLAGS += -I.objects
 CFLAGS += -DHAS_STRDUP
