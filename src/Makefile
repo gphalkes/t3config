@@ -14,7 +14,8 @@
 SOURCES.libt3config.la = lex.l parser.g config.c config_shared.c util.c write.c \
 	expression.c schema.c pathsearch.c xdg.c
 LDLIBS.libt3config.la = -lm
-CFLAGS.lex = -Wno-unused -Wno-unused-parameter -Wno-switch-default
+CFLAGS.lex = -Wno-unused -Wno-unused-parameter -Wno-switch-default -iquote.
+CFLAGS.parser = -iquote.
 
 SOURCES.test = test.c
 LDFLAGS.test = -L.libs

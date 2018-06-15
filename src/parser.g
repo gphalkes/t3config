@@ -15,14 +15,14 @@
 %options "abort thread-safe lowercase-symbols generate-lexer-wrapper=no";
 %prefix _t3_config_;
 %lexical _t3_config_yylex_wrapper;
-%datatype "parse_context_t *", "config_internal.h";
+%datatype "parse_context_t *", "t3config/config_internal.h";
 %start _t3_config_parse, config;
 %start _t3_config_parse_include, include_config;
 
 %token INT, NUMBER, STRING, IDENTIFIER, BOOL_TRUE, BOOL_FALSE;
 
 %top {
-#include "expression.h"
+#include "t3config/expression.h"
 
 struct _t3_config_this;
 T3_CONFIG_LOCAL int _t3_config_parse(parse_context_t * LLuserData);
@@ -36,8 +36,8 @@ T3_CONFIG_LOCAL void _t3_config_abort(struct _t3_config_this *, int);
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
-#include "config.h"
-#include "util.h"
+#include "t3config/config.h"
+#include "t3config/util.h"
 
 static t3_config_t *allocate_item(struct _t3_config_this *LLthis, t3_bool allocate_name) {
 	t3_config_t *result;
