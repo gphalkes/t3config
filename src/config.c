@@ -227,7 +227,7 @@ static t3_config_t *config_add(t3_config_t *config, const char *name, t3_config_
   if (name == NULL) {
     result->name = NULL;
   } else {
-    if ((result->name = strdup(name)) == NULL) {
+    if ((result->name = _t3_config_strdup(name)) == NULL) {
       free(result);
       return NULL;
     }
@@ -334,7 +334,7 @@ int t3_config_add_string(t3_config_t *config, const char *name, const char *valu
   if (strchr(value, '\n') != NULL) {
     return T3_ERR_BAD_ARG;
   }
-  if ((value_copy = strdup(value)) == NULL) {
+  if ((value_copy = _t3_config_strdup(value)) == NULL) {
     return T3_ERR_OUT_OF_MEMORY;
   }
 
@@ -382,7 +382,7 @@ int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *v
   }
 
   if (name != NULL) {
-    if ((item_name = strdup(name)) == NULL) {
+    if ((item_name = _t3_config_strdup(name)) == NULL) {
       return T3_ERR_OUT_OF_MEMORY;
     }
   }
