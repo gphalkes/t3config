@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2012 G.P. Halkes
+/* Copyright (C) 2011-2012,2019 G.P. Halkes
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 3, as
    published by the Free Software Foundation.
@@ -44,7 +44,7 @@ T3_CONFIG_LOCAL void _t3_config_set_column(int column_no, yyscan_t yyscanner);
 			result = YY_NULL; \
 		} else { \
 			result = 0; \
-			while ((size_t) result < max_size && yyextra->buffer_idx < yyextra->buffer_size) \
+			while (result < max_size && yyextra->buffer_idx < yyextra->buffer_size) \
 				buf[result++] = yyextra->buffer[yyextra->buffer_idx++]; \
 		} \
 	} \

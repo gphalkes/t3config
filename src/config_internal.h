@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2012 G.P. Halkes
+/* Copyright (C) 2011-2012,2019 G.P. Halkes
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 3, as
    published by the Free Software Foundation.
@@ -31,7 +31,7 @@ struct t3_config_t {
   union {
     const void *ptr; /* First member can be assigned. */
     char *string;
-    int integer;
+    int64_t integer;
     double number;
     struct t3_config_t *list;
     t3_bool boolean;

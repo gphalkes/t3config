@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2012 G.P. Halkes
+/* Copyright (C) 2011-2012,2019 G.P. Halkes
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 3, as
    published by the Free Software Foundation.
@@ -16,6 +16,7 @@
 #define T3_CONFIG_H
 
 #include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <t3config/config_api.h>
 #include <t3config/config_errors.h>
@@ -218,8 +219,14 @@ T3_CONFIG_API void t3_config_erase_from_list(t3_config_t *list, t3_config_t *ite
 T3_CONFIG_API int t3_config_add_bool(t3_config_t *config, const char *name, t3_bool value);
 /** Add (or overwrite) an integer value to a (sub-)config.
     See ::t3_config_add_bool for details.
+
+    @deprecated Use ::t3_config_add_int64 instead.
 */
 T3_CONFIG_API int t3_config_add_int(t3_config_t *config, const char *name, t3_config_int_t value);
+/** Add (or overwrite) an integer value to a (sub-)config.
+    See ::t3_config_add_bool for details.
+*/
+T3_CONFIG_API int t3_config_add_int64(t3_config_t *config, const char *name, int64_t value);
 /** Add (or overwrite) an floating point number value to a (sub-)config.
     See ::t3_config_add_bool for details.
 */
@@ -291,8 +298,15 @@ T3_CONFIG_API t3_bool t3_config_get_bool(const t3_config_t *config);
 /** Get the integer value from a config with ::T3_CONFIG_INT type.
     @return The integer value of @p config, or @c 0 if @p config is @c NULL or not of type
     ::T3_CONFIG_INT.
+
+    @deprecated Use ::t3_config_get_int64 instead.
 */
 T3_CONFIG_API t3_config_int_t t3_config_get_int(const t3_config_t *config);
+/** Get the integer value from a config with ::T3_CONFIG_INT type.
+    @return The integer value of @p config, or @c 0 if @p config is @c NULL or not of type
+    ::T3_CONFIG_INT.
+*/
+T3_CONFIG_API int64_t t3_config_get_int64(const t3_config_t *config);
 /** Get the floating point value from a config with ::T3_CONFIG_NUMBER type.
     @return The floating point value of @p config, or @c 0.0 if @p config is @c NULL or not of type
     ::T3_CONFIG_NUMBER.
@@ -312,9 +326,17 @@ T3_CONFIG_API t3_bool t3_config_get_bool_dflt(const t3_config_t *config, t3_bool
 /** Get the integer value from a config with ::T3_CONFIG_INT type.
     @return The integer value of @p config, or @p dflt if @p config is @c NULL or not of type
     ::T3_CONFIG_INT.
+
+    @deprecated Use ::t3_config_get_int64_dflt instead.
 */
 T3_CONFIG_API t3_config_int_t t3_config_get_int_dflt(const t3_config_t *config,
                                                      t3_config_int_t dflt);
+/** Get the integer value from a config with ::T3_CONFIG_INT type.
+    @return The integer value of @p config, or @p dflt if @p config is @c NULL or not of type
+    ::T3_CONFIG_INT.
+*/
+T3_CONFIG_API int64_t t3_config_get_int64_dflt(const t3_config_t *config,
+                                               int64_t dflt);
 /** Get the floating point value from a config with ::T3_CONFIG_NUMBER type.
     @return The floating point value of @p config, or @p dflt if @p config is @c NULL or not of
     type ::T3_CONFIG_NUMBER.

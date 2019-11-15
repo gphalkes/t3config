@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2012 G.P. Halkes
+/* Copyright (C) 2011-2012,2019 G.P. Halkes
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 3, as
    published by the Free Software Foundation.
@@ -32,10 +32,13 @@ T3_CONFIG_LOCAL void _t3_config_abort(struct _t3_config_this *, int);
 }
 
 {
-#include <stdlib.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <limits.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
+
 #include "t3config/config.h"
 #include "t3config/util.h"
 
@@ -68,19 +71,14 @@ static void set_value(struct _t3_config_this *LLthis, t3_config_t *item, t3_conf
 			item->value.boolean = LLsymb == BOOL_TRUE;
 			break;
 		case T3_CONFIG_INT: {
-			long value;
+			intmax_t value;
 			errno = 0;
-			value = strtol(_t3_config_get_text(_t3_config_data->scanner), NULL, 0);
-/*
-			if (errno == ERANGE
-#if T3_CONFIG_INT_MAX < LONG_MAX || T3_CONFIG_INT_MIN > LONG_MIN
-				|| value > T3_CONFIG_INT_MAX || value < T3_CONFIG_INT_MIN
-#endif
-			)
-				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
-*/
+			value = strtoimax(_t3_config_get_text(_t3_config_data->scanner), NULL, 0);
 			item->type = type;
-			item->value.integer = (int) value;
+			item->value.integer = (int64_t) value;
+/*			if (errno == ERANGE || value != item->value.integer) {
+				LLabort(LLthis, T3_ERR_OUT_OF_RANGE);
+      }*/
 			break;
 		}
 		case T3_CONFIG_NUMBER: {

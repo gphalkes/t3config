@@ -168,10 +168,10 @@ syntax as normal configuration files. However, because they describe other
 configuration files, they must also obey a specific structure (or schema).
 
 At the top level, four specific items are allowed: first a @c types section
-describing new types. Second, a @c allowed-keys section defining the
-permissible keys and their types. Third a @c item-type string defining the
+describing new types. Second, an @c allowed-keys section defining the
+permissible keys and their types. Third an @c item-type string defining the
 required type of keys not specifically allowed by the @c allowed-keys section.
-Finally, a list of strings named @c contraint which describes further
+Finally, a list of strings named @c constraint which describes further
 restrictions.
 
 The @c allowed-keys section defines the different key names that are allowed.

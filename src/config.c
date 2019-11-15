@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2012 G.P. Halkes
+/* Copyright (C) 2011-2012,2019 G.P. Halkes
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 3, as
    published by the Free Software Foundation.
@@ -321,6 +321,7 @@ static t3_config_t *add_or_replace(t3_config_t *config, const char *name, t3_con
 
 ADD_SIMPLE(bool, t3_bool, T3_CONFIG_BOOL, boolean)
 ADD_SIMPLE(int, t3_config_int_t, T3_CONFIG_INT, integer)
+ADD_SIMPLE(int64, int64_t, T3_CONFIG_INT, integer)
 ADD_SIMPLE(number, double, T3_CONFIG_NUMBER, number)
 
 int t3_config_add_string(t3_config_t *config, const char *name, const char *value) {
@@ -455,6 +456,7 @@ int t3_config_get_line(const t3_config_t *config) {
 
 GET(bool, t3_bool, T3_CONFIG_BOOL, boolean, t3_false)
 GET(int, t3_config_int_t, T3_CONFIG_INT, integer, 0)
+GET(int64, int64_t, T3_CONFIG_INT, integer, 0)
 GET(number, double, T3_CONFIG_NUMBER, number, 0.0)
 GET(string, const char *, T3_CONFIG_STRING, string, NULL)
 
@@ -465,6 +467,7 @@ GET(string, const char *, T3_CONFIG_STRING, string, NULL)
 
 GET_DFLT(bool, t3_bool, T3_CONFIG_BOOL, boolean)
 GET_DFLT(int, t3_config_int_t, T3_CONFIG_INT, integer)
+GET_DFLT(int64, int64_t, T3_CONFIG_INT, integer)
 GET_DFLT(number, double, T3_CONFIG_NUMBER, number)
 GET_DFLT(string, const char *, T3_CONFIG_STRING, string)
 
