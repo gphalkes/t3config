@@ -20,6 +20,24 @@ validating the configuration, and can optionally enable the include mechanism.
 
 @include example.c
 
+@section main-guidelines Guidelines
+
+The API of libt3config is designed such that it is possible to write code that
+only checks for errors in a limited number of places. That is, functions that
+fetch or store values in the config, all accept @c NULL as the pointer to the
+(sub-)config to add to, and successful return values are 0 to allow logical
+OR-ing of the values to check for simple errors. For functions that fetch
+values, reasonable defaults are provided.So, the following code is guaranteed
+not to crash:
+
+@code
+int has_errors = 0;
+t3_config_t *config = t3_config_new();
+has_errors |= config == NULL;
+has_errors |= t3_config_add_bool(config, "flag", t3_true);
+t3_bool value = t3_config_get_bool(t3_config_get(config, "flag"));
+@endcode
+
 */
 
 //==========================================================

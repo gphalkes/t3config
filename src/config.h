@@ -246,6 +246,8 @@ T3_CONFIG_API int t3_config_add_string(t3_config_t *config, const char *name, co
     If an item with the given name already exists, it is replaced by the new
     list. If necessary, memory used by sub-items or values is released prior
     to replacing the value, but after checking for argument validity.
+
+    If @p config is @c NULL, an error of type ::T3_ERR_BAD_ARG is returned.
 */
 T3_CONFIG_API t3_config_t *t3_config_add_list(t3_config_t *config, const char *name, int *error);
 /** Add (or overwrite) a plist to the (sub-)config.
@@ -261,6 +263,7 @@ T3_CONFIG_API t3_config_t *t3_config_add_section(t3_config_t *config, const char
     earlier from some source, or unlinked from elsewhere in the configuration.
     This should @b not be used to link the same configuration into the tree
     multiple times.
+
     See ::t3_config_add_bool for details.
 */
 T3_CONFIG_API int t3_config_add_existing(t3_config_t *config, const char *name, t3_config_t *value);
@@ -273,7 +276,9 @@ T3_CONFIG_API int t3_config_set_list_type(t3_config_t *config, t3_config_type_t 
     @return The requested sub-config, or @c NULL if no sub-config exists with the given name.
 
     This function can be used both to retrieve a named sub-config, or to get the
-    first sub-config for iteration over all items in this (sub-)config.
+    first sub-config for iteration over all items in this (sub-)config. For lists,
+    use @c NULL for the @p name parameter to get the first item in the list, and
+    use ::t3_config_get_next to retrieve further items.
 */
 T3_CONFIG_API t3_config_t *t3_config_get(const t3_config_t *config, const char *name);
 /** Get the type of a (sub-)config.
