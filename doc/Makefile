@@ -18,7 +18,7 @@ T3NAME:=config
 include ../../t3shared/doc-rules.mk
 
 clean::
-	rm examples.example
+	rm -f examples.example
 
 examples/example: examples/example.c
 	$(CC) -o $@ $< -I../include -L../src/.libs/ -lt3config

@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2012 G.P. Halkes
+# Copyright (C) 2011-2012,2019 G.P. Halkes
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3, as
 # published by the Free Software Foundation.
@@ -18,6 +18,21 @@ INSTALLDIRS="libdir docdir includedir"
 DEFAULT_LINGUAS=nl
 
 config() {
+  has_support_c99
+
+  clean_c
+  cat > .config.c <<EOF
+#include <inttypes.h>
+#include <stdint.h>
+
+int main(int argc, char *argv[]) {
+  intmax_t value = strtoimax("123", (char *)0, 0);
+  int64_t value64 = value;
+  return 0;
+}
+EOF
+  test_link "integer types from C99"
+
 	clean_c
 	cat > .config.c <<EOF
 #include <string.h>
