@@ -119,7 +119,8 @@ typedef struct {
   int line_number; /**< The line number where the error occured. */
   char *extra;     /**< Further information about the error or @c NULL, but only if
                       ::T3_CONFIG_VERBOSE_ERROR was set. Must be free'd. */
-  char *file_name; /**< File in which the error occured. Must be free'd. */
+  char *file_name; /**< File in which the error occured, but only if
+                      ::T3_CONFIG_ERROR_FILE_NAME was set. Must be free'd. */
 } t3_config_error_t;
 
 /** @name Error codes (libt3config specific) */
@@ -340,8 +341,7 @@ T3_CONFIG_API t3_config_int_t t3_config_get_int_dflt(const t3_config_t *config,
     @return The integer value of @p config, or @p dflt if @p config is @c NULL or not of type
     ::T3_CONFIG_INT.
 */
-T3_CONFIG_API int64_t t3_config_get_int64_dflt(const t3_config_t *config,
-                                               int64_t dflt);
+T3_CONFIG_API int64_t t3_config_get_int64_dflt(const t3_config_t *config, int64_t dflt);
 /** Get the floating point value from a config with ::T3_CONFIG_NUMBER type.
     @return The floating point value of @p config, or @p dflt if @p config is @c NULL or not of
     type ::T3_CONFIG_NUMBER.

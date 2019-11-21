@@ -1,3 +1,8 @@
+Version 1.1.0:
+	New features:
+	- Added a tool to verify schemas and configs. This makes it easier to create
+	  schemas.
+
 Version 1.0.0:
 	New features:
 	- Use int64_t as the basic integer type. New functions have been added to
