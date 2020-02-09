@@ -1,0 +1,62 @@
+# Copyright (C) 2020 G.P. Halkes
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3, as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+.POSIX:
+
+# C-compiler flags
+CFLAGS=-O2
+
+# Configuration flags and libraries.
+CONFIGFLAGS=
+CONFIGLIBS=
+
+# Gettext configuration
+# GETTEXTFLAGS should contain -DUSE_GETTEXT to enable gettext translations
+# GETTEXTLIBS should contain all link flags to allow linking with gettext, if
+# it has been enabled. The GNU libc already contains the gettext library, so
+# there is no need to add any flags. Otherwise, -lintl is usually required, and
+# sometimes -liconv as well.
+# LOCALEDIR: the directory where the locale dependant files should be installed.
+# LINGUAS: translations to be installed. Look in po directory for available
+#  translations.
+GETTEXTFLAGS=
+GETTEXTLIBS=
+LOCALEDIR=$(prefix)/share/locale
+LINGUAS=
+
+# The libtool executable
+LIBTOOL=libtool
+
+# Installation prefix
+prefix=/usr/local
+
+# Miscelaneous install paths
+libdir=$(prefix)/lib
+datadir=$(prefix)/share
+
+SILENCELT=--silent
+SILENTCC=@echo '[CC]' $< ;
+SILENTLD=@echo '[LD]' $@ ;
+
+OBJECTS=<OBJECTS>
+
+all: src.util/t3config-test
+
+.PHONY: all
+.SUFFIXES: .c .o .lo .la .mo .po
+
+.c.o:
+	$(SILENTCC) $(CC) $(CFLAGS) $(CONFIGFLAGS) $(GETTEXTFLAGS) -DLOCALEDIR=\"$(LOCALEDIR)\" -Isrc.util -Isrc \
+		-c -o $@ $<
+
+src.util/t3config-test: $(OBJECTS)
+	$(SILENTLD) $(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LDLIBS) $(CONFIGLIBS) $(GETTEXTLIBS) -Lsrc/.libs -lt3config

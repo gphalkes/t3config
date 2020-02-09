@@ -16,4 +16,4 @@
 /testsuite/*/work
 /testsuite/pathcleanse/test
 doc/examples/example
-src.util/t3config_test
+src.util/t3config-test

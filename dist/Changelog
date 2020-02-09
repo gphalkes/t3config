@@ -1,4 +1,4 @@
-Version 1.1.0:
+Version :
 	New features:
 	- Added a tool to verify schemas and configs. This makes it easier to create
 	  schemas.
